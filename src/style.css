@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Contraintes pour empêcher les icônes de devenir trop grandes */
+svg {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Forcer une taille raisonnable pour les icônes sans classe spécifique */
+svg:not([class*="w-"]):not([class*="h-"]) {
+  width: 1.25rem; /* 20px */
+  height: 1.25rem; /* 20px */
+}
+
+/* Empêcher les emojis de devenir énormes */
+span[class*="text-"] {
+  font-size: inherit;
+}
+
+/* Style spécifique pour les icônes dans les stats */
+.stat-figure svg {
+  max-width: 2rem !important;
+  max-height: 2rem !important;
+}
+
+/* Empêcher DaisyUI de grossir les icônes */
+.btn svg,
+.menu svg,
+.card svg {
+  flex-shrink: 0;
+}
+
+/* Forcer une taille maximale pour tous les SVG */
+svg {
+  max-width: 3rem !important;
+  max-height: 3rem !important;
+}
