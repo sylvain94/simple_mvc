@@ -1,17 +1,20 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
+const apiBaseUrl = process.env.VITE_API_URL || 'https://192.168.1.116:8443';
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
   server: {
-    // Configuration pour gérer les requêtes HTTPS vers votre backend
+    port: 8080,
+    host: true,
+    // Configuration to handle HTTPS requests to your backend
     proxy: {
       '/api': {
-        target: 'https://localhost:8443',
+        target: apiBaseUrl,
         changeOrigin: true,
-        secure: false, // Ignorer les certificats SSL auto-signés en développement
-        rewrite: (path) => path // Garder le préfixe /api
+        secure: false,
       }
     }
   }

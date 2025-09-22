@@ -12,25 +12,48 @@ const authService = {
    */
   async login(username, password) {
     try {
+      console.log('🔐 Tring to authenticate for:', username);
+      
       const response = await fetch(`/api/v1/authentication/authenticate`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'accept': '*/*'
         },
         body: JSON.stringify({
-          username: username,
+          userid: username,
           password: password
         })
       });
 
+      console.log('📡 Server response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
+      // Read the response content
+      const responseText = await response.text();
+      console.log('📄 Raw response content:', responseText);
+
       if (!response.ok) {
-        throw new Error('Invalid credentials');
+        console.error('❌ HTTP Error:', response.status, response.statusText);
+        console.error('📄 Error content:', responseText);
+        throw new Error(`Error ${response.status}: ${response.statusText}. Content: ${responseText}`);
       }
 
       // Parse the JSON response to get the token
-      const authResult = await response.json();
+      let authResult;
+      try {
+        authResult = JSON.parse(responseText);
+        console.log('✅ Parsed JSON response:', authResult);
+      } catch (parseError) {
+        console.error('❌ Erreur de parsing JSON:', parseError);
+        throw new Error(`Invalid server response: ${responseText}`);
+      }
       
       if (!authResult.token) {
+        console.error('❌ No token in the response:', authResult);
         throw new Error('No token received from server');
       }
 
@@ -42,7 +65,7 @@ const authService = {
           expiresAt = tokenPayload.exp * 1000; // Convert to milliseconds
         }
       } catch (e) {
-        console.warn('Could not decode JWT expiration, using default');
+        console.warn('Could not decode JWT expiration, using default 30 minutes');
       }
 
       // Create session with real JWT token
@@ -54,12 +77,23 @@ const authService = {
       
       // Store the session data
       localStorage.setItem('session', JSON.stringify(sessionData));
+      console.log('💾 Session stored:', sessionData);
       
       // Retrieve the user information
-      const user = await apiGet(`/api/v1/utils/users/getByUserID/${username}`);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      return { user, token: authResult.token };
+      console.log('👤 Retrieving user information for:', username);
+      try {
+        const user = await apiGet(`/utils/users/getByUserID/${username}`, true);
+        console.log('✅ User information retrieved:', user);
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        console.log('🎉 Authentication successful!');
+        return { user, token: authResult.token };
+      } catch (userError) {
+        console.error('❌ Error retrieving user information:', userError);
+        // We can continue even if we can't retrieve the user information
+        console.log('⚠️ Authentication successful but user information not available');
+        return { user: { username }, token: authResult.token };
+      }
     } catch (error) {
       throw new Error(error.message || 'Authentication error');
     }
