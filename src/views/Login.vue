@@ -8,22 +8,30 @@
           <p class="text-base-content/70 mt-2">Connectez-vous à votre compte</p>
         </div>
 
+        <!-- Erreur générale -->
+        <div v-if="errors.general" class="alert alert-error mb-6">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>{{ errors.general }}</span>
+        </div>
+
         <!-- Formulaire de connexion -->
         <form @submit.prevent="handleLogin" class="space-y-4">
           <div class="form-control">
             <label class="label">
-              <span class="label-text">Email</span>
+              <span class="label-text">Nom d'utilisateur</span>
             </label>
             <input 
-              v-model="loginForm.email"
-              type="email" 
-              placeholder="votre@email.com" 
+              v-model="loginForm.username"
+              type="text" 
+              placeholder="votre_nom_utilisateur" 
               class="input input-bordered w-full"
-              :class="{ 'input-error': errors.email }"
+              :class="{ 'input-error': errors.username }"
               required
             />
-            <label v-if="errors.email" class="label">
-              <span class="label-text-alt text-error">{{ errors.email }}</span>
+            <label v-if="errors.username" class="label">
+              <span class="label-text-alt text-error">{{ errors.username }}</span>
             </label>
           </div>
 
@@ -100,31 +108,42 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth.js'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const isLoading = ref(false)
 const loginForm = reactive({
-  email: '',
+  username: '',
   password: '',
   remember: false
 })
 
 const errors = reactive({
-  email: '',
-  password: ''
+  username: '',
+  password: '',
+  general: ''
+})
+
+// Vérifier si l'utilisateur est déjà connecté
+onMounted(() => {
+  if (authStore.isAuthenticated) {
+    router.push('/')
+  }
 })
 
 async function handleLogin() {
   // Reset errors
-  errors.email = ''
+  errors.username = ''
   errors.password = ''
+  errors.general = ''
   
   // Basic validation
-  if (!loginForm.email) {
-    errors.email = 'L\'email est requis'
+  if (!loginForm.username) {
+    errors.username = 'Le nom d\'utilisateur est requis'
     return
   }
   
@@ -133,25 +152,17 @@ async function handleLogin() {
     return
   }
   
-  if (loginForm.password.length < 6) {
-    errors.password = 'Le mot de passe doit contenir au moins 6 caractères'
-    return
-  }
-  
   isLoading.value = true
   
   try {
-    // Simulation d'une API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    // Ici tu ferais un appel à ton API
-    console.log('Tentative de connexion avec:', loginForm)
+    // Utiliser le service d'authentification
+    await authStore.login(loginForm.username, loginForm.password)
     
     // Redirection vers le dashboard en cas de succès
     router.push('/')
   } catch (error) {
     console.error('Erreur de connexion:', error)
-    errors.password = 'Email ou mot de passe incorrect'
+    errors.general = error.message || 'Nom d\'utilisateur ou mot de passe incorrect'
   } finally {
     isLoading.value = false
   }
