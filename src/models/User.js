@@ -1,11 +1,11 @@
 /**
- * Model User - Représente la structure et les données d'un utilisateur
+ * Model User - Represents the structure and data of a user
  * 
- * Les Models dans MVC sont responsables de :
- * - Définir la structure des données
- * - Valider les données
- * - Transformer/normaliser les données
- * - Définir les règles métier sur les données
+ * The Models in MVC are responsible for :
+ * - Define the structure of the data
+ * - Validate the data
+ * - Transform/normalize the data
+ * - Define the business rules on the data
  */
 
 export class User {
@@ -25,12 +25,12 @@ export class User {
     this.updatedAt = data.updatedAt ? new Date(data.updatedAt) : null
   }
 
-  // Getters pour des propriétés calculées
+  // Getters for computed properties
   get fullName() {
     if (this.firstName && this.lastName) {
       return `${this.firstName} ${this.lastName}`
     }
-    return this.userid || 'Utilisateur inconnu'
+    return this.userid || 'Unknown user'
   }
 
   get initials() {
@@ -48,20 +48,20 @@ export class User {
     return this.fullName !== this.userid ? this.fullName : this.userid
   }
 
-  // Méthodes de validation
+  // Validation methods
   validate() {
     const errors = []
 
     if (!this.userid || this.userid.trim() === '') {
-      errors.push('Le nom d\'utilisateur est requis')
+      errors.push('The user id is required')
     }
 
     if (this.email && !this.isValidEmail(this.email)) {
-      errors.push('L\'email n\'est pas valide')
+      errors.push('The email is not valid')
     }
 
     if (this.phone && !this.isValidPhone(this.phone)) {
-      errors.push('Le numéro de téléphone n\'est pas valide')
+      errors.push('The phone number is not valid')
     }
 
     return {
@@ -70,19 +70,19 @@ export class User {
     }
   }
 
-  // Méthodes utilitaires privées
+  // Private utility methods
   isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     return emailRegex.test(email)
   }
 
   isValidPhone(phone) {
-    // Regex simple pour numéros français
+    // Simple regex for French phone numbers
     const phoneRegex = /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/
     return phoneRegex.test(phone)
   }
 
-  // Méthodes de transformation
+  // Transformation methods
   toJSON() {
     return {
       id: this.id,
@@ -101,7 +101,7 @@ export class User {
     }
   }
 
-  // Méthode pour créer un utilisateur à partir des données API
+  // Method to create a user from API data
   static fromApiResponse(apiData) {
     return new User({
       id: apiData.id,
@@ -118,12 +118,12 @@ export class User {
     })
   }
 
-  // Méthode pour cloner l'utilisateur
+  // Method to clone the user
   clone() {
     return new User(this.toJSON())
   }
 
-  // Méthode pour mettre à jour les données
+  // Method to update the data
   update(newData) {
     Object.keys(newData).forEach(key => {
       if (this.hasOwnProperty(key)) {
@@ -135,7 +135,7 @@ export class User {
   }
 }
 
-// Modèle pour les permissions/rôles
+// Model for permissions/roles
 export class UserRole {
   constructor(data = {}) {
     this.id = data.id || null

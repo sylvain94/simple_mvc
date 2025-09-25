@@ -1,17 +1,17 @@
 # 🚀 Simple MVC
 
-Une application moderne basée sur l'architecture MVC avec Vue 3, construite avec les meilleures pratiques et les technologies actuelles.
+A modern application based on MVC architecture with Vue 3, built with best practices and current technologies.
 
-## 🛠 Stack Technologique
+## 🛠 Technology Stack
 
 - **Frontend:** Vue 3 (Composition API) + Vite
 - **Styling:** Tailwind CSS + DaisyUI
 - **Routing:** Vue Router 4
 - **State Management:** Pinia
 - **Build Tool:** Vite
-- **Runtime:** Node.js 22.19.0 (géré avec NVM)
+- **Runtime:** Node.js 22.19.0 (managed with NVM)
 
-## 📁 Structure du Projet
+## 📁 Project Structure
 
 ```
 src/
@@ -34,57 +34,57 @@ src/
 └── style.css           # Styles globaux
 ```
 
-## 🎨 Fonctionnalités
+## 🎨 Functionalities
 
-### ✅ Interface Utilisateur
-- **Navigation responsive** avec menu mobile
+### ✅ User interface
+- **Navigation responsive** with mobile menu
 - **Système de thèmes** (Light, Dark, Cupcake, etc.)
-- **Dashboard interactif** avec statistiques et actions rapides
-- **Formulaire de connexion** avec validation
-- **Page de paramètres** complète (profil, apparence, notifications, sécurité)
+- **Dashboard interactif** with statistics and quick actions
+- **Formulaire de connexion** with validation
+- **Page de paramètres** complete (profile, appearance, notifications, security)
 
 ### ✅ Architecture MVC
-- **Models:** Stores Pinia pour la gestion d'état
-- **Views:** Composants Vue avec routing
-- **Controllers:** Services API pour la logique métier
+- **Models:** Pinia Stores for Condition Management
+- **Views:** Component Vuejs with Routing
+- **Controllers:** API services for business logic
 
 ### ✅ Technologies Modernes
-- **Vue 3 Composition API** pour une meilleure réactivité
-- **Tailwind CSS** pour un styling utility-first
-- **DaisyUI** pour des composants prêts à l'emploi
-- **Vue Router** pour la navigation SPA
-- **Pinia** pour un state management simple et efficace
+- **Vue 3 Composition API** for a better reactivity
+- **Tailwind CSS** for utility-first styling
+- **DaisyUI** for ready-to-use components
+- **Vue Router** for SPA navigation
+- **Pinia** for simple and effective state management
 
-## 🚀 Démarrage Rapide
+## 🚀 Quick Start
 
-### Prérequis
-- Node.js 20.19+ ou 22.12+ (recommandé: 22.19.0 avec NVM)
-- npm ou yarn
+### Prerequisites
+- Node.js 20.19+ ou 22.12+ (recommended: 22.19.0 with NVM)
+- npm or yarn
 
 ### Installation
 ```bash
-# Cloner le projet
+# Clone the projet
 git clone https://github.com/sylvain94/simple_mvc.git
 cd simple_mvc
 
-# Installer les dépendances
+# Install the dependancies
 npm install
 
-# Lancer le serveur de développement
+# Launch the development server
 npm run dev
 ```
 
-### Configuration NVM (recommandé)
+### NVM Configuration (recommended)
 ```bash
-# Installer NVM si pas déjà fait
+# Install if not already done
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
-# Installer et utiliser Node.js 22
+# Install and use Node.js 22
 nvm install --lts
 nvm use --lts
 ```
 
-## 📖 Scripts Disponibles
+## 📖 Available Scripts
 
 ```bash
 npm run dev          # Serveur de développement
@@ -92,19 +92,19 @@ npm run build        # Build de production
 npm run preview      # Prévisualisation du build
 ```
 
-## 🎯 Pages Disponibles
+## 🎯 Available Pages
 
-- **`/`** - Dashboard principal avec statistiques et actions
-- **`/login`** - Page de connexion avec validation
-- **`/settings`** - Paramètres (profil, thème, notifications, sécurité)
+- **`/`** - Main dashboard with statistics and actions
+- **`/login`** - Login page with validation
+- **`/settings`** - Settings (profile, theme, notifications, security)
 
 ## 🔧 Configuration
 
-### Thèmes DaisyUI Disponibles
+### DaisyUI Themes Available
 - Light, Dark, Cupcake, Bumblebee, Emerald, Corporate, etc.
 
-### Variables d'Environnement
-Créez un fichier `.env` basé sur `.env.example`:
+### Environment Variables
+Create a file `.env` based on `.env.example`:
 ```env
 VITE_API_BASE=http://localhost:8080/api/v1
 VITE_APP_NAME=Simple MVC
@@ -113,16 +113,16 @@ VITE_APP_VERSION=1.0.0
 
 ## 🤝 Contribution
 
-1. Fork le projet
-2. Créez une branche pour votre fonctionnalité (`git checkout -b feature/AmazingFeature`)
-3. Committez vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. Poussez vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrez une Pull Request
+1. Fork the projet
+2. Create a branch for your functionality (`git checkout -b feature/AmazingFeature`)
+3. Commit yours changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to your branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 📝 License
 
-Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de détails.
+This project is licensed under the MIT License - see file [LICENSE](LICENSE) for more details.
 
 ---
 
-**Développé avec ❤️ par [Sylvain Renard](https://github.com/sylvain94)**
+**Developed with ❤️ by [Sylvain Renard](https://github.com/sylvain94)**
