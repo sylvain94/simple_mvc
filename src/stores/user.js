@@ -9,7 +9,7 @@ export const useUserStore = defineStore('user', () => {
 
   // Getters
   const userProfile = computed(() => user.value)
-  const userName = computed(() => user.value?.firstName + ' ' + user.value?.lastName || 'Utilisateur')
+  const userName = computed(() => user.value?.firstName + ' ' + user.value?.lastName || 'User')
 
   // Actions
   async function login(email, password) {
