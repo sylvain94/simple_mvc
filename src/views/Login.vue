@@ -1,32 +1,19 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-base-200">
-    <div class="card w-full max-w-md bg-base-100 shadow-2xl">
+  <div class="min-h-screen flex items-center justify-center bg-base-100">
+    <div class="card w-96 bg-base-200 shadow-xl">
       <div class="card-body">
-        <!-- Logo/Header -->
-        <div class="text-center mb-8">
-          <h1 class="text-3xl font-bold text-primary">🚀 Simple MVC</h1>
-          <p class="text-base-content/70 mt-2">Let's connect to your account</p>
-        </div>
-
-        <!-- General error -->
-        <div v-if="errors.general" class="alert alert-error mb-6">
-          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>{{ errors.general }}</span>
-        </div>
-
-        <!-- Login form -->
+        <h2 class="card-title text-2xl font-bold text-center mb-6">Login</h2>
+        
         <form @submit.prevent="handleLogin" class="space-y-4">
+          <!-- Username -->
           <div class="form-control">
             <label class="label">
-              <span class="label-text">Userid</span>
+              <span class="label-text">Username</span>
             </label>
             <input 
               v-model="loginForm.username"
               type="text" 
-              placeholder="your_userid" 
-              class="input input-bordered w-full"
+              class="input input-bordered w-full" 
               :class="{ 'input-error': errors.username }"
               required
             />
@@ -35,6 +22,7 @@
             </label>
           </div>
 
+          <!-- Password -->
           <div class="form-control">
             <label class="label">
               <span class="label-text">Password</span>
@@ -42,9 +30,9 @@
             <input 
               v-model="loginForm.password"
               type="password" 
-              placeholder="********" 
-              class="input input-bordered w-full"
+              class="input input-bordered w-full" 
               :class="{ 'input-error': errors.password }"
+              autocomplete="current-password"
               required
             />
             <label v-if="errors.password" class="label">
@@ -52,56 +40,56 @@
             </label>
           </div>
 
-          <div class="form-control">
-            <label class="label cursor-pointer">
-              <span class="label-text">Remember me</span>
-              <input v-model="loginForm.remember" type="checkbox" class="checkbox checkbox-primary" />
-            </label>
+          <!-- Error message -->
+          <div v-show="errors.general" class="alert alert-error">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ errors.general }}</span>
           </div>
 
-          <div class="form-control mt-6">
-            <button 
-              type="submit" 
-              class="btn btn-primary w-full"
-              :class="{ 'loading': isLoading }"
-              :disabled="isLoading"
-            >
-              <span v-if="!isLoading">Login</span>
-              <span v-else>Login in progress...</span>
-            </button>
-          </div>
+          <!-- Login button -->
+          <button 
+            type="submit" 
+            class="btn btn-primary w-full"
+            :class="{ 'loading': isLoading }"
+            :disabled="isLoading"
+          >
+            <span v-show="!isLoading">Login</span>
+            <span v-show="isLoading">Login in progress...</span>
+          </button>
         </form>
 
-        <!-- Additional links -->
-        <div class="text-center mt-6 space-y-2">
-          <a href="#" class="link link-primary text-sm">Forgot password?</a>
-          <div class="divider">OR</div>
-          <p class="text-sm">
-            No account yet? 
-            <a href="#" class="link link-secondary">Register</a>
-          </p>
+        <!-- Debug toggle button (development only) -->
+        <div v-if="isDevelopment" class="text-center mt-4">
+          <button 
+            @click="showDebug = !showDebug" 
+            class="btn btn-ghost btn-xs"
+          >
+            {{ showDebug ? 'Hide' : 'Show' }} Debug Console
+          </button>
         </div>
 
-        <!-- Debug console -->
-        <div v-if="showDebug" class="mt-8">
+        <!-- Debug console (only in development) -->
+        <div v-if="showDebug && isDevelopment" class="mt-4">
           <div class="card bg-base-100 shadow-lg">
-            <div class="card-body">
+            <div class="card-body p-4">
               <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold">Debug console</h3>
-                <button @click="clearDebugLogs" class="btn btn-sm btn-outline">
+                <h3 class="text-sm font-bold">Debug Console</h3>
+                <button @click="clearDebugLogs" class="btn btn-xs btn-outline">
                   Clear
                 </button>
               </div>
               
-              <div class="bg-base-300 rounded-lg p-4 max-h-96 overflow-y-auto">
-                <div v-if="debugLogs.length === 0" class="text-base-content/50 text-center py-4">
-                  No log available
+              <div class="bg-base-300 rounded-lg p-3 max-h-64 overflow-y-auto">
+                <div v-if="debugLogs.length === 0" class="text-base-content/50 text-center py-2 text-xs">
+                  No logs available
                 </div>
                 <div v-else>
                   <div 
                     v-for="(log, index) in debugLogs" 
                     :key="index"
-                    class="mb-2 p-2 rounded text-sm font-mono"
+                    class="mb-2 p-2 rounded text-xs font-mono"
                     :class="{
                       'bg-info/20 text-info': log.type === 'info',
                       'bg-success/20 text-success': log.type === 'success', 
@@ -139,6 +127,9 @@ const authStore = useAuthStore()
 const isLoading = ref(false)
 const debugLogs = ref([])
 const showDebug = ref(false)
+
+// detect development environment
+const isDevelopment = ref(import.meta.env.DEV)
 
 const loginForm = reactive({
   username: '',
@@ -192,12 +183,10 @@ onMounted(() => {
 })
 
 async function handleLogin() {
-  // Reset errors and logs
+  // Reset errors
   errors.username = ''
   errors.password = ''
   errors.general = ''
-  debugLogs.value = []
-  showDebug.value = true
   
   // Basic validation
   if (!loginForm.username) {
@@ -211,19 +200,41 @@ async function handleLogin() {
   }
   
   isLoading.value = true
-  addDebugLog('info', '🚀 Start of authentication', { userid: loginForm.username })
   
-    try {
-      // Use the authentication service
-      await authStore.login(loginForm.username, loginForm.password)
+  // Debug logging only in development
+  if (isDevelopment.value) {
+    debugLogs.value = []
+    showDebug.value = true
+    addDebugLog('info', '🚀 Start of authentication', { userid: loginForm.username })
+  }
+  
+  try {
+    // Use the authentication service
+    console.log('🔐 Attempting login with:', loginForm.username)
+    const result = await authStore.login(loginForm.username, loginForm.password)
+    console.log('✅ Login result:', result)
     
-    addDebugLog('success', '✅ Authentication successful, redirection...')
-    // Redirection to the dashboard in case of success
-    router.push('/')
+    if (isDevelopment.value) {
+      addDebugLog('success', '✅ Authentication successful, redirection...')
+    }
+    
+    // Check if we're actually authenticated
+    if (authStore.isAuthenticated) {
+      console.log('✅ User is authenticated, redirecting to dashboard')
+      // Redirection to the dashboard in case of success
+      await router.push('/')
+    } else {
+      console.error('❌ Authentication failed - user not authenticated after login')
+      errors.general = 'Authentication failed'
+    }
   } catch (error) {
-    console.error('Connection error:', error)
-    addDebugLog('error', '❌ Authentication error', { error: error.message })
-    errors.general = error.message || 'Userid or password incorrect'
+    console.error('❌ Connection error:', error)
+    
+    if (isDevelopment.value) {
+      addDebugLog('error', '❌ Authentication error', { error: error.message })
+    }
+    
+    errors.general = error.message || 'Username or password incorrect'
   } finally {
     isLoading.value = false
   }

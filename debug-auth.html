@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Authentication</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { padding: 10px 15px; margin: 5px; }
+        pre { background: #f0f0f0; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Debug Authentication API</h1>
+    
+    <div class="test-section">
+        <h2>Test API Connection</h2>
+        <button onclick="testApiConnection()">Test API isAlive</button>
+        <div id="api-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Authentication</h2>
+        <input type="text" id="username" placeholder="Username" value="Administrator">
+        <input type="password" id="password" placeholder="Password" value="">
+        <p><strong>API Target:</strong> https://192.168.1.141:8443 (via proxy)</p>
+        <p><strong>Status:</strong> API responds but credentials were wrong with Administrator/administrator</p>
+        <button onclick="testAuth()">Test Authentication</button>
+        <div id="auth-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Current Session</h2>
+        <button onclick="checkSession()">Check Session</button>
+        <div id="session-result"></div>
+    </div>
+
+    <script>
+        async function testApiConnection() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p class="info">Testing API connection...</p>';
+
+            try {
+                const response = await fetch('/api/v1/isAlive');
+                const text = await response.text();
+                
+                resultDiv.innerHTML = `
+                    <p class="success">✅ API Connection successful</p>
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>Response:</strong> ${text}</p>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ API Connection failed: ${error.message}</p>`;
+            }
+        }
+
+        async function testAuth() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('auth-result');
+            
+            resultDiv.innerHTML = '<p class="info">Testing authentication...</p>';
+
+            try {
+                const response = await fetch('/api/v1/authentication/authenticate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userid: username,
+                        password: password
+                    })
+                });
+
+                const responseText = await response.text();
+                
+                let authResult;
+                try {
+                    authResult = JSON.parse(responseText);
+                } catch (e) {
+                    authResult = responseText;
+                }
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Authentication successful</p>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <pre>${JSON.stringify(authResult, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ Authentication failed</p>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Response:</strong> ${responseText}</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Authentication error: ${error.message}</p>`;
+            }
+        }
+
+        function checkSession() {
+            const resultDiv = document.getElementById('session-result');
+            
+            const session = localStorage.getItem('session');
+            const user = localStorage.getItem('user');
+            const token = localStorage.getItem('token');
+
+            resultDiv.innerHTML = `
+                <h3>LocalStorage Content:</h3>
+                <p><strong>Session:</strong> ${session || 'Not found'}</p>
+                <p><strong>User:</strong> ${user || 'Not found'}</p>
+                <p><strong>Token:</strong> ${token || 'Not found'}</p>
+            `;
+        }
+    </script>
+</body>
+</html>

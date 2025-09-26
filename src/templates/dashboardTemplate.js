@@ -1,4 +1,16 @@
-<template>
+/**
+ * Template for the dashboard page - Vue.js version
+ * @description Displays system overview with statistics and active gateways
+ * 
+ * Adaptation de l'ancien template AlpineJS vers Vue.js
+ * Compatible avec votre architecture MVC actuelle
+ */
+
+/**
+ * Template HTML adapté pour Vue.js
+ * Utilise la syntaxe Vue au lieu d'AlpineJS
+ */
+export const dashboardTemplate = `
   <div class="container mx-auto p-6">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-2xl font-bold">Dashboard</h2>
@@ -106,104 +118,125 @@
       </div>
     </div>
   </div>
-</template>
+`;
 
-<script setup>
-import { ref, reactive, onMounted } from 'vue'
-import DashboardController from '../controllers/DashboardController.js'
-
-const isRefreshing = ref(false)
-const lastUpdated = ref(null)
-
-// Dashboard statistics
-const dashboardStats = reactive({
-  srtGateways: {
-    total: 0,
-    active: 0
-  },
-  files: {
-    total: 0,
-    active: 0
-  },
-  networkInterfaces: {
-    total: 0
-  }
-})
-
-// Active gateways list
-const activeGateways = ref([])
-
-// Initialize dashboard on mount
-onMounted(() => {
-  loadDashboardData()
-})
-
-async function loadDashboardData() {
-  try {
-    console.log('📊 Loading dashboard data...')
-    
-    // Use the Dashboard Controller to get statistics
-    const stats = await DashboardController.getDashboardStats()
-    
-    // Update reactive data
-    Object.assign(dashboardStats, stats)
-    
-    // Get active gateways
-    const gateways = await DashboardController.getActiveGateways()
-    activeGateways.value = gateways
-    
-    lastUpdated.value = new Date().toLocaleTimeString()
-    console.log('✅ Dashboard data loaded successfully')
-    
-  } catch (error) {
-    console.error('❌ Error loading dashboard data:', error)
-    // You could show a notification to the user here
-  }
-}
-
-async function refreshDashboard() {
-  isRefreshing.value = true
+/**
+ * Configuration du composant Vue correspondant
+ */
+export const dashboardComponentConfig = {
+  template: dashboardTemplate,
   
-  try {
-    console.log('🔄 Refreshing dashboard...')
+  setup() {
+    const { ref, reactive, onMounted } = Vue
     
-    // Use the Dashboard Controller to refresh all data
-    const refreshedData = await DashboardController.refreshDashboard()
+    const isRefreshing = ref(false)
     
-    // Update reactive data with refreshed information
-    Object.assign(dashboardStats, refreshedData.stats)
-    activeGateways.value = refreshedData.activeGateways
+    // Dashboard statistics
+    const dashboardStats = reactive({
+      srtGateways: {
+        total: 0,
+        active: 0
+      },
+      files: {
+        total: 0,
+        active: 0
+      },
+      networkInterfaces: {
+        total: 0
+      }
+    })
     
-    lastUpdated.value = new Date().toLocaleTimeString()
-    console.log('✅ Dashboard refreshed successfully')
+    // Active gateways list
+    const activeGateways = ref([])
     
-    // You could show a success notification here
+    // Sample data (in real app, this would come from your store/API)
+    const sampleData = {
+      srtGateways: [
+        {
+          id: 1,
+          name: 'Gateway-Production-01',
+          gatewayType: 'SRT-Encoder',
+          technicalServiceName: 'encoder-service-01',
+          running: true,
+          enabled: true
+        },
+        {
+          id: 2,
+          name: 'Gateway-Backup-01',
+          gatewayType: 'SRT-Decoder',
+          technicalServiceName: 'decoder-service-01',
+          running: true,
+          enabled: false
+        }
+      ],
+      inputFiles: [
+        { id: 1, name: 'input-stream-01.ts', running: true },
+        { id: 2, name: 'input-stream-02.ts', running: true },
+        { id: 3, name: 'backup-stream.ts', running: false }
+      ],
+      networkInterfaces: [
+        { id: 1, name: 'eth0', ip: '192.168.1.100' },
+        { id: 2, name: 'eth1', ip: '192.168.2.100' }
+      ]
+    }
     
-  } catch (error) {
-    console.error('❌ Error refreshing dashboard:', error)
-    // You could show an error notification here
-  } finally {
-    isRefreshing.value = false
+    function loadDashboardData() {
+      // Update statistics
+      dashboardStats.srtGateways.total = sampleData.srtGateways.length
+      dashboardStats.srtGateways.active = sampleData.srtGateways.filter(g => g.running).length
+      
+      dashboardStats.files.total = sampleData.inputFiles.length
+      dashboardStats.files.active = sampleData.inputFiles.filter(f => f.running).length
+      
+      dashboardStats.networkInterfaces.total = sampleData.networkInterfaces.length
+      
+      // Update active gateways list
+      activeGateways.value = sampleData.srtGateways.filter(g => g.running)
+    }
+    
+    async function refreshDashboard() {
+      isRefreshing.value = true
+      
+      try {
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        // In a real application, you would call your API/store here
+        // Example: await store.refreshDashboard()
+        
+        loadDashboardData()
+        console.log('Dashboard refreshed successfully')
+      } catch (error) {
+        console.error('Error refreshing dashboard:', error)
+      } finally {
+        isRefreshing.value = false
+      }
+    }
+    
+    // Initialize on mount
+    onMounted(() => {
+      loadDashboardData()
+    })
+    
+    return {
+      isRefreshing,
+      dashboardStats,
+      activeGateways,
+      refreshDashboard
+    }
   }
 }
 
-// Function to start a gateway (for future use)
-async function startGateway(gatewayId) {
-  try {
-    await DashboardController.startGateway(gatewayId)
-    await loadDashboardData() // Refresh data after starting
-  } catch (error) {
-    console.error('Error starting gateway:', error)
-  }
+/**
+ * Fonction pour créer le composant dashboard
+ * Compatible avec l'ancien pattern d'utilisation
+ */
+export function createDashboardComponent() {
+  return dashboardComponentConfig
 }
 
-// Function to stop a gateway (for future use)
-async function stopGateway(gatewayId) {
-  try {
-    await DashboardController.stopGateway(gatewayId)
-    await loadDashboardData() // Refresh data after stopping
-  } catch (error) {
-    console.error('Error stopping gateway:', error)
-  }
+export default {
+  dashboardTemplate,
+  dashboardComponentConfig,
+  createDashboardComponent
 }
-</script>

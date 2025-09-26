@@ -1,5 +1,5 @@
 /**
- * Controller Project - Gère la logique métier liée aux projets
+ * Controller Project - Manages business logic related to projects
  */
 
 import { Project } from '../models/Project.js'
@@ -7,12 +7,12 @@ import { Project } from '../models/Project.js'
 export class ProjectController {
   
   /**
-   * Récupère les projets récents pour le dashboard
-   * @returns {Promise<Project[]>} - Liste des projets récents
+   * Fetch recent projects for the dashboard
+   * @returns {Promise<Project[]>} - Recent projects
    */
   static async getRecentProjects() {
     try {
-      console.log('📋 Récupération des projets récents')
+      console.log('📋 Fetching recent projects')
       
       // Données d'exemple (à remplacer par un vrai service API)
       const mockData = [
@@ -20,7 +20,7 @@ export class ProjectController {
           id: 1,
           name: 'Site E-commerce',
           description: 'Boutique en ligne moderne',
-          status: 'En cours',
+          status: 'In progress',
           progress: 75,
           team: 'Frontend',
           startDate: '2025-01-15'
@@ -45,38 +45,38 @@ export class ProjectController {
         }
       ]
 
-      // Transformation en modèles Project
+      // Transformation in models Project
       const projects = mockData.map(data => Project.fromApiResponse(data))
       
-      // Validation et filtrage
+      // Validation and filtering
       const validProjects = projects.filter(project => {
         const validation = project.validate()
         if (!validation.isValid) {
-          console.warn(`⚠️ Projet invalide ignoré: ${project.name}`, validation.errors)
+          console.warn(`⚠️ Invalid project ignored: ${project.name}`, validation.errors)
           return false
         }
         return true
       })
 
-      // Tri par date de création (plus récent en premier)
+      // Sort by creation date (most recent first)
       validProjects.sort((a, b) => b.createdAt - a.createdAt)
 
-      console.log(`✅ ${validProjects.length} projets récents récupérés`)
+      console.log(`✅ ${validProjects.length} recent projects fetched`)
       return validProjects
       
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération des projets récents:', error)
+      console.error('❌ Error fetching recent projects:', error)
       throw new Error(`Impossible de récupérer les projets: ${error.message}`)
     }
   }
 
   /**
-   * Génère des statistiques sur les projets
+   * Generate statistics on projects
    * @returns {Promise<Object>} - Statistiques des projets
    */
   static async getProjectStats() {
     try {
-      console.log('📊 Génération des statistiques projets')
+      console.log('📊 Generating project statistics')
       
       // Données d'exemple
       const stats = {
@@ -88,23 +88,23 @@ export class ProjectController {
         avgProgress: 67
       }
 
-      console.log('✅ Statistiques projets générées:', stats)
+      console.log('✅ Project statistics generated:', stats)
       return stats
       
     } catch (error) {
-      console.error('❌ Erreur lors de la génération des statistiques projets:', error)
-      throw new Error(`Impossible de générer les statistiques: ${error.message}`)
+      console.error('❌ Error generating project statistics:', error)
+      throw new Error(`Impossible to generate project statistics: ${error.message}`)
     }
   }
 
   /**
-   * Crée un nouveau projet
+   * Create a new project
    * @param {Object} projectData - Données du projet
    * @returns {Promise<Project>} - Projet créé
    */
   static async createProject(projectData) {
     try {
-      console.log('➕ Création d\'un nouveau projet')
+      console.log('➕ Creation of a new project')
       
       // Création du modèle pour validation
       const project = new Project(projectData)
@@ -112,7 +112,7 @@ export class ProjectController {
       // Validation
       const validation = project.validate()
       if (!validation.isValid) {
-        throw new Error(`Données invalides: ${validation.errors.join(', ')}`)
+        throw new Error(`Invalid data: ${validation.errors.join(', ')}`)
       }
 
       // Règles métier
@@ -120,12 +120,12 @@ export class ProjectController {
         project.status = Project.STATUS.IN_PROGRESS
       }
 
-      console.log(`✅ Projet créé: ${project.name}`)
+      console.log(`✅ Project created: ${project.name}`)
       return project
       
     } catch (error) {
-      console.error('❌ Erreur lors de la création du projet:', error)
-      throw new Error(`Impossible de créer le projet: ${error.message}`)
+      console.error('❌ Error creating project:', error)
+      throw new Error(`Impossible to create project: ${error.message}`)
     }
   }
 }

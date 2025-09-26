@@ -1,7 +1,7 @@
 /**
- * Model Project - Représente un projet dans le système
+ * Model Project - Represents a project in the system
  * 
- * Exemple d'un autre modèle pour illustrer la réutilisabilité
+ * Example of another model to illustrate reusability
  */
 
 export class Project {
@@ -18,16 +18,16 @@ export class Project {
     this.updatedAt = data.updatedAt ? new Date(data.updatedAt) : new Date()
   }
 
-  // Constantes pour les statuts
+  // Constants for the statuses
   static STATUS = {
     PLANNING: 'Planning',
-    IN_PROGRESS: 'En cours',
+    IN_PROGRESS: 'In progress',
     REVIEW: 'Review',
-    COMPLETED: 'Terminé',
-    CANCELLED: 'Annulé'
+    COMPLETED: 'Completed',
+    CANCELLED: 'Cancelled'
   }
 
-  // Getters calculés
+  // Getters computed
   get isActive() {
     return this.status === Project.STATUS.IN_PROGRESS
   }
@@ -56,15 +56,15 @@ export class Project {
     const errors = []
 
     if (!this.name || this.name.trim() === '') {
-      errors.push('Le nom du projet est requis')
+      errors.push('The project name is required')
     }
 
     if (this.progress < 0 || this.progress > 100) {
-      errors.push('Le progrès doit être entre 0 et 100')
+      errors.push('The progress must be between 0 and 100')
     }
 
     if (!Object.values(Project.STATUS).includes(this.status)) {
-      errors.push('Statut invalide')
+      errors.push('Invalid status')
     }
 
     return {
@@ -73,7 +73,7 @@ export class Project {
     }
   }
 
-  // Méthodes de transformation
+  // Transformation methods
   toJSON() {
     return {
       id: this.id,

@@ -33,7 +33,7 @@ export async function apiPut(endpoint, body) {
     body: JSON.stringify(body),
   })
   if (!res.ok) throw new Error(`PUT ${endpoint} failed: ${res.status}`)
-  return res.text() // Pour challengeUseridPassword qui retourne du texte
+  return res.text() // For challengeUseridPassword which returns text in case of error
 }
 
 export async function apiDelete(endpoint) {
@@ -45,15 +45,15 @@ export async function apiDelete(endpoint) {
   return res.json()
 }
 
-// Service pour les utilisateurs
+// Service for users
 export const userService = {
   async getAllUsers() {
     try {
-      // Utiliser l'endpoint approprié pour récupérer tous les utilisateurs
-      // Supposons qu'il existe un endpoint /users qui retourne tous les utilisateurs
+      // Use the appropriate endpoint to get all users
+      // Assume there is an endpoint /users which returns all users
       return apiGet('/users', true) // Use authentication
     } catch (error) {
-      console.error('Erreur lors de la récupération des utilisateurs:', error)
+      console.error('Error getting all users:', error)
       throw error
     }
   },
@@ -62,7 +62,7 @@ export const userService = {
     try {
       return apiGet(`/api/v1/utils/users/getByUserID/${userid}`, true) // Use authentication
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'utilisateur:', error)
+      console.error('Error getting user by userid:', error)
       throw error
     }
   }

@@ -2,16 +2,16 @@
   <div class="container mx-auto p-6">
     <!-- Header -->
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-base-content mb-2">Paramètres</h1>
-      <p class="text-base-content/70">Configurez votre application selon vos préférences</p>
+      <h1 class="text-3xl font-bold text-base-content mb-2">Settings</h1>
+      <p class="text-base-content/70">Configure your application according to your preferences</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      <!-- Menu de navigation -->
+      <!-- Navigation menu -->
       <div class="lg:col-span-1">
         <div class="card bg-base-100 shadow-lg">
           <div class="card-body p-4">
-            <h2 class="card-title text-lg mb-4">Catégories</h2>
+            <h2 class="card-title text-lg mb-4">Categories</h2>
             <ul class="menu">
               <li v-for="category in categories" :key="category.id">
                 <a 
@@ -39,24 +39,24 @@
         </div>
       </div>
 
-      <!-- Contenu des paramètres -->
+      <!-- Parameter content -->
       <div class="lg:col-span-3">
-        <!-- Profil Utilisateur -->
+        <!-- User Profile -->
         <div v-if="activeCategory === 'profile'" class="card bg-base-100 shadow-lg">
           <div class="card-body">
-            <h2 class="card-title mb-6">Profil Utilisateur</h2>
+            <h2 class="card-title mb-6">User Profile</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Prénom</span>
+                  <span class="label-text">First name</span>
                 </label>
                 <input v-model="userProfile.firstName" type="text" class="input input-bordered" />
               </div>
               
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Nom</span>
+                  <span class="label-text">Last name</span>
                 </label>
                 <input v-model="userProfile.lastName" type="text" class="input input-bordered" />
               </div>
@@ -77,38 +77,129 @@
             </div>
             
             <div class="card-actions justify-end mt-6">
-              <button class="btn btn-primary">Sauvegarder</button>
+              <button class="btn btn-primary">Save</button>
             </div>
           </div>
         </div>
 
-        <!-- Thème et Apparence -->
-        <div v-else-if="activeCategory === 'appearance'" class="card bg-base-100 shadow-lg">
+        <!-- Theme and Appearance -->
+        <div v-else-if="activeCategory === 'appearance'" class="card bg-base-100 shadow-elevated">
           <div class="card-body">
-            <h2 class="card-title mb-6">Thème et Apparence</h2>
+            <h2 class="card-title mb-6 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v6a2 2 0 002 2h4a2 2 0 002-2V5z" />
+              </svg>
+              Thème et Apparence
+            </h2>
             
+            <!-- Theme Selection Cards -->
+            <div class="form-control mb-8">
+              <label class="label">
+                <span class="label-text font-semibold">Sélection du thème</span>
+                <span class="label-text-alt text-sm opacity-70">Thème actuel: {{ appStore.theme }}</span>
+              </label>
+              
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <!-- Light Theme Card -->
+                <div 
+                  @click="appStore.setTheme('light')"
+                  :class="{ 'ring-2 ring-primary ring-offset-2': appStore.theme === 'light' }"
+                  class="card bg-base-100 border cursor-pointer hover:shadow-lg transition-all duration-300"
+                >
+                  <div class="card-body p-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 class="font-semibold text-sm">Mode Clair</h3>
+                        <p class="text-xs opacity-70">Interface lumineuse</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Dark Theme Card -->
+                <div 
+                  @click="appStore.setTheme('dark')"
+                  :class="{ 'ring-2 ring-primary ring-offset-2': appStore.theme === 'dark' }"
+                  class="card bg-base-100 border cursor-pointer hover:shadow-lg transition-all duration-300"
+                >
+                  <div class="card-body p-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-gray-800 border-2 border-gray-600 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 class="font-semibold text-sm">Mode Sombre</h3>
+                        <p class="text-xs opacity-70">Interface sombre</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Auto Theme Card -->
+                <div 
+                  @click="appStore.setTheme('auto')"
+                  :class="{ 'ring-2 ring-primary ring-offset-2': appStore.theme === 'auto' }"
+                  class="card bg-base-100 border cursor-pointer hover:shadow-lg transition-all duration-300"
+                >
+                  <div class="card-body p-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-blue-500 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 class="font-semibold text-sm">Automatique</h3>
+                        <p class="text-xs opacity-70">Suit le système</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Theme Preview -->
             <div class="form-control mb-6">
               <label class="label">
-                <span class="label-text">Thème</span>
+                <span class="label-text font-semibold">Aperçu</span>
               </label>
-              <select v-model="selectedTheme" @change="changeTheme" class="select select-bordered">
-                <option v-for="theme in availableThemes" :key="theme.value" :value="theme.value">
-                  {{ theme.label }}
-                </option>
-              </select>
+              <div class="p-4 border rounded-lg bg-base-200">
+                <div class="flex items-center gap-4">
+                  <div class="w-3 h-3 rounded-full bg-primary"></div>
+                  <div class="w-3 h-3 rounded-full bg-secondary"></div>
+                  <div class="w-3 h-3 rounded-full bg-accent"></div>
+                  <span class="text-sm">Couleurs du thème actuel</span>
+                </div>
+              </div>
             </div>
             
-            <div class="form-control mb-6">
+            <!-- Additional Options -->
+            <div class="divider">Options avancées</div>
+            
+            <div class="form-control mb-4">
               <label class="label cursor-pointer">
-                <span class="label-text">Mode sombre automatique</span>
-                <input v-model="autoTheme" type="checkbox" class="toggle toggle-primary" />
+                <span class="label-text">Animations réduites</span>
+                <input v-model="reducedMotion" type="checkbox" class="toggle toggle-primary" />
+              </label>
+              <label class="label">
+                <span class="label-text-alt">Réduit les animations pour améliorer les performances</span>
               </label>
             </div>
             
             <div class="form-control">
               <label class="label cursor-pointer">
-                <span class="label-text">Animations réduites</span>
-                <input v-model="reducedMotion" type="checkbox" class="toggle toggle-primary" />
+                <span class="label-text">Transitions fluides</span>
+                <input v-model="smoothTransitions" type="checkbox" class="toggle toggle-primary" />
+              </label>
+              <label class="label">
+                <span class="label-text-alt">Active les transitions fluides entre les thèmes</span>
               </label>
             </div>
           </div>
@@ -122,7 +213,7 @@
             <div class="space-y-4">
               <div class="form-control">
                 <label class="label cursor-pointer">
-                  <span class="label-text">Notifications par email</span>
+                  <span class="label-text">Notifications by email</span>
                   <input v-model="notifications.email" type="checkbox" class="toggle toggle-primary" />
                 </label>
               </div>
@@ -136,14 +227,14 @@
               
               <div class="form-control">
                 <label class="label cursor-pointer">
-                  <span class="label-text">Notifications de projets</span>
+                  <span class="label-text">Projects notifications</span>
                   <input v-model="notifications.projects" type="checkbox" class="toggle toggle-primary" />
                 </label>
               </div>
               
               <div class="form-control">
                 <label class="label cursor-pointer">
-                  <span class="label-text">Résumé hebdomadaire</span>
+                  <span class="label-text">Weekly summary</span>
                   <input v-model="notifications.weekly" type="checkbox" class="toggle toggle-primary" />
                 </label>
               </div>
@@ -151,43 +242,43 @@
           </div>
         </div>
 
-        <!-- Sécurité -->
+        <!-- Security -->
         <div v-else-if="activeCategory === 'security'" class="card bg-base-100 shadow-lg">
           <div class="card-body">
-            <h2 class="card-title mb-6">Sécurité</h2>
+            <h2 class="card-title mb-6">Security</h2>
             
             <div class="space-y-6">
               <div class="alert alert-info">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <span>Dernière connexion: {{ lastLogin }}</span>
+                <span>Last login: {{ lastLogin }}</span>
               </div>
               
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Nouveau mot de passe</span>
+                  <span class="label-text">New password</span>
                 </label>
                 <input v-model="security.newPassword" type="password" class="input input-bordered" />
               </div>
               
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Confirmer le mot de passe</span>
+                  <span class="label-text">Confirm password</span>
                 </label>
                 <input v-model="security.confirmPassword" type="password" class="input input-bordered" />
               </div>
               
               <div class="form-control">
                 <label class="label cursor-pointer">
-                  <span class="label-text">Authentification à deux facteurs</span>
+                  <span class="label-text">Two-factor authentication</span>
                   <input v-model="security.twoFactor" type="checkbox" class="toggle toggle-primary" />
                 </label>
               </div>
               
               <div class="card-actions">
-                <button class="btn btn-primary">Changer le mot de passe</button>
-                <button class="btn btn-outline btn-error">Déconnecter tous les appareils</button>
+                <button class="btn btn-primary">Change password</button>
+                <button class="btn btn-outline btn-error">Disconnect all devices</button>
               </div>
             </div>
           </div>
@@ -198,30 +289,27 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useAppStore } from '../stores/app.js'
 
+// Store imports
+const appStore = useAppStore()
+
+// Reactive data
 const activeCategory = ref('profile')
-const selectedTheme = ref('light')
-const autoTheme = ref(false)
 const reducedMotion = ref(false)
-const lastLogin = ref('18 septembre 2025, 21:45')
+const smoothTransitions = ref(true)
+const lastLogin = ref('26 septembre 2025, 11:06')
 
+// Categories for settings navigation
 const categories = ref([
-  { id: 'profile', name: 'Profil' },
-  { id: 'appearance', name: 'Apparence' },
-  { id: 'notifications', name: 'Notifications' },
-  { id: 'security', name: 'Sécurité' }
+  { id: 'profile', name: 'Profile', icon: 'user' },
+  { id: 'appearance', name: 'Apparence', icon: 'palette' },
+  { id: 'notifications', name: 'Notifications', icon: 'bell' },
+  { id: 'security', name: 'Sécurité', icon: 'shield' }
 ])
 
-const availableThemes = ref([
-  { value: 'light', label: 'Clair' },
-  { value: 'dark', label: 'Sombre' },
-  { value: 'cupcake', label: 'Cupcake' },
-  { value: 'bumblebee', label: 'Bumblebee' },
-  { value: 'emerald', label: 'Emerald' },
-  { value: 'corporate', label: 'Corporate' }
-])
-
+// User profile data (should come from a store in real app)
 const userProfile = reactive({
   firstName: 'Sylvain',
   lastName: 'Renard',
@@ -229,6 +317,7 @@ const userProfile = reactive({
   bio: 'Développeur passionné par les technologies modernes et l\'architecture MVC.'
 })
 
+// Notification preferences
 const notifications = reactive({
   email: true,
   push: false,
@@ -236,13 +325,86 @@ const notifications = reactive({
   weekly: true
 })
 
+// Security settings
 const security = reactive({
   newPassword: '',
   confirmPassword: '',
   twoFactor: false
 })
 
-function changeTheme() {
-  document.documentElement.setAttribute('data-theme', selectedTheme.value)
+// Theme management
+const currentTheme = computed(() => appStore.theme)
+const effectiveTheme = computed(() => appStore.getEffectiveTheme())
+
+// Initialize component
+onMounted(() => {
+  console.log('🔧 Settings component mounted');
+  // Load user preferences from localStorage or API
+  loadUserPreferences();
+})
+
+function loadUserPreferences() {
+  // Load saved preferences
+  const savedReducedMotion = localStorage.getItem('reducedMotion');
+  const savedSmoothTransitions = localStorage.getItem('smoothTransitions');
+  
+  if (savedReducedMotion !== null) {
+    reducedMotion.value = JSON.parse(savedReducedMotion);
+  }
+  
+  if (savedSmoothTransitions !== null) {
+    smoothTransitions.value = JSON.parse(savedSmoothTransitions);
+  }
+}
+
+function saveUserPreferences() {
+  localStorage.setItem('reducedMotion', JSON.stringify(reducedMotion.value));
+  localStorage.setItem('smoothTransitions', JSON.stringify(smoothTransitions.value));
+  
+  // Apply reduced motion preference
+  if (reducedMotion.value) {
+    document.documentElement.style.setProperty('--transition-duration', '0s');
+  } else {
+    document.documentElement.style.removeProperty('--transition-duration');
+  }
+  
+  console.log('💾 User preferences saved');
+}
+
+// Watch for changes and save preferences
+import { watch } from 'vue'
+
+watch([reducedMotion, smoothTransitions], () => {
+  saveUserPreferences();
+}, { deep: true })
+
+function saveProfile() {
+  // In a real app, this would save to an API
+  console.log('💾 Saving profile:', userProfile);
+  // You would call UserController.updateProfile(userProfile) here
+}
+
+function saveNotifications() {
+  console.log('🔔 Saving notifications:', notifications);
+  // You would call a notifications API here
+}
+
+function changePassword() {
+  if (security.newPassword !== security.confirmPassword) {
+    alert('Les mots de passe ne correspondent pas');
+    return;
+  }
+  
+  if (security.newPassword.length < 8) {
+    alert('Le mot de passe doit contenir au moins 8 caractères');
+    return;
+  }
+  
+  console.log('🔐 Changing password...');
+  // You would call AuthController.changePassword() here
+  
+  // Clear fields after successful change
+  security.newPassword = '';
+  security.confirmPassword = '';
 }
 </script>
