@@ -26,20 +26,40 @@ export async function apiPost(endpoint, body) {
   return res.json()
 }
 
-export async function apiPut(endpoint, body) {
+export async function apiPut(endpoint, body, useAuth = false) {
+  const headers = { 'Content-Type': 'application/json' }
+  
+  if (useAuth) {
+    const sessionData = localStorage.getItem('session')
+    if (sessionData) {
+      const { token } = JSON.parse(sessionData)
+      headers['Authorization'] = `Bearer ${token}`
+    }
+  }
+
   const res = await fetch(`${API_BASE}${endpoint}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(body),
   })
   if (!res.ok) throw new Error(`PUT ${endpoint} failed: ${res.status}`)
   return res.text() // For challengeUseridPassword which returns text in case of error
 }
 
-export async function apiDelete(endpoint) {
+export async function apiDelete(endpoint, useAuth = false) {
+  const headers = { 'Content-Type': 'application/json' }
+  
+  if (useAuth) {
+    const sessionData = localStorage.getItem('session')
+    if (sessionData) {
+      const { token } = JSON.parse(sessionData)
+      headers['Authorization'] = `Bearer ${token}`
+    }
+  }
+
   const res = await fetch(`${API_BASE}${endpoint}`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
   })
   if (!res.ok) throw new Error(`DELETE ${endpoint} failed: ${res.status}`)
   return res.json()

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug InputFile</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .result { margin: 10px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; background: #f9f9f9; }
+        .debug { background: #fef3c7; border-color: #f59e0b; }
+        .success { border-color: #10b981; background: #f0fdf4; color: #059669; }
+        .error { border-color: #ef4444; background: #fef2f2; color: #dc2626; }
+        pre { white-space: pre-wrap; word-wrap: break-word; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug InputFile - Mire 720p</h1>
+    
+    <div class="result debug">
+        <h2>🔍 Données brutes de l'API</h2>
+        <pre id="raw-data"></pre>
+    </div>
+
+    <div class="result">
+        <h2>🛠️ Analyse des propriétés</h2>
+        <div id="property-analysis"></div>
+    </div>
+
+    <div class="result">
+        <h2>📊 Propriétés calculées</h2>
+        <div id="computed-properties"></div>
+    </div>
+
+    <div class="result">
+        <h2>✅ Résultat final</h2>
+        <div id="final-result"></div>
+    </div>
+
+    <script type="module">
+        // Données exactes de votre API
+        const apiData = {
+            "id": "120372d5-26f1-4850-86a5-e57968fcb38d",
+            "functionType": "InputFileToTSEntity",
+            "name": "Mire 720p",
+            "description": null,
+            "instanceID": null,
+            "command": "ffmpeg",
+            "inputType": "FILE",
+            "outputType": "UNDEF",
+            "outputFilePath": null,
+            "outputFileName": null,
+            "inputOptions": [
+                "-hide_banner",
+                "-re",
+                "-stream_loop -1",
+                "-fflags +genpts",
+                "-copyts",
+                "-fflags +flush_packets",
+                "-i"
+            ],
+            "inputParameters": null,
+            "inputProtocol": "",
+            "outputOptions": [
+                "-c copy",
+                "-f mpegts"
+            ],
+            "outputParameters": null,
+            "outputProtocol": "udp",
+            "matchingLinePattern": null,
+            "maxMatchingLines": null,
+            "maxTestDelay": 30000,
+            "runTempoAfterLaunch": 1,
+            "inputAnalyzeCommand": null,
+            "inputAnalyseMethod": null,
+            "inputAnalyzeFormat": "JSON",
+            "inputInputAnalyzeOptions": null,
+            "outputInputAnalyzeOptions": null,
+            "outputAnalyzeCommand": "tsp",
+            "outputAnalyseMethod": null,
+            "outputAnalyzeFormat": "JSON",
+            "inputOutputAnalyzeOptions": null,
+            "outputOutputAnalyzeOptions": null,
+            "active": true,
+            "enabled": true,
+            "running": false,
+            "auto_run": false,
+            "persistent": true,
+            "externalID": null,
+            "consumedResourceId": null,
+            "consumedResourceName": null,
+            "technicalServiceID": null,
+            "technicalServiceName": null,
+            "topologyID": null,
+            "procPID": -1,
+            "packetSize": 1316,
+            "currentOutputSignalNumber": 0,
+            "maxOutputSignals": 1,
+            "currentInputSignalNumber": 0,
+            "maxInputSignals": 0,
+            "controlIPAddress": null,
+            "controlPort": -1,
+            "filePath": "/home/ansible/",
+            "fileName": "mire_720p.ts",
+            "multicastAddress": "232.0.0.2",
+            "multicastPort": 6005,
+            "sourceAddress": "192.168.1.20",
+            "fullCommand": "ffmpeg -hide_banner -re -stream_loop -1 -fflags +genpts -copyts -fflags +flush_packets -i /home/ansible/mire_720p.ts -c copy -f mpegts udp://232.0.0.2:6005?pkt_size=1316&localaddr=192.168.1.20",
+            "statuses": "{\"running\":false,\"active\":true,\"enabled\":true}",
+            "autoRun": false,
+            "inputSignal": null,
+            "outputSignal": null
+        };
+
+        // Afficher les données brutes
+        document.getElementById('raw-data').textContent = JSON.stringify(apiData, null, 2);
+
+        // Analyser les propriétés importantes
+        const pathAnalysis = [
+            `📁 filePath: "${apiData.filePath}" (type: ${typeof apiData.filePath}, length: ${apiData.filePath ? apiData.filePath.length : 'null'})`,
+            `📄 fileName: "${apiData.fileName}" (type: ${typeof apiData.fileName}, length: ${apiData.fileName ? apiData.fileName.length : 'null'})`,
+            `🌐 multicastAddress: "${apiData.multicastAddress}" (type: ${typeof apiData.multicastAddress})`,
+            `🔌 multicastPort: ${apiData.multicastPort} (type: ${typeof apiData.multicastPort})`,
+            `📍 sourceAddress: "${apiData.sourceAddress}" (type: ${typeof apiData.sourceAddress})`,
+            `📦 packetSize: ${apiData.packetSize} (type: ${typeof apiData.packetSize})`,
+            `🏃 running: ${apiData.running} (type: ${typeof apiData.running})`,
+            `✅ enabled: ${apiData.enabled} (type: ${typeof apiData.enabled})`,
+            `🔥 active: ${apiData.active} (type: ${typeof apiData.active})`
+        ];
+
+        document.getElementById('property-analysis').innerHTML = pathAnalysis.join('<br>');
+
+        // Simulation de la logique fullPath
+        const path = apiData.filePath || '';
+        const name = apiData.fileName || '';
+        
+        let fullPathResult;
+        if (path && name) {
+            const normalizedPath = path.endsWith('/') ? path : path + '/';
+            fullPathResult = `${normalizedPath}${name}`;
+        } else if (path || name) {
+            fullPathResult = path || name;
+        } else {
+            fullPathResult = 'No path specified';
+        }
+
+        // Simulation de la logique multicastAddressFormatted
+        let multicastResult;
+        if (apiData.multicastAddress && apiData.multicastPort) {
+            multicastResult = `${apiData.multicastAddress}:${apiData.multicastPort}`;
+        } else {
+            multicastResult = 'Not configured';
+        }
+
+        // Status logic
+        let statusResult;
+        if (apiData.running && apiData.enabled) {
+            statusResult = 'Active';
+        } else if (apiData.running && !apiData.enabled) {
+            statusResult = 'Running (Disabled)';
+        } else if (!apiData.running && apiData.enabled) {
+            statusResult = 'Stopped';
+        } else {
+            statusResult = 'Disabled';
+        }
+
+        const computedResults = [
+            `🗂️ fullPath = "${fullPathResult}"`,
+            `🌐 multicastAddressFormatted = "${multicastResult}"`,
+            `📊 status = "${statusResult}"`,
+            `🔄 isActive = ${apiData.running && apiData.enabled}`,
+            '',
+            `🔍 Détail du calcul fullPath :`,
+            `   - path = "${path}" (${path ? 'truthy' : 'falsy'})`,
+            `   - name = "${name}" (${name ? 'truthy' : 'falsy'})`,
+            `   - path && name = ${!!(path && name)}`,
+            `   - normalizedPath = "${path.endsWith('/') ? path : path + '/'}"`,
+            `   - Résultat final = "${fullPathResult}"`,
+            '',
+            `🔍 Détail du calcul multicast :`,
+            `   - multicastAddress = "${apiData.multicastAddress}" (${apiData.multicastAddress ? 'truthy' : 'falsy'})`,
+            `   - multicastPort = ${apiData.multicastPort} (${apiData.multicastPort ? 'truthy' : 'falsy'})`,
+            `   - Condition = ${!!(apiData.multicastAddress && apiData.multicastPort)}`,
+            `   - Résultat final = "${multicastResult}"`
+        ];
+
+        document.getElementById('computed-properties').innerHTML = computedResults.join('<br>');
+
+        // Résultat final comme dans le tableau Vue
+        const tableHtml = `
+            <h3>📋 Comme affiché dans Vue.js</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Path</th>
+                        <th>Status</th>
+                        <th>Multicast</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>${apiData.name}</strong><br>
+                            <small>${apiData.description || 'No description'}</small>
+                        </td>
+                        <td>
+                            ${fullPathResult}<br>
+                            <small>Type: ${apiData.inputType}</small>
+                        </td>
+                        <td>
+                            ${statusResult}<br>
+                            <small>${apiData.auto_run ? 'Auto-start' : 'Manual'}</small>
+                        </td>
+                        <td>
+                            ${multicastResult}<br>
+                            <small>Packet: ${apiData.packetSize}</small>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+
+        document.getElementById('final-result').innerHTML = tableHtml;
+
+        console.log('🔍 Debug InputFile completed');
+        console.log('Data:', apiData);
+        console.log('fullPath result:', fullPathResult);
+        console.log('multicast result:', multicastResult);
+    </script>
+</body>
+</html>

@@ -8,8 +8,10 @@
 export { User, UserRole } from './User.js'
 export { Project } from './Project.js'
 export { default as Gateway } from './Gateway.js'
+export { default as InputFile } from './InputFile.js'
 
 // Default reexport to facilitate imports
 export { default as UserModel } from './User.js'
 export { default as ProjectModel } from './Project.js'
 export { default as GatewayModel } from './Gateway.js'
+export { default as InputFileModel } from './InputFile.js'

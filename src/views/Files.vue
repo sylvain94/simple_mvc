@@ -1,30 +1,98 @@
 <template>
   <div class="container mx-auto p-6">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-2xl font-bold">Files Management</h2>
+    <!-- Header with stats and actions -->
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-2xl font-bold">Files Management</h2>
+        <p class="text-base-content/70 mt-1" v-if="stats">
+          {{ stats.total }} files total • {{ stats.active }} active • {{ stats.enabled }} enabled
+        </p>
+      </div>
       <div class="flex gap-2">
-        <button class="btn btn-secondary gap-2">
+        <button 
+          @click="openCreateModal"
+          class="btn btn-secondary gap-2"
+          :disabled="isLoading"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
           Add File
         </button>
-        <button class="btn btn-primary gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <button 
+          @click="refreshFiles"
+          class="btn btn-primary gap-2"
+          :class="{ 'loading': isLoading }"
+          :disabled="isLoading"
+        >
+          <svg v-if="!isLoading" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
           Refresh
         </button>
       </div>
     </div>
+
+    <!-- Search bar -->
+    <div class="mb-4">
+      <div class="form-control">
+        <div class="input-group">
+          <input 
+            v-model="searchQuery"
+            @input="onSearchInput"
+            type="text" 
+            placeholder="Search files by name, path, multicast IP, or command..." 
+            class="input input-bordered flex-1"
+          />
+          <button class="btn btn-square">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
     
+    <!-- Input Files Table -->
     <div class="card bg-base-100 shadow-xl">
       <div class="card-body">
-        <h3 class="card-title">Input Files</h3>
-        <div class="overflow-x-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="card-title">Input Files</h3>
+          <div class="text-sm text-base-content/70">
+            Last updated: {{ lastUpdated ? lastUpdated.toLocaleTimeString() : 'Never' }}
+          </div>
+        </div>
+        
+        <!-- Loading State -->
+        <div v-if="isLoading && inputFiles.length === 0" class="text-center py-8">
+          <div class="loading loading-spinner loading-lg"></div>
+          <p class="mt-4">Loading input files...</p>
+        </div>
+        
+        <!-- Error State -->
+        <div v-else-if="error" class="alert alert-error">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>{{ error }}</span>
+          <button @click="refreshFiles" class="btn btn-sm">Retry</button>
+        </div>
+        
+        <!-- Files Table -->
+        <div v-else class="overflow-x-auto">
           <table class="table w-full">
             <thead>
               <tr>
+                <th>
+                  <label>
+                    <input 
+                      type="checkbox" 
+                      class="checkbox"
+                      :checked="allSelected"
+                      @change="toggleAllSelection"
+                    />
+                  </label>
+                </th>
                 <th>Name</th>
                 <th>Path</th>
                 <th>Status</th>
@@ -33,13 +101,106 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td colspan="5" class="text-center py-4">
-                  No files configured yet
+              <!-- No files message -->
+              <tr v-if="filteredFiles.length === 0 && !isLoading">
+                <td colspan="6" class="text-center py-8">
+                  <div class="text-base-content/50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p class="font-medium">No input files found</p>
+                    <p class="text-sm">{{ searchQuery ? 'Try adjusting your search criteria' : 'Add your first input file to get started' }}</p>
+                  </div>
+                </td>
+              </tr>
+              
+              <!-- File rows -->
+              <tr v-for="file in filteredFiles" :key="file.id" class="hover">
+                <td>
+                  <label>
+                    <input 
+                      type="checkbox" 
+                      class="checkbox"
+                      :checked="selectedFiles.includes(file.id)"
+                      @change="toggleFileSelection(file.id)"
+                    />
+                  </label>
+                </td>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="avatar">
+                      <div class="mask mask-squircle w-12 h-12">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="font-bold">{{ file.name }}</div>
+                      <div class="text-sm opacity-50" v-if="file.description">{{ file.description }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="text-sm">{{ file.fullPath }}</div>
+                  <div class="text-xs opacity-50" v-if="file.inputType">Type: {{ file.inputType }}</div>
+                </td>
+                <td>
+                  <div class="badge" :class="file.getStatusBadgeClass()">
+                    {{ file.status }}
+                  </div>
+                  <div class="text-xs opacity-50 mt-1" v-if="file.auto_run">Auto-start</div>
+                </td>
+                <td>
+                  <div class="text-sm">{{ file.multicastAddressFormatted }}</div>
+                  <div class="text-xs opacity-50" v-if="file.packetSize">Packet: {{ file.packetSize }}</div>
+                </td>
+                <td>
+                  <div class="flex gap-1">
+                    <!-- Start/Stop button -->
+                    <button 
+                      @click="toggleFile(file)"
+                      :class="file.running ? 'btn-error' : 'btn-success'"
+                      class="btn btn-xs"
+                      :disabled="isProcessing.includes(file.id)"
+                    >
+                      <span v-if="isProcessing.includes(file.id)" class="loading loading-spinner loading-xs"></span>
+                      <span v-else>{{ file.running ? 'Stop' : 'Start' }}</span>
+                    </button>
+                    
+                    <!-- Edit button -->
+                    <button 
+                      @click="editFile(file)"
+                      class="btn btn-xs btn-primary"
+                    >
+                      Edit
+                    </button>
+                    
+                    <!-- Analyze button -->
+                    <button 
+                      @click="analyzeFile(file)"
+                      class="btn btn-xs btn-info"
+                      :disabled="!file.running"
+                    >
+                      Analyze
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
+        
+        <!-- Bulk actions -->
+        <div v-if="selectedFiles.length > 0" class="mt-4 p-4 bg-base-200 rounded-lg">
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-medium">{{ selectedFiles.length }} file(s) selected</span>
+            <div class="flex gap-2">
+              <button @click="startSelectedFiles" class="btn btn-xs btn-success">Start Selected</button>
+              <button @click="stopSelectedFiles" class="btn btn-xs btn-error">Stop Selected</button>
+              <button @click="deleteSelectedFiles" class="btn btn-xs btn-error">Delete Selected</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -47,9 +208,275 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { InputFileController } from '../controllers/InputFileController.js'
 
+// Reactive data
+const inputFiles = ref([])
+const isLoading = ref(false)
+const error = ref(null)
+const lastUpdated = ref(null)
+const searchQuery = ref('')
+const selectedFiles = ref([])
+const isProcessing = ref([])
+const stats = ref(null)
+
+// Computed properties
+const filteredFiles = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return inputFiles.value
+  }
+  
+  const query = searchQuery.value.toLowerCase().trim()
+  return inputFiles.value.filter(file => 
+    file.name.toLowerCase().includes(query) ||
+    file.fullPath.toLowerCase().includes(query) ||
+    (file.description && file.description.toLowerCase().includes(query)) ||
+    file.multicastAddress.includes(query) ||
+    file.sourceAddress.includes(query) ||
+    file.command.toLowerCase().includes(query)
+  )
+})
+
+const allSelected = computed(() => {
+  return filteredFiles.value.length > 0 && 
+         filteredFiles.value.every(file => selectedFiles.value.includes(file.id))
+})
+
+// Methods
+async function refreshFiles() {
+  isLoading.value = true
+  error.value = null
+  
+  try {
+    console.log('🔄 Refreshing input files...')
+    
+    // Charger les fichiers et les statistiques en parallèle
+    const [files, fileStats] = await Promise.all([
+      InputFileController.getAllInputFiles(),
+      InputFileController.getInputFileStats()
+    ])
+    
+    inputFiles.value = files
+    stats.value = fileStats
+    lastUpdated.value = new Date()
+    
+    console.log(`✅ Loaded ${files.length} input files`)
+    
+  } catch (err) {
+    console.error('❌ Error loading input files:', err)
+    error.value = err.message || 'Failed to load input files'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function toggleFile(file) {
+  const fileId = file.id
+  const action = file.running ? 'stop' : 'start'
+  
+  if (isProcessing.value.includes(fileId)) {
+    return
+  }
+  
+  isProcessing.value.push(fileId)
+  
+  try {
+    console.log(`🔄 ${action === 'start' ? 'Starting' : 'Stopping'} file ${file.name}`)
+    
+    let response
+    if (action === 'start') {
+      response = await InputFileController.startInputFile(fileId)
+    } else {
+      response = await InputFileController.stopInputFile(fileId)
+    }
+    
+    console.log(`✅ File ${file.name} ${action}ed successfully:`, response)
+    
+    // Mettre à jour le fichier localement
+    const fileIndex = inputFiles.value.findIndex(f => f.id === fileId)
+    if (fileIndex !== -1) {
+      inputFiles.value[fileIndex].running = !inputFiles.value[fileIndex].running
+      
+      // Optionnel: rafraîchir complètement pour s'assurer de la synchronisation
+      // setTimeout(() => refreshFiles(), 1000)
+    }
+    
+    // Mettre à jour les statistiques
+    await updateStats()
+    
+    // Afficher un message de succès
+    console.log(`🎉 Success: ${file.name} is now ${action === 'start' ? 'running' : 'stopped'}`)
+    
+  } catch (err) {
+    console.error(`❌ Error ${action}ing file ${file.name}:`, err)
+    error.value = `Failed to ${action} file "${file.name}": ${err.message}`
+    
+    // Effacer l'erreur après 5 secondes
+    setTimeout(() => {
+      if (error.value && error.value.includes(file.name)) {
+        error.value = null
+      }
+    }, 5000)
+  } finally {
+    isProcessing.value = isProcessing.value.filter(id => id !== fileId)
+  }
+}
+
+async function analyzeFile(file) {
+  try {
+    console.log(`🔍 Analyzing file ${file.name}`)
+    
+    const analysis = await InputFileController.analyzeInputFile(file.id)
+    
+    // Ici vous pouvez ouvrir une modal avec les résultats d'analyse
+    console.log('📊 Analysis results:', analysis)
+    
+    // TODO: Implémenter l'affichage des résultats d'analyse
+    alert(`Analysis completed for ${file.name}. Check console for details.`)
+    
+  } catch (err) {
+    console.error(`❌ Error analyzing file ${file.name}:`, err)
+    error.value = `Failed to analyze file: ${err.message}`
+  }
+}
+
+function editFile(file) {
+  console.log('✏️ Editing file:', file.name)
+  // TODO: Ouvrir modal d'édition
+  alert(`Edit functionality for ${file.name} will be implemented soon`)
+}
+
+function openCreateModal() {
+  console.log('➕ Opening create file modal')
+  // TODO: Ouvrir modal de création
+  alert('Create file functionality will be implemented soon')
+}
+
+// Selection methods
+function toggleFileSelection(fileId) {
+  const index = selectedFiles.value.indexOf(fileId)
+  if (index > -1) {
+    selectedFiles.value.splice(index, 1)
+  } else {
+    selectedFiles.value.push(fileId)
+  }
+}
+
+function toggleAllSelection() {
+  if (allSelected.value) {
+    selectedFiles.value = []
+  } else {
+    selectedFiles.value = filteredFiles.value.map(file => file.id)
+  }
+}
+
+// Bulk actions
+async function startSelectedFiles() {
+  const selected = inputFiles.value.filter(f => 
+    selectedFiles.value.includes(f.id) && !f.running
+  )
+  
+  if (selected.length === 0) {
+    return
+  }
+  
+  try {
+    console.log(`▶️ Starting ${selected.length} files`)
+    
+    await Promise.all(
+      selected.map(file => InputFileController.startInputFile(file.id))
+    )
+    
+    // Rafraîchir la liste
+    await refreshFiles()
+    selectedFiles.value = []
+    
+  } catch (err) {
+    console.error('❌ Error starting selected files:', err)
+    error.value = `Failed to start selected files: ${err.message}`
+  }
+}
+
+async function stopSelectedFiles() {
+  const selected = inputFiles.value.filter(f => 
+    selectedFiles.value.includes(f.id) && f.running
+  )
+  
+  if (selected.length === 0) {
+    return
+  }
+  
+  try {
+    console.log(`⏹️ Stopping ${selected.length} files`)
+    
+    await Promise.all(
+      selected.map(file => InputFileController.stopInputFile(file.id))
+    )
+    
+    // Rafraîchir la liste
+    await refreshFiles()
+    selectedFiles.value = []
+    
+  } catch (err) {
+    console.error('❌ Error stopping selected files:', err)
+    error.value = `Failed to stop selected files: ${err.message}`
+  }
+}
+
+async function deleteSelectedFiles() {
+  if (selectedFiles.value.length === 0) {
+    return
+  }
+  
+  const confirmed = confirm(`Are you sure you want to delete ${selectedFiles.value.length} file(s)?`)
+  if (!confirmed) {
+    return
+  }
+  
+  try {
+    console.log(`🗑️ Deleting ${selectedFiles.value.length} files`)
+    
+    await Promise.all(
+      selectedFiles.value.map(fileId => InputFileController.deleteInputFile(fileId))
+    )
+    
+    // Rafraîchir la liste
+    await refreshFiles()
+    selectedFiles.value = []
+    
+  } catch (err) {
+    console.error('❌ Error deleting selected files:', err)
+    error.value = `Failed to delete selected files: ${err.message}`
+  }
+}
+
+// Search handling with debounce
+let searchTimeout = null
+function onSearchInput() {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    console.log(`🔍 Searching for: "${searchQuery.value}"`)
+  }, 300)
+}
+
+// Update statistics
+async function updateStats() {
+  try {
+    stats.value = await InputFileController.getInputFileStats()
+  } catch (err) {
+    console.warn('⚠️ Failed to update stats:', err)
+  }
+}
+
+// Lifecycle
 onMounted(() => {
-  console.log('Files view mounted')
+  console.log('📁 Files view mounted')
+  refreshFiles()
+})
+
+// Watch for route changes to refresh data
+watch(() => inputFiles.value.length, (newLength) => {
+  console.log(`📊 Input files count updated: ${newLength}`)
 })
 </script>

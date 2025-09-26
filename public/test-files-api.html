@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Files API</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .btn { padding: 10px 15px; margin: 5px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .btn:hover { background: #2563eb; }
+        .result { margin: 10px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; background: #f9f9f9; }
+        .error { border-color: #ef4444; background: #fef2f2; color: #dc2626; }
+        .success { border-color: #10b981; background: #f0fdf4; color: #059669; }
+        .loading { opacity: 0.6; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #f2f2f2; }
+        .status-active { color: green; font-weight: bold; }
+        .status-stopped { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Files API</h1>
+    
+    <div>
+        <h2>Configuration</h2>
+        <label>API Token: <input type="text" id="apiToken" placeholder="Bearer token" style="width: 400px;"></label>
+        <button onclick="saveToken()" class="btn">Save Token</button>
+        <p><small>Token will be saved in localStorage for testing</small></p>
+    </div>
+
+    <div>
+        <h2>API Tests</h2>
+        <button onclick="testGetAllFiles()" class="btn">GET All Files</button>
+        <button onclick="testWithCurl()" class="btn">Test with CURL command</button>
+        <button onclick="clearResults()" class="btn" style="background: #6b7280;">Clear Results</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        // Load saved token
+        document.getElementById('apiToken').value = localStorage.getItem('apiToken') || '';
+
+        function saveToken() {
+            const token = document.getElementById('apiToken').value;
+            localStorage.setItem('apiToken', token);
+            addResult('Token saved successfully', 'success');
+        }
+
+        function getHeaders() {
+            const token = localStorage.getItem('apiToken');
+            return {
+                'Accept': '*/*',
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            };
+        }
+
+        async function testGetAllFiles() {
+            addResult('🔄 Testing GET /api/v1/functions/input_files/getAll...', 'loading');
+            
+            try {
+                const response = await fetch('/api/v1/functions/input_files/getAll', {
+                    method: 'GET',
+                    headers: getHeaders()
+                });
+
+                const data = await response.text();
+                
+                addResult(\`
+                    <h3>GET All Files Response</h3>
+                    <p><strong>Status:</strong> \${response.status} \${response.statusText}</p>
+                    <p><strong>Headers:</strong></p>
+                    <pre>\${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}</pre>
+                    <p><strong>Response Body:</strong></p>
+                    <pre>\${data}</pre>
+                \`, response.ok ? 'success' : 'error');
+
+                // If successful, try to parse and display as table
+                if (response.ok) {
+                    try {
+                        const files = JSON.parse(data);
+                        if (Array.isArray(files)) {
+                            displayFilesTable(files);
+                        }
+                    } catch (e) {
+                        console.log('Response is not JSON array:', e);
+                    }
+                }
+                
+            } catch (error) {
+                addResult(\`
+                    <h3>❌ Error</h3>
+                    <p>Network error: \${error.message}</p>
+                \`, 'error');
+            }
+        }
+
+        async function testWithCurl() {
+            addResult('🔄 Simulating CURL command...', 'loading');
+            
+            const token = localStorage.getItem('apiToken');
+            if (!token) {
+                addResult('❌ Please provide an API token first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('https://192.168.1.141:8443/api/v1/functions/input_files/getAll', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': '*/*',
+                        'Authorization': \`Bearer \${token}\`
+                    }
+                });
+
+                const data = await response.text();
+                
+                addResult(\`
+                    <h3>Direct API Call (like CURL)</h3>
+                    <p><strong>URL:</strong> https://192.168.1.141:8443/api/v1/functions/input_files/getAll</p>
+                    <p><strong>Status:</strong> \${response.status} \${response.statusText}</p>
+                    <p><strong>Response:</strong></p>
+                    <pre>\${data}</pre>
+                \`, response.ok ? 'success' : 'error');
+                
+            } catch (error) {
+                addResult(\`
+                    <h3>❌ Direct API Error</h3>
+                    <p>Error: \${error.message}</p>
+                    <p>This might be due to CORS or network restrictions</p>
+                \`, 'error');
+            }
+        }
+
+        function displayFilesTable(files) {
+            if (!files || files.length === 0) {
+                addResult('<h3>📁 Files Table</h3><p>No files found</p>', 'success');
+                return;
+            }
+
+            let tableHtml = \`
+                <h3>📁 Files Table (\${files.length} files)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Path</th>
+                            <th>Status</th>
+                            <th>Multicast</th>
+                            <th>Enabled</th>
+                            <th>Auto Run</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            \`;
+
+            files.forEach(file => {
+                const status = file.running && file.enabled ? 'Active' : 
+                             file.running ? 'Running (Disabled)' : 
+                             file.enabled ? 'Stopped' : 'Disabled';
+                const statusClass = file.running && file.enabled ? 'status-active' : 'status-stopped';
+                const multicast = file.multicast_ip && file.multicast_port ? 
+                                \`\${file.multicast_ip}:\${file.multicast_port}\` : 'Not set';
+
+                tableHtml += \`
+                    <tr>
+                        <td>\${file.id || 'N/A'}</td>
+                        <td>\${file.name || 'Unnamed'}</td>
+                        <td>\${file.path || 'No path'}</td>
+                        <td class="\${statusClass}">\${status}</td>
+                        <td>\${multicast}</td>
+                        <td>\${file.enabled ? '✅' : '❌'}</td>
+                        <td>\${file.auto_run ? '✅' : '❌'}</td>
+                    </tr>
+                \`;
+            });
+
+            tableHtml += '</tbody></table>';
+            addResult(tableHtml, 'success');
+        }
+
+        function addResult(content, type = '') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = \`result \${type}\`;
+            div.innerHTML = \`
+                <div style="display: flex; justify-between; align-items: start;">
+                    <div style="flex: 1;">\${content}</div>
+                    <small style="color: #666;">\${new Date().toLocaleTimeString()}</small>
+                </div>
+            \`;
+            results.appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        // Initialize
+        console.log('🧪 Files API Test page loaded');
+        addResult('🚀 Files API Test page ready. Configure your token and start testing!', 'success');
+    </script>
+</body>
+</html>
