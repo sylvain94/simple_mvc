@@ -249,9 +249,8 @@ async function refreshFiles() {
   error.value = null
   
   try {
-    console.log('🔄 Refreshing input files...')
     
-    // Charger les fichiers et les statistiques en parallèle
+    // Load files and statistics in parallel
     const [files, fileStats] = await Promise.all([
       InputFileController.getAllInputFiles(),
       InputFileController.getInputFileStats()
@@ -261,7 +260,6 @@ async function refreshFiles() {
     stats.value = fileStats
     lastUpdated.value = new Date()
     
-    console.log(`✅ Loaded ${files.length} input files`)
     
   } catch (err) {
     console.error('❌ Error loading input files:', err)
@@ -282,7 +280,6 @@ async function toggleFile(file) {
   isProcessing.value.push(fileId)
   
   try {
-    console.log(`🔄 ${action === 'start' ? 'Starting' : 'Stopping'} file ${file.name}`)
     
     let response
     if (action === 'start') {
@@ -291,28 +288,23 @@ async function toggleFile(file) {
       response = await InputFileController.stopInputFile(fileId)
     }
     
-    console.log(`✅ File ${file.name} ${action}ed successfully:`, response)
-    
-    // Mettre à jour le fichier localement
+    // Update the file locally
     const fileIndex = inputFiles.value.findIndex(f => f.id === fileId)
     if (fileIndex !== -1) {
       inputFiles.value[fileIndex].running = !inputFiles.value[fileIndex].running
       
-      // Optionnel: rafraîchir complètement pour s'assurer de la synchronisation
+      // Optional: refresh completely to ensure synchronization
       // setTimeout(() => refreshFiles(), 1000)
     }
     
-    // Mettre à jour les statistiques
+    // Update statistics
     await updateStats()
-    
-    // Afficher un message de succès
-    console.log(`🎉 Success: ${file.name} is now ${action === 'start' ? 'running' : 'stopped'}`)
-    
+       
   } catch (err) {
     console.error(`❌ Error ${action}ing file ${file.name}:`, err)
     error.value = `Failed to ${action} file "${file.name}": ${err.message}`
     
-    // Effacer l'erreur après 5 secondes
+    // Clear the error after 5 seconds
     setTimeout(() => {
       if (error.value && error.value.includes(file.name)) {
         error.value = null
@@ -325,14 +317,12 @@ async function toggleFile(file) {
 
 async function analyzeFile(file) {
   try {
-    console.log(`🔍 Analyzing file ${file.name}`)
     
     const analysis = await InputFileController.analyzeInputFile(file.id)
     
-    // Ici vous pouvez ouvrir une modal avec les résultats d'analyse
-    console.log('📊 Analysis results:', analysis)
-    
-    // TODO: Implémenter l'affichage des résultats d'analyse
+    // You can open a modal with the analysis results
+
+    // TODO: Implement the display of the analysis results
     alert(`Analysis completed for ${file.name}. Check console for details.`)
     
   } catch (err) {
@@ -342,8 +332,7 @@ async function analyzeFile(file) {
 }
 
 function editFile(file) {
-  console.log('✏️ Editing file:', file.name)
-  // TODO: Ouvrir modal d'édition
+  // TODO: Open the edit modal
   alert(`Edit functionality for ${file.name} will be implemented soon`)
 }
 
@@ -382,13 +371,12 @@ async function startSelectedFiles() {
   }
   
   try {
-    console.log(`▶️ Starting ${selected.length} files`)
     
     await Promise.all(
       selected.map(file => InputFileController.startInputFile(file.id))
     )
     
-    // Rafraîchir la liste
+    // Refresh the list
     await refreshFiles()
     selectedFiles.value = []
     
@@ -408,13 +396,12 @@ async function stopSelectedFiles() {
   }
   
   try {
-    console.log(`⏹️ Stopping ${selected.length} files`)
     
     await Promise.all(
       selected.map(file => InputFileController.stopInputFile(file.id))
     )
     
-    // Rafraîchir la liste
+    // Refresh the list
     await refreshFiles()
     selectedFiles.value = []
     
@@ -435,13 +422,12 @@ async function deleteSelectedFiles() {
   }
   
   try {
-    console.log(`🗑️ Deleting ${selectedFiles.value.length} files`)
     
     await Promise.all(
       selectedFiles.value.map(fileId => InputFileController.deleteInputFile(fileId))
     )
     
-    // Rafraîchir la liste
+    // Refresh the list
     await refreshFiles()
     selectedFiles.value = []
     
@@ -456,7 +442,6 @@ let searchTimeout = null
 function onSearchInput() {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
-    console.log(`🔍 Searching for: "${searchQuery.value}"`)
   }, 300)
 }
 
@@ -471,12 +456,10 @@ async function updateStats() {
 
 // Lifecycle
 onMounted(() => {
-  console.log('📁 Files view mounted')
   refreshFiles()
 })
 
 // Watch for route changes to refresh data
 watch(() => inputFiles.value.length, (newLength) => {
-  console.log(`📊 Input files count updated: ${newLength}`)
 })
 </script>

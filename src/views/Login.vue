@@ -143,10 +143,6 @@ const errors = reactive({
   general: ''
 })
 
-// Intercept console logs to display in the interface
-const originalConsoleLog = console.log
-const originalConsoleError = console.error
-
 function addDebugLog(type, message, data = null) {
   const timestamp = new Date().toLocaleTimeString()
   debugLogs.value.push({
@@ -158,20 +154,6 @@ function addDebugLog(type, message, data = null) {
   // Keep only the last 20 logs
   if (debugLogs.value.length > 20) {
     debugLogs.value.shift()
-  }
-}
-
-console.log = (...args) => {
-  originalConsoleLog(...args)
-  if (args[0] && typeof args[0] === 'string' && (args[0].includes('🔐') || args[0].includes('📡') || args[0].includes('✅') || args[0].includes('❌'))) {
-    addDebugLog('log', args[0], args[1])
-  }
-}
-
-console.error = (...args) => {
-  originalConsoleError(...args)
-  if (args[0] && typeof args[0] === 'string' && (args[0].includes('❌') || args[0].includes('📄'))) {
-    addDebugLog('error', args[0], args[1])
   }
 }
 
@@ -210,9 +192,7 @@ async function handleLogin() {
   
   try {
     // Use the authentication service
-    console.log('🔐 Attempting login with:', loginForm.username)
     const result = await authStore.login(loginForm.username, loginForm.password)
-    console.log('✅ Login result:', result)
     
     if (isDevelopment.value) {
       addDebugLog('success', '✅ Authentication successful, redirection...')
@@ -220,7 +200,6 @@ async function handleLogin() {
     
     // Check if we're actually authenticated
     if (authStore.isAuthenticated) {
-      console.log('✅ User is authenticated, redirecting to dashboard')
       // Redirection to the dashboard in case of success
       await router.push('/')
     } else {

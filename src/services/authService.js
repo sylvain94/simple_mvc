@@ -11,9 +11,7 @@ const authService = {
    * @returns {Promise} - Authentication result
    */
   async login(username, password) {
-    try {
-      console.log('🔐 Tring to authenticate for:', username);
-      
+    try {   
       const response = await fetch(`/api/v1/authentication/authenticate`, {
         method: 'POST',
         headers: {
@@ -26,15 +24,8 @@ const authService = {
         })
       });
 
-      console.log('📡 Server response:', {
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries())
-      });
-
       // Read the response content
       const responseText = await response.text();
-      console.log('📄 Raw response content:', responseText);
 
       if (!response.ok) {
         console.error('❌ HTTP Error:', response.status, response.statusText);
@@ -46,7 +37,6 @@ const authService = {
       let authResult;
       try {
         authResult = JSON.parse(responseText);
-        console.log('✅ Parsed JSON response:', authResult);
       } catch (parseError) {
         console.error('❌ Erreur de parsing JSON:', parseError);
         throw new Error(`Invalid server response: ${responseText}`);
@@ -77,21 +67,16 @@ const authService = {
       
       // Store the session data
       localStorage.setItem('session', JSON.stringify(sessionData));
-      console.log('💾 Session stored:', sessionData);
       
       // Retrieve the user information
-      console.log('👤 Retrieving user information for:', username);
       try {
         const user = await apiGet(`/utils/users/getByUserID/${username}`, true);
-        console.log('✅ User information retrieved:', user);
         localStorage.setItem('user', JSON.stringify(user));
         
-        console.log('🎉 Authentication successful!');
         return { user, token: authResult.token };
       } catch (userError) {
         console.error('❌ Error retrieving user information:', userError);
         // We can continue even if we can't retrieve the user information
-        console.log('⚠️ Authentication successful but user information not available');
         return { user: { username }, token: authResult.token };
       }
     } catch (error) {

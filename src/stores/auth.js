@@ -26,12 +26,10 @@ export const useAuthStore = defineStore('auth', {
      * Initialize the store with existing session data
      */
     initializeAuth() {
-      console.log('🔄 Initializing auth store')
       if (authService.isAuthenticated()) {
         this.user = authService.getCurrentUser()
         this.token = authService.getToken()
         this.isAuthenticated = true
-        console.log('✅ Auth initialized - user authenticated:', this.user?.userid)
       } else {
         console.log('ℹ️ No existing authentication found')
       }
@@ -43,21 +41,15 @@ export const useAuthStore = defineStore('auth', {
      * @param {string} password 
      */
     async login(username, password) {
-      console.log('🔐 Auth store login called for:', username)
       this.isLoading = true
       this.error = null
 
       try {
         const result = await authService.login(username, password)
-        console.log('🔐 Auth service returned:', result)
         
         this.user = result.user
         this.token = result.token
         this.isAuthenticated = true
-        
-        console.log('✅ Auth store updated - isAuthenticated:', this.isAuthenticated)
-        console.log('✅ User stored:', this.user)
-        console.log('✅ Token stored:', this.token ? 'YES' : 'NO')
         
         return result
       } catch (error) {

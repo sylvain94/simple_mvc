@@ -140,7 +140,6 @@ onMounted(() => {
 
 async function loadDashboardData() {
   try {
-    console.log('📊 Loading dashboard data...')
     
     // Use the Dashboard Controller to get statistics
     const stats = await DashboardController.getDashboardStats()
@@ -153,7 +152,7 @@ async function loadDashboardData() {
     activeGateways.value = gateways
     
     lastUpdated.value = new Date().toLocaleTimeString()
-    console.log('✅ Dashboard data loaded successfully')
+    
     
   } catch (error) {
     console.error('❌ Error loading dashboard data:', error)
@@ -165,7 +164,6 @@ async function refreshDashboard() {
   isRefreshing.value = true
   
   try {
-    console.log('🔄 Refreshing dashboard...')
     
     // Use the Dashboard Controller to refresh all data
     const refreshedData = await DashboardController.refreshDashboard()
@@ -175,7 +173,6 @@ async function refreshDashboard() {
     activeGateways.value = refreshedData.activeGateways
     
     lastUpdated.value = new Date().toLocaleTimeString()
-    console.log('✅ Dashboard refreshed successfully')
     
     // You could show a success notification here
     

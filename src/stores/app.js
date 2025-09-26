@@ -75,10 +75,8 @@ export const useAppStore = defineStore('app', {
   actions: {
     // Initialize the application
     async init() {
-      console.log('🚀 Initializing app store');
       
       if (this.initialized) {
-        console.log('⚠️ App store already initialized');
         return;
       }
 
@@ -89,7 +87,6 @@ export const useAppStore = defineStore('app', {
       await this.updateHubProperties();
       
       this.initialized = true;
-      console.log('✅ App store initialized successfully');
     },
 
     // Theme management
@@ -124,30 +121,29 @@ export const useAppStore = defineStore('app', {
         document.documentElement.classList.remove('dark');
       }
       
-      console.log(`🎨 Theme applied: ${effectiveTheme}`);
     },
 
     getEffectiveTheme() {
       if (this.theme === 'auto') {
-        // Détection automatique basée sur les préférences système
+        // Automatic detection based on system preferences
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
       return this.theme;
     },
 
     initTheme() {
-      // Charger le thème depuis localStorage ou utiliser les préférences système
+      // Load theme from localStorage or use system preferences
       const savedTheme = localStorage.getItem('theme');
       if (savedTheme && ['light', 'dark', 'auto'].includes(savedTheme)) {
         this.theme = savedTheme;
       } else {
-        // Par défaut, utiliser les préférences système
+        // Default to system preferences
         this.theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
       
       this.applyTheme();
       
-      // Écouter les changements de préférences système
+      // Listen for system preference changes
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
         if (this.theme === 'auto') {
           this.applyTheme();

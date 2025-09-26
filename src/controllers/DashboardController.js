@@ -15,7 +15,6 @@ const DashboardController = {
    */
   async getDashboardStats() {
     try {
-      console.log('📊 Fetching dashboard statistics')
       
       // In a real application, these would be API calls
       // For now, we'll use sample data
@@ -45,7 +44,6 @@ const DashboardController = {
         }
       }
       
-      console.log('✅ Dashboard statistics generated:', stats)
       return stats
       
     } catch (error) {
@@ -60,7 +58,6 @@ const DashboardController = {
    */
   async getAllGateways() {
     try {
-      console.log('🚪 Fetching all gateways')
       
       // Sample data - in real app, this would be an API call
       const mockGatewayData = [
@@ -148,7 +145,6 @@ const DashboardController = {
    */
   async getAllFiles() {
     try {
-      console.log('📁 Fetching all files')
       
       // Sample data - in real app, this would be an API call
       const mockFileData = [
@@ -158,7 +154,6 @@ const DashboardController = {
         { id: 4, name: 'test-stream.mp4', running: false, size: '890MB', type: 'mp4' }
       ]
       
-      console.log(`✅ ${mockFileData.length} files fetched`)
       return mockFileData
       
     } catch (error) {
@@ -173,7 +168,6 @@ const DashboardController = {
    */
   async getAllNetworkInterfaces() {
     try {
-      console.log('🌐 Fetching network interfaces')
       
       // Sample data - in real app, this would be an API call
       const mockNetworkData = [
@@ -182,7 +176,6 @@ const DashboardController = {
         { id: 3, name: 'lo', ip: '127.0.0.1', active: true, type: 'loopback' }
       ]
       
-      console.log(`✅ ${mockNetworkData.length} network interfaces fetched`)
       return mockNetworkData
       
     } catch (error) {
@@ -197,7 +190,6 @@ const DashboardController = {
    */
   async refreshDashboard() {
     try {
-      console.log('🔄 Refreshing dashboard data')
       
       const dashboardData = {
         stats: await this.getDashboardStats(),
@@ -205,7 +197,6 @@ const DashboardController = {
         timestamp: new Date().toISOString()
       }
       
-      console.log('✅ Dashboard data refreshed successfully')
       return dashboardData
       
     } catch (error) {
@@ -244,7 +235,6 @@ const DashboardController = {
         return null
       }
       
-      console.log(`✅ Gateway found: ${gateway.name}`)
       return gateway
       
     } catch (error) {
@@ -260,7 +250,6 @@ const DashboardController = {
    */
   async startGateway(id) {
     try {
-      console.log(`▶️ Starting gateway ${id}`)
       
       const gateway = await this.getGatewayById(id)
       if (!gateway) {
@@ -286,7 +275,6 @@ const DashboardController = {
    */
   async stopGateway(id) {
     try {
-      console.log(`⏹️ Stopping gateway ${id}`)
       
       const gateway = await this.getGatewayById(id)
       if (!gateway) {
@@ -296,7 +284,6 @@ const DashboardController = {
       gateway.stop()
       
       // In real app, this would call an API to actually stop the gateway
-      console.log(`✅ Gateway ${gateway.name} stopped successfully`)
       return true
       
     } catch (error) {
