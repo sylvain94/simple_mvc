@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Thèmes - MediaHub</title>
+    <link rel="stylesheet" href="/src/style.css">
+    <script type="module">
+        // Import du CSS compilé depuis notre projet
+        import '../src/style.css'
+    </script>
+</head>
+<body class="min-h-screen bg-base-100 text-base-content">
+    <div class="container mx-auto p-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-4xl font-bold">Test des Thèmes DaisyUI</h1>
+            <div class="badge badge-primary" id="current-theme">light</div>
+        </div>
+        
+        <!-- Theme Selector -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <button onclick="setTheme('light')" class="btn btn-primary btn-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Light
+            </button>
+            <button onclick="setTheme('dark')" class="btn btn-secondary btn-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+                Dark
+            </button>
+            <button onclick="setTheme('cupcake')" class="btn btn-accent btn-lg">🧁 Cupcake</button>
+            <button onclick="setTheme('corporate')" class="btn btn-neutral btn-lg">🏢 Corporate</button>
+        </div>
+        
+        <!-- Test Components -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Card Example -->
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">Example Card</h2>
+                    <p>Ceci est un exemple de carte utilisant les couleurs du thème actuel.</p>
+                    <div class="flex gap-2 mt-4">
+                        <div class="w-6 h-6 bg-primary rounded"></div>
+                        <div class="w-6 h-6 bg-secondary rounded"></div>
+                        <div class="w-6 h-6 bg-accent rounded"></div>
+                        <div class="w-6 h-6 bg-neutral rounded"></div>
+                    </div>
+                    <div class="card-actions justify-end">
+                        <button class="btn btn-primary">Primary</button>
+                        <button class="btn btn-ghost">Ghost</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Example -->
+            <div class="card bg-base-200 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">Form Example</h2>
+                    <div class="form-control w-full">
+                        <label class="label">
+                            <span class="label-text">Username</span>
+                        </label>
+                        <input type="text" placeholder="Enter username" class="input input-bordered w-full" />
+                    </div>
+                    <div class="form-control w-full">
+                        <label class="label">
+                            <span class="label-text">Theme preference</span>
+                        </label>
+                        <select class="select select-bordered">
+                            <option>Light</option>
+                            <option>Dark</option>
+                            <option>Auto</option>
+                        </select>
+                    </div>
+                    <div class="form-control">
+                        <label class="label cursor-pointer">
+                            <span class="label-text">Remember me</span>
+                            <input type="checkbox" class="toggle toggle-primary" />
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alerts -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+            <div class="alert alert-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Info alert</span>
+            </div>
+            
+            <div class="alert alert-success">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Success!</span>
+            </div>
+            
+            <div class="alert alert-warning">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <span>Warning!</span>
+            </div>
+            
+            <div class="alert alert-error">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Error!</span>
+            </div>
+        </div>
+        
+        <!-- Debug Info -->
+        <div class="mt-8 p-4 bg-base-300 rounded-lg">
+            <h3 class="font-bold text-lg mb-2">Debug Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                    <strong>data-theme:</strong> 
+                    <span id="debug-data-theme">-</span>
+                </div>
+                <div>
+                    <strong>Classes:</strong> 
+                    <span id="debug-classes">-</span>
+                </div>
+                <div>
+                    <strong>localStorage:</strong> 
+                    <span id="debug-localstorage">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setTheme(theme) {
+            console.log(`🎨 Setting theme to: ${theme}`);
+            
+            // Apply theme to document
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            // Update display
+            document.getElementById('current-theme').textContent = theme;
+            updateDebugInfo();
+            
+            // Save to localStorage
+            localStorage.setItem('theme', theme);
+            
+            console.log(`✅ Theme applied: ${theme}`);
+        }
+        
+        function updateDebugInfo() {
+            document.getElementById('debug-data-theme').textContent = 
+                document.documentElement.getAttribute('data-theme') || 'undefined';
+            
+            document.getElementById('debug-classes').textContent = 
+                document.documentElement.className || 'none';
+            
+            document.getElementById('debug-localstorage').textContent = 
+                localStorage.getItem('theme') || 'undefined';
+        }
+        
+        // Initialize
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        setTheme(savedTheme);
+        
+        // Update debug info every second
+        setInterval(updateDebugInfo, 1000);
+        
+        console.log('🚀 Theme test page loaded');
+        console.log('📝 Available themes: light, dark, cupcake, corporate');
+    </script>
+</body>
+</html>

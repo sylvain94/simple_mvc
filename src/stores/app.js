@@ -17,7 +17,7 @@ export const useAppStore = defineStore('app', {
     // Application info
     hubName: 'Mediahub',
     initialized: false,
-    theme: localStorage.getItem('theme') || 'light',
+    theme: 'light', // Will be set by initTheme()
     
     // Hub properties
     hubProperties: {

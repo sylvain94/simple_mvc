@@ -93,15 +93,20 @@ router.beforeEach((to, from, next) => {
     // Redirect to dashboard if already authenticated and trying to access login
     next('/')
   } else {
-    // Update app store current page
-    if (to.meta.page) {
-      // Import here to avoid circular dependency
-      import('../stores/app.js').then(({ useAppStore }) => {
-        const appStore = useAppStore()
-        appStore.currentPage = to.meta.page
-      })
-    }
     next()
+    // Update app store current page after navigation
+    if (to.meta.page) {
+      // Use setTimeout to avoid circular dependency issues
+      setTimeout(() => {
+        try {
+          const { useAppStore } = require('../stores/app.js')
+          const appStore = useAppStore()
+          appStore.currentPage = to.meta.page
+        } catch (error) {
+          console.warn('Could not update current page in app store:', error)
+        }
+      }, 0)
+    }
   }
 })
 

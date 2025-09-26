@@ -12,6 +12,11 @@ const appStore = useAppStore()
 // Initialize stores on mount
 onMounted(async () => {
   console.log('🚀 App.vue mounted - initializing')
+  
+  // Always initialize theme first
+  console.log('🎨 Initializing theme system')
+  appStore.initTheme()
+  
   await authStore.initializeAuth()
   console.log('🔐 Auth initialized, isAuthenticated:', authStore.isAuthenticated)
   
@@ -28,6 +33,12 @@ const currentPage = computed(() => appStore.currentPage)
 const sidebarOpen = computed(() => appStore.sidebarOpen)
 const hubName = computed(() => appStore.hubName)
 const theme = computed(() => appStore.theme)
+const effectiveTheme = computed(() => {
+  if (appStore.theme === 'auto') {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  }
+  return appStore.theme
+})
 
 // Navigation functions
 function logout() {
@@ -111,7 +122,7 @@ function openUserProfile() {
             >
               <!-- Sun icon for light mode -->
               <svg 
-                v-if="appStore.getEffectiveTheme() === 'light'"
+                v-if="effectiveTheme === 'light'"
                 xmlns="http://www.w3.org/2000/svg" 
                 fill="none" 
                 viewBox="0 0 24 24" 
