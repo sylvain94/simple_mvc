@@ -217,13 +217,11 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Name -->
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">Name *</span>
-              </label>
+              <label class="block text-sm font-medium mb-2">Name *</label>
               <input 
                 v-model="editingFile.name"
                 type="text" 
-                class="input input-bordered" 
+                class="input input-bordered w-full" 
                 placeholder="File name"
                 required
               />
@@ -231,13 +229,11 @@
 
             <!-- Description -->
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">Description</span>
-              </label>
+              <label class="block text-sm font-medium mb-2">Description</label>
               <input 
                 v-model="editingFile.description"
                 type="text" 
-                class="input input-bordered" 
+                class="input input-bordered w-full" 
                 placeholder="Optional description"
               />
             </div>
@@ -247,13 +243,11 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- File Path -->
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">File Path *</span>
-              </label>
+              <label class="block text-sm font-medium mb-2">File Path *</label>
               <input 
                 v-model="editingFile.filePath"
                 type="text" 
-                class="input input-bordered" 
+                class="input input-bordered w-full" 
                 placeholder="/path/to/file/"
                 required
               />
@@ -261,13 +255,11 @@
 
             <!-- File Name -->
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">File Name *</span>
-              </label>
+              <label class="block text-sm font-medium mb-2">File Name *</label>
               <input 
                 v-model="editingFile.fileName"
                 type="text" 
-                class="input input-bordered" 
+                class="input input-bordered w-full" 
                 placeholder="video.ts"
                 required
               />
@@ -279,26 +271,22 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Multicast Address -->
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">Multicast Address</span>
-              </label>
+              <label class="block text-sm font-medium mb-2">Multicast Address</label>
               <input 
                 v-model="editingFile.multicastAddress"
                 type="text" 
-                class="input input-bordered" 
+                class="input input-bordered w-full" 
                 placeholder="239.0.0.1"
               />
             </div>
 
             <!-- Multicast Port -->
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">Multicast Port</span>
-              </label>
+              <label class="block text-sm font-medium mb-2">Multicast Port</label>
               <input 
                 v-model="editingFile.multicastPort"
                 type="number" 
-                class="input input-bordered" 
+                class="input input-bordered w-full" 
                 placeholder="5000"
                 min="1"
                 max="65535"
@@ -307,13 +295,11 @@
 
             <!-- Source Address -->
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">Source Address</span>
-              </label>
+              <label class="block text-sm font-medium mb-2">Source Address</label>
               <input 
                 v-model="editingFile.sourceAddress"
                 type="text" 
-                class="input input-bordered" 
+                class="input input-bordered w-full" 
                 placeholder="192.168.1.100"
               />
             </div>
@@ -324,13 +310,11 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Packet Size -->
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">Packet Size</span>
-              </label>
+              <label class="block text-sm font-medium mb-2">Packet Size</label>
               <input 
                 v-model="editingFile.packetSize"
                 type="number" 
-                class="input input-bordered" 
+                class="input input-bordered w-full" 
                 placeholder="1316"
                 min="188"
                 max="65507"
@@ -338,26 +322,37 @@
             </div>
           </div>
           <!-- Checkboxes -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
             <div class="form-control">
-              <label class="label cursor-pointer">
-                <span class="label-text">Enabled</span>
+              <label class="flex items-center gap-2 cursor-pointer">
                 <input 
                   v-model="editingFile.enabled"
                   type="checkbox" 
                   class="checkbox checkbox-primary" 
                 />
+                <span class="text-sm font-medium">Enabled</span>
               </label>
             </div>
 
             <div class="form-control">
-              <label class="label cursor-pointer">
-                <span class="label-text">Persistent</span>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input 
+                  v-model="editingFile.auto_run"
+                  type="checkbox" 
+                  class="checkbox checkbox-primary" 
+                />
+                <span class="text-sm font-medium">Auto Run</span>
+              </label>
+            </div>
+  
+            <div class="form-control">
+              <label class="flex items-center gap-2 cursor-pointer">
                 <input 
                   v-model="editingFile.persistent"
                   type="checkbox" 
                   class="checkbox checkbox-primary" 
                 />
+                <span class="text-sm font-medium">Persistent</span>
               </label>
             </div>
           </div>
