@@ -184,7 +184,7 @@ export const InputFileController = {
     try {
       console.log(`⏹️ Stopping input file ${id}`);
       
-      const response = await apiPut(`/functions/input_files/stopByID/${id}`, {}, true);
+      const response = await apiPut(`/functions/input_files/stopByID/{id}?id=${id}`, {}, true);
       
       console.log(`✅ Input file ${id} stopped successfully:`, response);
       return response;

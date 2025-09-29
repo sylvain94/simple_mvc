@@ -103,8 +103,6 @@ import { onMounted } from 'vue'
 function openSwaggerDocs() {
   const swaggerUrl = 'https://192.168.1.141:8443/swagger-ui/index.html#'
   
-  console.log('🔗 Opening Swagger API documentation:', swaggerUrl)
-  
   // Open in new tab/window
   window.open(swaggerUrl, '_blank', 'noopener,noreferrer')
 }

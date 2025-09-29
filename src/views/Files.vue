@@ -204,6 +204,176 @@
         </div>
       </div>
     </div>
+
+    <!-- Edit/Create Modal -->
+    <div v-if="showEditModal" class="modal modal-open">
+      <div class="modal-box max-w-4xl">
+        <h3 class="font-bold text-lg mb-4">
+          {{ isCreatingFile ? 'Create New File' : 'Edit File' }}
+        </h3>
+        
+        <form @submit.prevent="saveFile" class="space-y-4">
+          <!-- File Information -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Name -->
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Name *</span>
+              </label>
+              <input 
+                v-model="editingFile.name"
+                type="text" 
+                class="input input-bordered" 
+                placeholder="File name"
+                required
+              />
+            </div>
+
+            <!-- Description -->
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Description</span>
+              </label>
+              <input 
+                v-model="editingFile.description"
+                type="text" 
+                class="input input-bordered" 
+                placeholder="Optional description"
+              />
+            </div>
+          </div>
+
+          <!-- File Path Information -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- File Path -->
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">File Path *</span>
+              </label>
+              <input 
+                v-model="editingFile.filePath"
+                type="text" 
+                class="input input-bordered" 
+                placeholder="/path/to/file/"
+                required
+              />
+            </div>
+
+            <!-- File Name -->
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">File Name *</span>
+              </label>
+              <input 
+                v-model="editingFile.fileName"
+                type="text" 
+                class="input input-bordered" 
+                placeholder="video.ts"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Network Configuration -->
+          <div class="divider">Network Configuration</div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Multicast Address -->
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Multicast Address</span>
+              </label>
+              <input 
+                v-model="editingFile.multicastAddress"
+                type="text" 
+                class="input input-bordered" 
+                placeholder="239.0.0.1"
+              />
+            </div>
+
+            <!-- Multicast Port -->
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Multicast Port</span>
+              </label>
+              <input 
+                v-model="editingFile.multicastPort"
+                type="number" 
+                class="input input-bordered" 
+                placeholder="5000"
+                min="1"
+                max="65535"
+              />
+            </div>
+
+            <!-- Source Address -->
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Source Address</span>
+              </label>
+              <input 
+                v-model="editingFile.sourceAddress"
+                type="text" 
+                class="input input-bordered" 
+                placeholder="192.168.1.100"
+              />
+            </div>
+          </div>
+
+          <!-- Advanced Settings -->
+          <div class="divider">Advanced Settings</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Packet Size -->
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Packet Size</span>
+              </label>
+              <input 
+                v-model="editingFile.packetSize"
+                type="number" 
+                class="input input-bordered" 
+                placeholder="1316"
+                min="188"
+                max="65507"
+              />
+            </div>
+          </div>
+          <!-- Checkboxes -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div class="form-control">
+              <label class="label cursor-pointer">
+                <span class="label-text">Enabled</span>
+                <input 
+                  v-model="editingFile.enabled"
+                  type="checkbox" 
+                  class="checkbox checkbox-primary" 
+                />
+              </label>
+            </div>
+
+            <div class="form-control">
+              <label class="label cursor-pointer">
+                <span class="label-text">Persistent</span>
+                <input 
+                  v-model="editingFile.persistent"
+                  type="checkbox" 
+                  class="checkbox checkbox-primary" 
+                />
+              </label>
+            </div>
+          </div>
+
+          <!-- Modal Actions -->
+          <div class="modal-action">
+            <button type="button" @click="closeEditModal" class="btn">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+              {{ isCreatingFile ? 'Create File' : 'Update File' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -220,6 +390,26 @@ const searchQuery = ref('')
 const selectedFiles = ref([])
 const isProcessing = ref([])
 const stats = ref(null)
+
+// Modal state
+const showEditModal = ref(false)
+const isCreatingFile = ref(false)
+const editingFile = ref({
+  id: null,
+  name: '',
+  description: '',
+  filePath: '',
+  fileName: '',
+  multicastAddress: '',
+  multicastPort: '',
+  sourceAddress: '',
+  packetSize: 1316,
+  inputType: 'FILE',
+  outputType: 'UNDEF',
+  enabled: true,
+  auto_run: false,
+  persistent: true
+})
 
 // Computed properties
 const filteredFiles = computed(() => {
@@ -332,14 +522,100 @@ async function analyzeFile(file) {
 }
 
 function editFile(file) {
-  // TODO: Open the edit modal
-  alert(`Edit functionality for ${file.name} will be implemented soon`)
+  console.log('✏️ Editing file:', file.name)
+  
+  // Copy file data to editing form
+  editingFile.value = {
+    id: file.id,
+    name: file.name || '',
+    description: file.description || '',
+    filePath: file.filePath || '',
+    fileName: file.fileName || '',
+    multicastAddress: file.multicastAddress || '',
+    multicastPort: file.multicastPort || '',
+    sourceAddress: file.sourceAddress || '',
+    packetSize: file.packetSize || 1316,
+    inputType: file.inputType || 'FILE',
+    outputType: file.outputType || 'UNDEF',
+    enabled: file.enabled !== undefined ? file.enabled : true,
+    auto_run: file.auto_run !== undefined ? file.auto_run : false,
+    persistent: file.persistent !== undefined ? file.persistent : true
+  }
+  
+  isCreatingFile.value = false
+  showEditModal.value = true
 }
 
 function openCreateModal() {
   console.log('➕ Opening create file modal')
-  // TODO: Ouvrir modal de création
-  alert('Create file functionality will be implemented soon')
+  
+  // Reset form for new file
+  editingFile.value = {
+    id: null,
+    name: '',
+    description: '',
+    filePath: '',
+    fileName: '',
+    multicastAddress: '',
+    multicastPort: '',
+    sourceAddress: '',
+    packetSize: 1316,
+    inputType: 'FILE',
+    outputType: 'UNDEF',
+    enabled: true,
+    auto_run: false,
+    persistent: true
+  }
+  
+  isCreatingFile.value = true
+  showEditModal.value = true
+}
+
+function closeEditModal() {
+  showEditModal.value = false
+  isCreatingFile.value = false
+  editingFile.value = {
+    id: null,
+    name: '',
+    description: '',
+    filePath: '',
+    fileName: '',
+    multicastAddress: '',
+    multicastPort: '',
+    sourceAddress: '',
+    packetSize: 1316,
+    inputType: 'FILE',
+    outputType: 'UNDEF',
+    enabled: true,
+    auto_run: false,
+    persistent: true
+  }
+}
+
+async function saveFile() {
+  try {
+    console.log('💾 Saving file:', editingFile.value.name)
+    
+    if (isCreatingFile.value) {
+      // Create new file
+      await InputFileController.createInputFile(editingFile.value)
+      console.log('✅ File created successfully')
+    } else {
+      // Update existing file
+      await InputFileController.updateInputFile(editingFile.value.id, editingFile.value)
+      console.log('✅ File updated successfully')
+    }
+    
+    // Refresh the files list
+    await refreshFiles()
+    
+    // Close modal
+    closeEditModal()
+    
+  } catch (err) {
+    console.error('❌ Error saving file:', err)
+    error.value = `Failed to save file: ${err.message}`
+  }
 }
 
 // Selection methods

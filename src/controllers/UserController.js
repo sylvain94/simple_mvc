@@ -22,10 +22,10 @@ export class UserController {
   static async getUserByUserid(userid) {
     try {
       if (!userid || userid.trim() === '') {
-        throw new Error('L\'ID utilisateur est requis')
+        throw new Error('userid is required')
       }
 
-      console.log(`🔍 Récupération de l'utilisateur: ${userid}`)
+      console.log(`🔍 Getting user by userid: ${userid}`)
       
       // Appel au service API
       const apiResponse = await userService.getUserByUserid(userid)
@@ -36,14 +36,14 @@ export class UserController {
       // Validation des données reçues
       const validation = user.validate()
       if (!validation.isValid) {
-        console.warn('⚠️ Données utilisateur invalides:', validation.errors)
+        console.warn('⚠️ User data is invalid:', validation.errors)
       }
 
-      console.log(`✅ Utilisateur récupéré: ${user.displayName}`)
+      console.log(`✅ User retrieved: ${user.displayName}`)
       return user
       
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération de l\'utilisateur:', error)
+      console.error('❌ Error retrieving user:', error)
       throw new Error(`Impossible de récupérer l'utilisateur: ${error.message}`)
     }
   }
@@ -54,7 +54,7 @@ export class UserController {
    */
   static async getAllUsers() {
     try {
-      console.log('📋 Récupération de tous les utilisateurs')
+      console.log('📋 Getting all users')
       
       const apiResponse = await userService.getAllUsers()
       
@@ -65,7 +65,7 @@ export class UserController {
       const validUsers = users.filter(user => {
         const validation = user.validate()
         if (!validation.isValid) {
-          console.warn(`⚠️ Utilisateur invalide ignoré: ${user.userid}`, validation.errors)
+          console.warn(`⚠️ Invalid user ignored: ${user.userid}`, validation.errors)
           return false
         }
         return true
@@ -74,7 +74,7 @@ export class UserController {
       // Tri par nom d'affichage
       validUsers.sort((a, b) => a.displayName.localeCompare(b.displayName))
 
-      console.log(`✅ ${validUsers.length} utilisateurs récupérés`)
+      console.log(`✅ ${validUsers.length} users retrieved`)
       return validUsers
       
     } catch (error) {
