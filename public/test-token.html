@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Token JWT</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; }
+        input[type="text"] { width: 100%; padding: 8px; margin: 5px 0; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test du Token JWT</h1>
+    
+    <div>
+        <label for="token">Token JWT :</label>
+        <input type="text" id="token" placeholder="Coller votre token ici..." />
+        <button onclick="testToken()">Tester le Token</button>
+        <button onclick="getStoredToken()">Récupérer le Token Stocké</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        function getStoredToken() {
+            const sessionData = localStorage.getItem('session');
+            const results = document.getElementById('results');
+            
+            if (!sessionData) {
+                results.innerHTML = '<div class="result error">❌ Aucune session trouvée dans localStorage</div>';
+                return;
+            }
+            
+            try {
+                const session = JSON.parse(sessionData);
+                const token = session.token;
+                
+                if (!token) {
+                    results.innerHTML = '<div class="result error">❌ Aucun token trouvé dans la session</div>';
+                    return;
+                }
+                
+                document.getElementById('token').value = token;
+                
+                // Décoder le payload JWT pour voir l'expiration
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const now = Math.floor(Date.now() / 1000);
+                    const exp = payload.exp;
+                    const timeLeft = exp - now;
+                    
+                    results.innerHTML = `
+                        <div class="result success">
+                            ✅ Token récupéré !<br>
+                            📏 Longueur : ${token.length}<br>
+                            👤 Utilisateur : ${payload.sub}<br>
+                            ⏰ Expire le : ${new Date(exp * 1000).toLocaleString()}<br>
+                            ⏳ Temps restant : ${timeLeft > 0 ? timeLeft + ' secondes' : '⚠️ EXPIRÉ depuis ' + Math.abs(timeLeft) + ' secondes'}
+                        </div>
+                    `;
+                } catch (e) {
+                    results.innerHTML = '<div class="result error">❌ Erreur lors du décodage du token : ' + e.message + '</div>';
+                }
+                
+            } catch (e) {
+                results.innerHTML = '<div class="result error">❌ Erreur lors de la lecture de la session : ' + e.message + '</div>';
+            }
+        }
+        
+        async function testToken() {
+            const token = document.getElementById('token').value.trim();
+            const results = document.getElementById('results');
+            
+            if (!token) {
+                results.innerHTML = '<div class="result error">❌ Veuillez saisir un token</div>';
+                return;
+            }
+            
+            try {
+                results.innerHTML = '<div class="result">🔄 Test en cours...</div>';
+                
+                // Test avec le même endpoint que votre application
+                const response = await fetch('/api/v1/functions/input_files/startByID/120372d5-26f1-4850-86a5-e57968fcb38d', {
+                    method: 'PUT',
+                    headers: {
+                        'accept': 'text/plain',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const responseText = await response.text();
+                
+                if (response.ok) {
+                    results.innerHTML = `
+                        <div class="result success">
+                            ✅ Token valide !<br>
+                            📡 Status : ${response.status}<br>
+                            📄 Réponse : ${responseText || '(vide)'}
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <div class="result error">
+                            ❌ Erreur ${response.status} : ${response.statusText}<br>
+                            📄 Réponse : ${responseText || '(vide)'}<br>
+                            🔍 Headers : ${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                results.innerHTML = `<div class="result error">❌ Erreur réseau : ${error.message}</div>`;
+            }
+        }
+        
+        // Charger automatiquement le token au démarrage
+        window.onload = function() {
+            getStoredToken();
+        };
+    </script>
+</body>
+</html>

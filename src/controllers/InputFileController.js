@@ -128,7 +128,7 @@ export const InputFileController = {
         throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
       }
       
-      const response = await apiPut(`/functions/input_files/update/${id}`, inputFile.toApiFormat(), true);
+      const response = await apiPut(`/functions/input_files/updateByID/${id}`, inputFile.toApiFormat(), true);
       
       const updatedFile = InputFile.fromApiResponse(response);
       console.log('✅ Input file updated successfully:', updatedFile);
@@ -148,7 +148,7 @@ export const InputFileController = {
     try {
       console.log(`📁 Deleting input file ${id}`);
       
-      await apiDelete(`/functions/input_files/delete/${id}`, true);
+      await apiDelete(`/functions/input_files/deleteByID/${id}`, true);
       
       console.log(`✅ Input file ${id} deleted successfully`);
       return true;

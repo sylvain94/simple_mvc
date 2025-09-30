@@ -268,7 +268,7 @@
 
           <!-- Network Configuration -->
           <div class="divider">Network Configuration</div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Multicast Address -->
             <div class="form-control">
               <label class="block text-sm font-medium mb-2">Multicast Address</label>
@@ -337,7 +337,7 @@
             <div class="form-control">
               <label class="flex items-center gap-2 cursor-pointer">
                 <input 
-                  v-model="editingFile.auto_run"
+                  v-model="editingFile.autoRun"
                   type="checkbox" 
                   class="checkbox checkbox-primary" 
                 />
@@ -399,10 +399,7 @@ const editingFile = ref({
   multicastPort: '',
   sourceAddress: '',
   packetSize: 1316,
-  inputType: 'FILE',
-  outputType: 'UNDEF',
   enabled: true,
-  auto_run: false,
   persistent: true
 })
 
@@ -530,10 +527,7 @@ function editFile(file) {
     multicastPort: file.multicastPort || '',
     sourceAddress: file.sourceAddress || '',
     packetSize: file.packetSize || 1316,
-    inputType: file.inputType || 'FILE',
-    outputType: file.outputType || 'UNDEF',
     enabled: file.enabled !== undefined ? file.enabled : true,
-    auto_run: file.auto_run !== undefined ? file.auto_run : false,
     persistent: file.persistent !== undefined ? file.persistent : true
   }
   
@@ -555,10 +549,7 @@ function openCreateModal() {
     multicastPort: '',
     sourceAddress: '',
     packetSize: 1316,
-    inputType: 'FILE',
-    outputType: 'UNDEF',
     enabled: true,
-    auto_run: false,
     persistent: true
   }
   
@@ -579,10 +570,7 @@ function closeEditModal() {
     multicastPort: '',
     sourceAddress: '',
     packetSize: 1316,
-    inputType: 'FILE',
-    outputType: 'UNDEF',
     enabled: true,
-    auto_run: false,
     persistent: true
   }
 }

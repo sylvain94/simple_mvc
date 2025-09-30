@@ -29,7 +29,7 @@ class InputFile {
     this.sourceAddress = data.sourceAddress || '';
     this.packetSize = data.packetSize || 1316;
     this.outputProtocol = data.outputProtocol || 'udp';
-    this.inputProtocol = data.inputProtocol || '';
+    this.inputProtocol = data.inputProtocol || 'udp';
     
     // Status and control
     this.active = data.active !== undefined ? data.active : true;
@@ -281,22 +281,54 @@ class InputFile {
    */
   toApiFormat() {
     return {
+      // Identification
       id: this.id,
       name: this.name,
-      path: this.path,
-      enabled: this.enabled,
-      running: this.running,
-      persistent: this.persistent,
-      auto_run: this.auto_run,
-      multicast_ip: this.multicast_ip,
-      multicast_port: this.multicast_port,
-      local_port: this.local_port,
-      bitrate: this.bitrate,
-      packet_size: this.packet_size,
       description: this.description,
-      externalID: this.externalID,
-      consumedResourceId: this.consumedResourceId,
-      consumedResourceName: this.consumedResourceName,
+      
+      // Mandatory fields according to the API
+      filePath: this.filePath || "",                    // mandatory*
+      fileName: this.fileName || "",                    // mandatory*
+      multicastAddress: this.multicastAddress || "",    // mandatory*
+      multicastPort: this.multicastPort || 0,           // mandatory*
+      sourceAddress: this.sourceAddress || "",          // mandatory*
+      
+      // Network configuration and protocol
+      inputType: this.inputType || "FILE",
+      outputType: this.outputType || "UNDEF",
+      outputProtocol: this.outputProtocol || "udp",
+      inputProtocol: this.inputProtocol || "udp",
+      packetSize: this.packetSize || 1316,
+      
+      // Commands and options
+      command: this.command || "ffmpeg",
+      inputOptions: Array.isArray(this.inputOptions) ? this.inputOptions : [],
+      outputOptions: Array.isArray(this.outputOptions) ? this.outputOptions : [],
+      fullCommand: this.fullCommand || "",
+      
+      // Status and control
+      statuses: this.statuses || JSON.stringify({
+        running: this.running !== undefined ? this.running : false,
+        active: this.active !== undefined ? this.active : true,
+        enabled: this.enabled !== undefined ? this.enabled : true
+      }),
+      autoRun: this.autoRun !== undefined ? this.autoRun : (this.auto_run !== undefined ? this.auto_run : false),
+      persistent: this.persistent !== undefined ? this.persistent : true,
+      
+      // Process information
+      procPID: this.procPID || -1,
+      instanceID: this.instanceID || null,
+      
+      // Analysis configuration
+      maxTestDelay: this.maxTestDelay || 30000,
+      runTempoAfterLaunch: this.runTempoAfterLaunch || 1,
+      inputAnalyzeCommand: this.inputAnalyzeCommand || null,
+      outputAnalyzeCommand: this.outputAnalyzeCommand || "tsp",
+      
+      // Consumed resources
+      externalID: this.externalID || null,
+      consumedResourceId: this.consumedResourceId || null,
+      consumedResourceName: this.consumedResourceName || null,
     };
   }
 
