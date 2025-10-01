@@ -7,6 +7,7 @@
 
 import { defineStore } from 'pinia'
 import { useAuthStore } from './auth.js'
+import { userService } from '../services/api.js'
 
 export const useAppStore = defineStore('app', {
   state: () => ({
@@ -179,22 +180,101 @@ export const useAppStore = defineStore('app', {
     // Users management
     async loadUsers() {
       try {
-        const authStore = useAuthStore();
-        const response = await fetch('/api/v1/getAllUsers', {
-          headers: {
-            'Authorization': `Bearer ${authStore.getToken()}`
-          }
-        });
+        console.log('👥 Loading users from API...')
+        const users = await userService.getAllUsers()
         
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+        // L'API retourne un objet avec les données, on doit extraire la liste
+        if (users && typeof users === 'object') {
+          // Si c'est un objet avec une propriété contenant la liste
+          if (Array.isArray(users.data)) {
+            this.users = users.data
+          } else if (Array.isArray(users.users)) {
+            this.users = users.users
+          } else if (Array.isArray(users)) {
+            this.users = users
+          } else {
+            // Si c'est un objet avec des clés numériques, convertir en array
+            this.users = Object.values(users)
+          }
+        } else {
+          this.users = []
         }
         
-        const users = await response.json();
-        this.users = users;
+        console.log(`✅ Loaded ${this.users.length} users:`, this.users)
       } catch (error) {
-        console.error('Error loading users:', error);
-        this.users = [];
+        console.error('❌ Error loading users:', error)
+        this.users = []
+        throw error // Re-throw pour que la vue puisse gérer l'erreur
+      }
+    },
+
+    // Delete user
+    async deleteUser(userId) {
+      try {
+        console.log(`🗑️ Deleting user: ${userId}`)
+        await userService.deleteUserById(userId)
+        
+        // Recharger la liste des utilisateurs après suppression
+        await this.loadUsers()
+        
+        console.log('✅ User deleted successfully')
+        return { success: true }
+      } catch (error) {
+        console.error('❌ Error deleting user:', error)
+        throw error
+      }
+    },
+
+    // Create user
+    async createUser(userData) {
+      try {
+        console.log('👥 Creating new user:', userData)
+        const newUser = await userService.createUser(userData)
+        
+        // Recharger la liste des utilisateurs après création
+        await this.loadUsers()
+        
+        console.log('✅ User created successfully:', newUser)
+        return { success: true, user: newUser }
+      } catch (error) {
+        console.error('❌ Error creating user:', error)
+        throw error
+      }
+    },
+
+    // Enable/disable user
+    async toggleUserStatus(userId, enable = true) {
+      try {
+        console.log(`${enable ? '✅' : '❌'} ${enable ? 'Enabling' : 'Disabling'} user: ${userId}`)
+        
+        if (enable) {
+          await userService.enableUserByID(userId)
+        } else {
+          await userService.disableUserByID(userId)
+        }
+        
+        // Recharger la liste des utilisateurs après modification
+        await this.loadUsers()
+        
+        console.log(`✅ User ${enable ? 'enabled' : 'disabled'} successfully`)
+        return { success: true }
+      } catch (error) {
+        console.error(`❌ Error ${enable ? 'enabling' : 'disabling'} user:`, error)
+        throw error
+      }
+    },
+
+    // Reset user password
+    async resetUserPassword(userId, newPassword) {
+      try {
+        console.log(`🔑 Resetting password for user: ${userId}`)
+        await userService.resetPasswordByUserID(userId, newPassword)
+        
+        console.log('✅ Password reset successfully')
+        return { success: true }
+      } catch (error) {
+        console.error('❌ Error resetting password:', error)
+        throw error
       }
     },
 
