@@ -16,10 +16,25 @@ export async function apiGet(endpoint, useAuth = false) {
   return res.json()
 }
 
-export async function apiPost(endpoint, body) {
+export async function apiPost(endpoint, body, useAuth = false) {
+  const headers = { 'Content-Type': 'application/json' }
+  
+  if (useAuth) {
+    const sessionData = localStorage.getItem('session')
+    if (sessionData) {
+      const { token } = JSON.parse(sessionData)
+      headers['Authorization'] = `Bearer ${token}`
+      console.log('🔐 Adding Authorization header for POST request')
+    } else {
+      console.warn('⚠️ useAuth=true but no session found')
+    }
+  }
+
+  console.log('📡 POST request headers:', headers)
+  
   const res = await fetch(`${API_BASE}${endpoint}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(body),
   })
   if (!res.ok) throw new Error(`POST ${endpoint} failed: ${res.status}`)

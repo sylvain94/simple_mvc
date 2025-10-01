@@ -95,13 +95,17 @@ export const InputFileController = {
       console.log('📁 Creating new input file:', inputFileData);
       
       const inputFile = new InputFile(inputFileData);
+      const apiData = inputFile.toApiFormat();
+      
+      console.log('📝 API data being sent:', JSON.stringify(apiData, null, 2));
+      
       const validation = inputFile.validate();
       
       if (!validation.isValid) {
         throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
       }
       
-      const response = await apiPost('/functions/input_files/create', inputFile.toApiFormat(), true);
+      const response = await apiPost('/functions/input_files/create', apiData, true);
       
       const createdFile = InputFile.fromApiResponse(response);
       console.log('✅ Input file created successfully:', createdFile);
@@ -190,7 +194,7 @@ export const InputFileController = {
     try {
       console.log(`⏹️ Stopping input file ${id}`);
       
-      const response = await apiPut(`/functions/input_files/stopByID/{id}?id=${id}`, {}, true);
+      const response = await apiPut(`/functions/input_files/stopByID/${id}`, {}, true);
       
       console.log(`✅ Input file ${id} stopped successfully:`, response);
       return response;

@@ -32,12 +32,12 @@ class InputFile {
     this.inputProtocol = data.inputProtocol || 'udp';
     
     // Status and control
-    this.active = data.active !== undefined ? data.active : true;
-    this.enabled = data.enabled !== undefined ? data.enabled : true;
-    this.running = data.running !== undefined ? data.running : false;
-    this.auto_run = data.auto_run !== undefined ? data.auto_run : false;
-    this.autoRun = data.autoRun !== undefined ? data.autoRun : false; // Alternative property name
-    this.persistent = data.persistent !== undefined ? data.persistent : true;
+    this.active = data.active || true;
+    this.enabled = data.enabled || true;
+    this.running = data.running || false;
+    this.auto_run = data.auto_run || false;
+    this.autoRun = data.autoRun || false; // Alternative property name
+    this.persistent = data.persistent || true;
     
     // Process information
     this.procPID = data.procPID || -1;
@@ -282,7 +282,6 @@ class InputFile {
   toApiFormat() {
     return {
       // Identification
-      id: this.id,
       name: this.name,
       description: this.description || null,
       
@@ -319,7 +318,6 @@ class InputFile {
             "-c copy",
             "-f mpegts"
           ],
-      fullCommand: this.fullCommand || "",
       
       // Status and control
       statuses: this.statuses || JSON.stringify({
