@@ -284,7 +284,7 @@ class InputFile {
       // Identification
       id: this.id,
       name: this.name,
-      description: this.description || 'test',
+      description: this.description || null,
       
       // Mandatory fields according to the API
       filePath: this.filePath || "",                    // mandatory*
