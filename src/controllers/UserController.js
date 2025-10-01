@@ -1,12 +1,12 @@
 /**
- * Controller User - Gère la logique métier liée aux utilisateurs
+ * Controller User - Manages the business logic related to users
  * 
- * Les Controllers dans MVC sont responsables de :
- * - Orchestrer les interactions entre Models et Views
- * - Gérer la logique métier complexe
- * - Valider les données avant envoi aux services
- * - Transformer les données pour l'affichage
- * - Gérer les erreurs et les cas d'usage
+ * The Controllers in MVC are responsible for:
+ * - Orchestrate the interactions between Models and Views
+ * - Manage complex business logic
+ * - Validate data before sending to services
+ * - Transform data for display
+ * - Manage errors and use cases
  */
 
 import { User } from '../models/User.js'
@@ -15,42 +15,42 @@ import { userService } from '../services/api.js'
 export class UserController {
   
   /**
-   * Récupère un utilisateur par son ID utilisateur
-   * @param {string} userid - ID de l'utilisateur
-   * @returns {Promise<User>} - Instance User ou null
+   * Retrieves a user by their user ID
+   * @param {string} userid - User ID
+   * @returns {Promise<User>} - Instance User or null
    */
   static async getUserByUserid(userid) {
     try {
       if (!userid || userid.trim() === '') {
-        throw new Error('userid is required')
+        throw new Error('User ID is required')
       }
 
-      console.log(`🔍 Getting user by userid: ${userid}`)
+      console.log(`🔍 Getting user by User ID: ${userid}`)
       
-      // Appel au service API
+      // API service call
       const apiResponse = await userService.getUserByUserid(userid)
       
-      // Transformation en modèle User
+      // Transformation into User model
       const user = User.fromApiResponse(apiResponse)
       
-      // Validation des données reçues
+      // Validation of received data
       const validation = user.validate()
       if (!validation.isValid) {
         console.warn('⚠️ User data is invalid:', validation.errors)
       }
 
-      console.log(`✅ User retrieved: ${user.displayName}`)
+      console.log(`✅ User retrieved: ${user.displayname}`)
       return user
       
     } catch (error) {
       console.error('❌ Error retrieving user:', error)
-      throw new Error(`Impossible de récupérer l'utilisateur: ${error.message}`)
+      throw new Error(`Impossible to retrieve the user: ${error.message}`)
     }
   }
 
   /**
-   * Récupère tous les utilisateurs
-   * @returns {Promise<User[]>} - Liste des utilisateurs
+   * Retrieves all users
+   * @returns {Promise<User[]>} - List of users
    */
   static async getAllUsers() {
     try {
@@ -58,137 +58,137 @@ export class UserController {
       
       const apiResponse = await userService.getAllUsers()
       
-      // Transformation en modèles User
+      // Transformation into User models
       const users = apiResponse.map(userData => User.fromApiResponse(userData))
       
-      // Filtrage et tri
+      // Filtering and sorting
       const validUsers = users.filter(user => {
         const validation = user.validate()
         if (!validation.isValid) {
-          console.warn(`⚠️ Invalid user ignored: ${user.userid}`, validation.errors)
+          console.warn(`⚠️ Invalid user ignored: ${user.displayname}`, validation.errors)
           return false
         }
         return true
       })
 
-      // Tri par nom d'affichage
-      validUsers.sort((a, b) => a.displayName.localeCompare(b.displayName))
+      // Sorting by display name
+      validUsers.sort((a, b) => a.displayname.localeCompare(b.displayname))
 
       console.log(`✅ ${validUsers.length} users retrieved`)
       return validUsers
       
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération des utilisateurs:', error)
-      throw new Error(`Impossible de récupérer les utilisateurs: ${error.message}`)
+      console.error('❌ Error retrieving users:', error)
+      throw new Error(`Impossible to retrieve the users: ${error.message}`)
     }
   }
 
   /**
-   * Crée un nouvel utilisateur
-   * @param {Object} userData - Données de l'utilisateur
-   * @returns {Promise<User>} - Utilisateur créé
+   * Creates a new user
+   * @param {Object} userData - User data
+   * @returns {Promise<User>} - Created user
    */
   static async createUser(userData) {
     try {
-      console.log('➕ Création d\'un nouvel utilisateur')
+      console.log('➕ Creation of a new user')
       
-      // Création du modèle User pour validation
+      // Creation of the User model for validation
       const user = new User(userData)
       
-      // Validation des données
+      // Validation of data
       const validation = user.validate()
       if (!validation.isValid) {
-        throw new Error(`Données invalides: ${validation.errors.join(', ')}`)
+        throw new Error(`Invalid data: ${validation.errors.join(', ')}`)
       }
 
-      // Règles métier spécifiques
+      // Business logic specific rules
       if (await this.isUseridTaken(user.userid)) {
-        throw new Error('Ce nom d\'utilisateur est déjà pris')
+        throw new Error('This user ID is already taken')
       }
 
-      // Appel au service API (à implémenter selon votre backend)
+      // API service call (to be implemented according to your backend)
       // const apiResponse = await userService.createUser(user.toJSON())
       // const createdUser = User.fromApiResponse(apiResponse)
 
-      console.log(`✅ Utilisateur créé: ${user.displayName}`)
+      console.log(`✅ User created: ${user.displayname}`)
       return user
       
     } catch (error) {
-      console.error('❌ Erreur lors de la création de l\'utilisateur:', error)
-      throw new Error(`Impossible de créer l'utilisateur: ${error.message}`)
+      console.error('❌ Error creating user:', error)
+      throw new Error(`Impossible to create the user: ${error.message}`)
     }
   }
 
   /**
-   * Met à jour un utilisateur
-   * @param {string} userid - ID de l'utilisateur
-   * @param {Object} updateData - Données à mettre à jour
-   * @returns {Promise<User>} - Utilisateur mis à jour
+   * Updates a user
+   * @param {string} userid - User ID
+   * @param {Object} updateData - Data to update
+   * @returns {Promise<User>} - Updated user
    */
   static async updateUser(userid, updateData) {
     try {
-      console.log(`📝 Mise à jour de l'utilisateur: ${userid}`)
+      console.log(`📝 Update of the user: ${userid}`)
       
-      // Récupération de l'utilisateur existant
+      // Retrieving the existing user
       const existingUser = await this.getUserByUserid(userid)
       
-      // Mise à jour des données
+      // Updating the data
       const updatedUser = existingUser.update(updateData)
       
       // Validation
       const validation = updatedUser.validate()
       if (!validation.isValid) {
-        throw new Error(`Données invalides: ${validation.errors.join(', ')}`)
+        throw new Error(`Invalid data: ${validation.errors.join(', ')}`)
       }
 
-      // Appel au service API (à implémenter)
+      // API service call (to be implemented)
       // const apiResponse = await userService.updateUser(userid, updatedUser.toJSON())
       // const finalUser = User.fromApiResponse(apiResponse)
 
-      console.log(`✅ Utilisateur mis à jour: ${updatedUser.displayName}`)
+      console.log(`✅ User updated: ${updatedUser.displayname}`)
       return updatedUser
       
     } catch (error) {
-      console.error('❌ Erreur lors de la mise à jour de l\'utilisateur:', error)
-      throw new Error(`Impossible de mettre à jour l'utilisateur: ${error.message}`)
+      console.error('❌ Error updating user:', error)
+      throw new Error(`Impossible to update the user: ${error.message}`)
     }
   }
 
   /**
-   * Supprime un utilisateur
-   * @param {string} userid - ID de l'utilisateur
-   * @returns {Promise<boolean>} - Succès de la suppression
+   * Deletes a user
+   * @param {string} userid - User ID
+   * @returns {Promise<boolean>} - Success of the deletion
    */
   static async deleteUser(userid) {
     try {
-      console.log(`🗑️ Suppression de l'utilisateur: ${userid}`)
+      console.log(`🗑️ Deletion of the user: ${userid}`)
       
-      // Vérifications métier
+      // Business logic checks
       const user = await this.getUserByUserid(userid)
       
       if (user.admin) {
-        throw new Error('Impossible de supprimer un administrateur')
+        throw new Error('Impossible to delete an administrator')
       }
 
-      // Appel au service API (à implémenter)
+      // API service call (to be implemented)
       // await userService.deleteUser(userid)
 
-      console.log(`✅ Utilisateur supprimé: ${userid}`)
+      console.log(`✅ User deleted: ${userid}`)
       return true
       
     } catch (error) {
-      console.error('❌ Erreur lors de la suppression de l\'utilisateur:', error)
-      throw new Error(`Impossible de supprimer l'utilisateur: ${error.message}`)
+      console.error('❌ Error deleting user:', error)
+      throw new Error(`Impossible to delete the user: ${error.message}`)
     }
   }
 
   /**
-   * Génère des statistiques sur les utilisateurs
-   * @returns {Promise<Object>} - Statistiques
+   * Generates statistics on users
+   * @returns {Promise<Object>} - Statistics
    */
   static async getUserStats() {
     try {
-      console.log('📊 Génération des statistiques utilisateurs')
+      console.log('📊 Generation of user statistics')
       
       const users = await this.getAllUsers()
       
@@ -202,53 +202,53 @@ export class UserController {
         mustChangePassword: users.filter(u => u.mustChangePassword).length
       }
 
-      console.log('✅ Statistiques générées:', stats)
+      console.log('✅ User statistics generated:', stats)
       return stats
       
     } catch (error) {
-      console.error('❌ Erreur lors de la génération des statistiques:', error)
-      throw new Error(`Impossible de générer les statistiques: ${error.message}`)
+      console.error('❌ Error generating user statistics:', error)
+      throw new Error(`Impossible to generate the user statistics: ${error.message}`)
     }
   }
 
   /**
-   * Vérifie si un nom d'utilisateur est déjà pris
-   * @param {string} userid - Nom d'utilisateur à vérifier
-   * @returns {Promise<boolean>} - True si pris
+   * Checks if a user ID is already taken
+   * @param {string} userid - User ID to check
+   * @returns {Promise<boolean>} - True if taken
    */
   static async isUseridTaken(userid) {
     try {
       await this.getUserByUserid(userid)
-      return true // Si on trouve l'utilisateur, le nom est pris
+      return true // If the user is found, the ID is taken
     } catch (error) {
-      return false // Si erreur, le nom n'est pas pris
+      return false // If error, the ID is not taken
     }
   }
 
   /**
-   * Recherche des utilisateurs par critères
-   * @param {Object} criteria - Critères de recherche
-   * @returns {Promise<User[]>} - Utilisateurs trouvés
+   * Search for users by criteria
+   * @param {Object} criteria - Search criteria
+   * @returns {Promise<User[]>} - Found users
    */
   static async searchUsers(criteria) {
     try {
-      console.log('🔍 Recherche d\'utilisateurs avec critères:', criteria)
+      console.log('🔍 Search for users with criteria:', criteria)
       
       const allUsers = await this.getAllUsers()
       
       let filteredUsers = allUsers
       
-      // Filtrage par terme de recherche
+      // Filtering by search term
       if (criteria.searchTerm) {
         const term = criteria.searchTerm.toLowerCase()
         filteredUsers = filteredUsers.filter(user => 
           user.userid.toLowerCase().includes(term) ||
-          user.displayName.toLowerCase().includes(term) ||
+          user.displayname.toLowerCase().includes(term) ||
           (user.email && user.email.toLowerCase().includes(term))
         )
       }
 
-      // Filtrage par statut
+      // Filtering by status
       if (criteria.status) {
         switch (criteria.status) {
           case 'active':
@@ -263,12 +263,12 @@ export class UserController {
         }
       }
 
-      console.log(`✅ ${filteredUsers.length} utilisateurs trouvés`)
+      console.log(`✅ ${filteredUsers.length} users found`)
       return filteredUsers
       
     } catch (error) {
-      console.error('❌ Erreur lors de la recherche:', error)
-      throw new Error(`Impossible de rechercher les utilisateurs: ${error.message}`)
+      console.error('❌ Error searching for users:', error)
+      throw new Error(`Impossible to search for users: ${error.message}`)
     }
   }
 }
