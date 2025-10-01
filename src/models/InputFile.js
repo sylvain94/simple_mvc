@@ -284,7 +284,7 @@ class InputFile {
       // Identification
       id: this.id,
       name: this.name,
-      description: this.description,
+      description: this.description || 'test',
       
       // Mandatory fields according to the API
       filePath: this.filePath || "",                    // mandatory*
@@ -302,8 +302,23 @@ class InputFile {
       
       // Commands and options
       command: this.command || "ffmpeg",
-      inputOptions: Array.isArray(this.inputOptions) ? this.inputOptions : [],
-      outputOptions: Array.isArray(this.outputOptions) ? this.outputOptions : [],
+      inputOptions: Array.isArray(this.inputOptions) && this.inputOptions.length > 0 
+        ? this.inputOptions 
+        : [
+            "-hide_banner",
+            "-re", 
+            "-stream_loop -1",
+            "-fflags +genpts",
+            "-copyts",
+            "-fflags +flush_packets",
+            "-i"
+          ],
+      outputOptions: Array.isArray(this.outputOptions) && this.outputOptions.length > 0 
+        ? this.outputOptions 
+        : [
+            "-c copy",
+            "-f mpegts"
+          ],
       fullCommand: this.fullCommand || "",
       
       // Status and control
@@ -312,7 +327,7 @@ class InputFile {
         active: this.active !== undefined ? this.active : true,
         enabled: this.enabled !== undefined ? this.enabled : true
       }),
-      autoRun: this.autoRun !== undefined ? this.autoRun : (this.auto_run !== undefined ? this.auto_run : false),
+      autoRun: this.autoRun !== undefined ? this.autoRun : false,
       persistent: this.persistent !== undefined ? this.persistent : true,
       
       // Process information

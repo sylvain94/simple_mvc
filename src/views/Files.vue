@@ -578,6 +578,16 @@ function closeEditModal() {
 async function saveFile() {
   try {
     console.log('💾 Saving file:', editingFile.value.name)
+    console.log('📝 Form data being saved:', {
+      id: editingFile.value.id,
+      name: editingFile.value.name,
+      description: editingFile.value.description,
+      filePath: editingFile.value.filePath,
+      fileName: editingFile.value.fileName,
+      multicastAddress: editingFile.value.multicastAddress,
+      multicastPort: editingFile.value.multicastPort,
+      sourceAddress: editingFile.value.sourceAddress
+    })
     
     if (isCreatingFile.value) {
       // Create new file

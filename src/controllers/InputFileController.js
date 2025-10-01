@@ -120,8 +120,14 @@ export const InputFileController = {
   async updateInputFile(id, inputFileData) {
     try {
       console.log(`📁 Updating input file ${id}:`, inputFileData);
+      console.log(`📝 Description in inputFileData:`, inputFileData.description);
       
       const inputFile = new InputFile({ ...inputFileData, id });
+      console.log(`📝 Description in InputFile model:`, inputFile.description);
+      
+      const apiData = inputFile.toApiFormat();
+      console.log(`📝 Description in API format:`, apiData.description);
+      
       const validation = inputFile.validate();
       
       if (!validation.isValid) {
