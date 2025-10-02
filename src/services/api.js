@@ -83,7 +83,7 @@ export async function apiDelete(endpoint, useAuth = false) {
 // Service for users
 export const userService = {
   /**
-   * Récupère tous les utilisateurs
+   * Retrieves all users
    */
   async getAllUsers() {
     try {
@@ -96,7 +96,7 @@ export const userService = {
   },
 
   /**
-   * Récupère un utilisateur par son UserID
+   * Retrieves a user by their UserID
    */
   async getUserByUserid(userid) {
     try {
@@ -109,7 +109,7 @@ export const userService = {
   },
 
   /**
-   * Récupère un utilisateur par son nom et prénom
+   * Retrieves a user by their name and first name
    */
   async getUserByName(firstName, lastName) {
     try {
@@ -122,7 +122,7 @@ export const userService = {
   },
 
   /**
-   * Crée un nouvel utilisateur
+   * Creates a new user
    */
   async createUser(userData) {
     try {
@@ -135,7 +135,7 @@ export const userService = {
   },
 
   /**
-   * Supprime un utilisateur par son ID
+   * Deletes a user by their ID
    */
   async deleteUserById(userId) {
     try {
@@ -148,7 +148,7 @@ export const userService = {
   },
 
   /**
-   * Réinitialise le mot de passe d'un utilisateur
+   * Resets the password of a user
    */
   async resetPasswordByUserID(userId, newPassword) {
     try {
@@ -161,7 +161,7 @@ export const userService = {
   },
 
   /**
-   * Active un utilisateur
+   * Activates a user
    */
   async enableUserByID(userId) {
     try {
@@ -174,7 +174,7 @@ export const userService = {
   },
 
   /**
-   * Désactive un utilisateur
+   * Disables a user
    */
   async disableUserByID(userId) {
     try {
@@ -187,7 +187,7 @@ export const userService = {
   },
 
   /**
-   * Active un utilisateur (statut actif)
+   * Activates a user (active status)
    */
   async activateUserByID(userId) {
     try {
@@ -200,7 +200,7 @@ export const userService = {
   },
 
   /**
-   * Désactive un utilisateur (statut actif)
+   * Deactivates a user (active status)
    */
   async deactivateUserByID(userId) {
     try {
@@ -216,7 +216,7 @@ export const userService = {
 // Service for roles
 export const roleService = {
   /**
-   * Récupère tous les rôles
+   * Retrieves all roles
    */
   async getAllRoles() {
     try {
@@ -229,7 +229,7 @@ export const roleService = {
   },
 
   /**
-   * Crée un nouveau rôle
+   * Creates a new role
    */
   async createRole(roleData) {
     try {
@@ -245,7 +245,7 @@ export const roleService = {
 // Service for user-role relationships
 export const userRoleService = {
   /**
-   * Récupère toutes les relations utilisateur-rôle
+   * Retrieves all user-role relationships
    */
   async getAllUserRoles() {
     try {
@@ -258,7 +258,7 @@ export const userRoleService = {
   },
 
   /**
-   * Récupère les rôles d'un utilisateur
+   * Retrieves the roles of a user
    */
   async getRolesForUserID(userId) {
     try {
@@ -271,7 +271,7 @@ export const userRoleService = {
   },
 
   /**
-   * Récupère toutes les relations par utilisateur
+   * Retrieves all relationships by user
    */
   async getAllByUserID(userId) {
     try {
@@ -284,7 +284,7 @@ export const userRoleService = {
   },
 
   /**
-   * Récupère toutes les relations par rôle
+   * Retrieves all relationships by role
    */
   async getAllByRoleID(roleId) {
     try {
@@ -297,7 +297,7 @@ export const userRoleService = {
   },
 
   /**
-   * Crée une relation utilisateur-rôle
+   * Creates a user-role relationship
    */
   async createUserRoleRelation(userId, roleId) {
     try {
@@ -310,7 +310,7 @@ export const userRoleService = {
   },
 
   /**
-   * Supprime une relation utilisateur-rôle
+   * Deletes a user-role relationship
    */
   async deleteUserRoleRelation(relationId) {
     try {
