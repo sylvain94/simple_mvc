@@ -107,14 +107,14 @@ export class User {
       id: apiData.id,
       usertype: apiData.usertype,
       userid: apiData.userid,
-      first_name: apiData.firstName,
-      last_name: apiData.lastName,
+      firstName: apiData.firstName,
+      lastName: apiData.lastName,
       email: apiData.email,
       phone: apiData.phone,
       enabled: apiData.enabled,
       active: apiData.active,
       admin: apiData.admin,
-      must_change_password: apiData.mustChangePassword
+      mustChangePassword: apiData.mustChangePassword
     })
   }
 

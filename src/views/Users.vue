@@ -175,14 +175,161 @@
       </div>
     </div>
 
-    <!-- User Create Modal (placeholder for now) -->
+    <!-- User Create Modal -->
     <div v-if="appStore.showUserCreateModal" class="modal modal-open">
-      <div class="modal-box">
-        <h3 class="font-bold text-lg">Create New User</h3>
-        <p class="py-4">User creation form would go here</p>
-        <div class="modal-action">
-          <button class="btn" @click="appStore.showUserCreateModal = false">Close</button>
-        </div>
+      <div class="modal-box max-w-2xl">
+        <h3 class="font-bold text-lg mb-4">Create a new user</h3>
+        
+        <form @submit.prevent="handleCreateUser" class="space-y-4">
+          <!-- User ID -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">User ID *</span>
+            </label>
+            <input 
+              type="text" 
+              v-model="newUser.userid" 
+              class="input input-bordered" 
+              placeholder="Ex: sylvain"
+              required 
+            />
+          </div>
+
+          <!-- Password -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Password *</span>
+            </label>
+            <input 
+              type="password" 
+              v-model="newUser.password" 
+              class="input input-bordered" 
+              placeholder="Password"
+              required 
+            />
+          </div>
+
+          <!-- First Name -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">First Name *</span>
+            </label>
+            <input 
+              type="text" 
+              v-model="newUser.firstName" 
+              class="input input-bordered" 
+              placeholder="Ex: John"
+              required 
+            />
+          </div>
+
+          <!-- Last Name -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Last Name *</span>
+            </label>
+            <input 
+              type="text" 
+              v-model="newUser.lastName" 
+              class="input input-bordered" 
+              placeholder="Ex: Doe"
+              required 
+            />
+          </div>
+
+          <!-- Email -->
+          <div class="form-control">
+            <label class="label">
+            <span class="label-text">Email *</span>
+            </label>
+            <input 
+              type="email" 
+              v-model="newUser.email" 
+              class="input input-bordered" 
+              placeholder="Ex: john.doe@gmail.com"
+              required 
+            />
+          </div>
+
+          <!-- Phone -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Phone</span>
+            </label>
+            <input 
+              type="tel" 
+              v-model="newUser.phone" 
+              class="input input-bordered" 
+              placeholder="Ex: +336 12 78 94 36"
+            />
+          </div>
+
+          <!-- Checkboxes for boolean fields -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="form-control">
+              <label class="label cursor-pointer">
+                <span class="label-text">User enabled</span>
+                <input 
+                  type="checkbox" 
+                  v-model="newUser.enabled" 
+                  class="checkbox checkbox-primary" 
+                />
+              </label>
+            </div>
+
+            <div class="form-control">
+              <label class="label cursor-pointer">
+                <span class="label-text">Account active</span>
+                <input 
+                  type="checkbox" 
+                  v-model="newUser.active" 
+                  class="checkbox checkbox-primary" 
+                />
+              </label>
+            </div>
+
+            <div class="form-control">
+              <label class="label cursor-pointer">
+                <span class="label-text">Administrator</span>
+                <input 
+                  type="checkbox" 
+                  v-model="newUser.admin" 
+                  class="checkbox checkbox-primary" 
+                />
+              </label>
+            </div>
+
+            <div class="form-control">
+              <label class="label cursor-pointer">
+                <span class="label-text">Must change password</span>
+                <input 
+                  type="checkbox" 
+                  v-model="newUser.mustChangePassword" 
+                  class="checkbox checkbox-primary" 
+                />
+              </label>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="modal-action">
+            <button 
+              type="button" 
+              class="btn btn-ghost" 
+              @click="closeCreateModal"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              :disabled="isCreatingUser"
+            >
+              <span v-if="isCreatingUser" class="loading loading-spinner loading-sm"></span>
+              {{ isCreatingUser ? 'Creation...' : 'Create the user' }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -207,9 +354,25 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAppStore } from '../stores/app.js'
+import { UserController } from '../controllers/UserController.js'
 
 const appStore = useAppStore()
 const isRefreshing = ref(false)
+const isCreatingUser = ref(false)
+
+// Data for the new user
+const newUser = ref({
+  userid: '',
+  password: '',
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  enabled: true,
+  active: true,
+  admin: false,
+  mustChangePassword: false
+})
 const isLoading = ref(false)
 const isProcessing = ref(false)
 const error = ref(null)
@@ -238,15 +401,17 @@ function getInitials(user) {
   return 'U'
 }
 
-// Data loading
+// Data loading methods
 async function loadUsers() {
   isLoading.value = true
   error.value = null
   
   try {
     console.log('🔄 Loading users...')
-    await appStore.loadUsers()
-    console.log(`✅ Successfully loaded ${appStore.users.length} users`)
+    // ✅ MVC: Vue → Controller → Service
+    const users = await UserController.getAllUsers()
+    appStore.users = users // Store only for state management
+    console.log(`✅ Successfully loaded ${users.length} users`)
   } catch (err) {
     console.error('❌ Error loading users:', err)
     error.value = `Error loading users: ${err.message}`
@@ -262,8 +427,10 @@ async function refreshUsers() {
   
   try {
     console.log('🔄 Refreshing users...')
-    await appStore.loadUsers()
-    successMessage.value = `List of users refreshed (${appStore.users.length} users)`
+    // ✅ MVC: Vue → Controller → Service
+    const users = await UserController.getAllUsers()
+    appStore.users = users // Store only for state management
+    successMessage.value = `List of users refreshed (${users.length} users)`
     console.log('✅ Users refreshed successfully')
   } catch (err) {
     console.error('❌ Error refreshing users:', err)
@@ -274,6 +441,75 @@ async function refreshUsers() {
 }
 
 // User actions
+// Methods for the creation of a user
+async function handleCreateUser() {
+  // Validation basique
+  if (!newUser.value.userid || !newUser.value.password || !newUser.value.firstName || 
+      !newUser.value.lastName || !newUser.value.email) {
+    error.value = 'Please fill in all required fields'
+    return
+  }
+
+  if (newUser.value.password.length < 6) {
+    error.value = 'The password must contain at least 6 characters'
+    return
+  }
+
+  isCreatingUser.value = true
+  error.value = null
+
+  try {
+    console.log('👥 Creating new user with data:', newUser.value)
+    
+    // Create the user with the exact structure required by the API
+    const userData = {
+      userid: newUser.value.userid,
+      password: newUser.value.password,
+      firstName: newUser.value.firstName,
+      lastName: newUser.value.lastName,
+      email: newUser.value.email,
+      phone: newUser.value.phone || '',
+      enabled: newUser.value.enabled,
+      active: newUser.value.active,
+      admin: newUser.value.admin,
+      mustChangePassword: newUser.value.mustChangePassword
+    }
+
+    // ✅ MVC: Vue → Controller → Service
+    await UserController.createUser(userData)
+    // Reload users list after creation
+    await loadUsers()
+    successMessage.value = `User "${userData.userid}" created successfully`
+    console.log('✅ User created successfully')
+    
+    // Close the modal and reset the form
+    closeCreateModal()
+  } catch (err) {
+    console.error('❌ Error creating user:', err)
+    error.value = `Error creating user: ${err.message}`
+  } finally {
+    isCreatingUser.value = false
+  }
+}
+
+function closeCreateModal() {
+  appStore.showUserCreateModal = false
+  // Reset the form
+  newUser.value = {
+    userid: '',
+    password: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    enabled: true,
+    active: true,
+    admin: false,
+    mustChangePassword: false
+  }
+  error.value = null
+}
+
 async function deleteUser(user) {
   if (!confirm(`Are you sure you want to delete the user "${user.userid}" ?`)) {
     return
@@ -284,7 +520,10 @@ async function deleteUser(user) {
   
   try {
     console.log(`🗑️ Deleting user: ${user.userid}`)
-    await appStore.deleteUser(user.id)
+    // ✅ MVC: Vue → Controller → Service
+    await UserController.deleteUser(user.userid)
+    // Reload users list after deletion
+    await loadUsers()
     successMessage.value = `User "${user.userid}" deleted successfully`
     console.log('✅ User deleted successfully')
   } catch (err) {
@@ -307,7 +546,10 @@ async function toggleUserStatus(user) {
   
   try {
     console.log(`${user.enabled ? '❌' : '✅'} ${action} user: ${user.userid}`)
-    await appStore.toggleUserStatus(user.id, !user.enabled)
+    // ✅ MVC: Vue → Controller → Service
+    await UserController.toggleUserStatus(user.userid, !user.enabled)
+    // Reload users list after status change
+    await loadUsers()
     successMessage.value = `User "${user.userid}" ${user.enabled ? 'disabled' : 'enabled'} successfully`
     console.log('✅ User status toggled successfully')
   } catch (err) {
@@ -335,7 +577,10 @@ async function resetPassword(user) {
   
   try {
     console.log(`🔑 Resetting password for user: ${user.userid}`)
-    await appStore.resetUserPassword(user.id, newPassword)
+    // ✅ MVC: Vue → Controller → Service
+    await UserController.resetPassword(user.userid, newPassword)
+    // Reload users list after password reset
+    await loadUsers()
     successMessage.value = `Password of "${user.userid}" reset successfully`
     console.log('✅ Password reset successfully')
   } catch (err) {

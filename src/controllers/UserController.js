@@ -39,7 +39,7 @@ export class UserController {
         console.warn('⚠️ User data is invalid:', validation.errors)
       }
 
-      console.log(`✅ User retrieved: ${user.displayname}`)
+      console.log(`✅ User retrieved: ${user.displayName}`)
       return user
       
     } catch (error) {
@@ -65,14 +65,18 @@ export class UserController {
       const validUsers = users.filter(user => {
         const validation = user.validate()
         if (!validation.isValid) {
-          console.warn(`⚠️ Invalid user ignored: ${user.displayname}`, validation.errors)
+          console.warn(`⚠️ Invalid user ignored: ${user.displayName}`, validation.errors)
           return false
         }
         return true
       })
 
-      // Sorting by display name
-      validUsers.sort((a, b) => a.displayname.localeCompare(b.displayname))
+      // Sorting by display name (with null safety)
+      validUsers.sort((a, b) => {
+        const nameA = a.displayName || a.userid || ''
+        const nameB = b.displayName || b.userid || ''
+        return nameA.localeCompare(nameB)
+      })
 
       console.log(`✅ ${validUsers.length} users retrieved`)
       return validUsers
@@ -106,12 +110,12 @@ export class UserController {
         throw new Error('This user ID is already taken')
       }
 
-      // API service call (to be implemented according to your backend)
-      // const apiResponse = await userService.createUser(user.toJSON())
-      // const createdUser = User.fromApiResponse(apiResponse)
+      // API service call
+      const apiResponse = await userService.createUser(user.toJSON())
+      const createdUser = User.fromApiResponse(apiResponse)
 
-      console.log(`✅ User created: ${user.displayname}`)
-      return user
+      console.log(`✅ User created: ${createdUser.displayName}`)
+      return createdUser
       
     } catch (error) {
       console.error('❌ Error creating user:', error)
@@ -145,7 +149,7 @@ export class UserController {
       // const apiResponse = await userService.updateUser(userid, updatedUser.toJSON())
       // const finalUser = User.fromApiResponse(apiResponse)
 
-      console.log(`✅ User updated: ${updatedUser.displayname}`)
+      console.log(`✅ User updated: ${updatedUser.displayName}`)
       return updatedUser
       
     } catch (error) {
@@ -170,8 +174,8 @@ export class UserController {
         throw new Error('Impossible to delete an administrator')
       }
 
-      // API service call (to be implemented)
-      // await userService.deleteUser(userid)
+      // API service call
+      await userService.deleteUserById(userid)
 
       console.log(`✅ User deleted: ${userid}`)
       return true
@@ -243,7 +247,7 @@ export class UserController {
         const term = criteria.searchTerm.toLowerCase()
         filteredUsers = filteredUsers.filter(user => 
           user.userid.toLowerCase().includes(term) ||
-          user.displayname.toLowerCase().includes(term) ||
+          user.displayName.toLowerCase().includes(term) ||
           (user.email && user.email.toLowerCase().includes(term))
         )
       }
@@ -269,6 +273,57 @@ export class UserController {
     } catch (error) {
       console.error('❌ Error searching for users:', error)
       throw new Error(`Impossible to search for users: ${error.message}`)
+    }
+  }
+
+  /**
+   * Toggles user status (enabled/disabled)
+   * @param {string} userid - User ID
+   * @param {boolean} enabled - New enabled status
+   * @returns {Promise<User>} - Updated user
+   */
+  static async toggleUserStatus(userid, enabled) {
+    try {
+      console.log(`${enabled ? '✅' : '❌'} ${enabled ? 'Enabling' : 'Disabling'} user: ${userid}`)
+      
+      if (enabled) {
+        await userService.enableUserByID(userid)
+      } else {
+        await userService.disableUserByID(userid)
+      }
+
+      console.log(`✅ User ${enabled ? 'enabled' : 'disabled'}: ${userid}`)
+      return true
+      
+    } catch (error) {
+      console.error('❌ Error toggling user status:', error)
+      throw new Error(`Impossible to ${enabled ? 'enable' : 'disable'} the user: ${error.message}`)
+    }
+  }
+
+  /**
+   * Resets user password
+   * @param {string} userid - User ID
+   * @param {string} newPassword - New password
+   * @returns {Promise<boolean>} - Success of the operation
+   */
+  static async resetPassword(userid, newPassword) {
+    try {
+      console.log(`🔑 Resetting password for user: ${userid}`)
+      
+      // Validation of the password
+      if (!newPassword || newPassword.length < 6) {
+        throw new Error('The password must contain at least 6 characters')
+      }
+
+      await userService.resetPasswordByUserID(userid, newPassword)
+
+      console.log(`✅ Password reset for user: ${userid}`)
+      return true
+      
+    } catch (error) {
+      console.error('❌ Error resetting password:', error)
+      throw new Error(`Impossible to reset the password: ${error.message}`)
     }
   }
 }
