@@ -24,13 +24,11 @@ export async function apiPost(endpoint, body, useAuth = false) {
     if (sessionData) {
       const { token } = JSON.parse(sessionData)
       headers['Authorization'] = `Bearer ${token}`
-      console.log('🔐 Adding Authorization header for POST request')
     } else {
       console.warn('⚠️ useAuth=true but no session found')
     }
   }
 
-  console.log('📡 POST request headers:', headers)
   
   const res = await fetch(`${API_BASE}${endpoint}`, {
     method: 'POST',
@@ -87,7 +85,6 @@ export const userService = {
    */
   async getAllUsers() {
     try {
-      console.log('👥 Fetching all users')
       return await apiGet('/utils/users/getAll', true)
     } catch (error) {
       console.error('❌ Error getting all users:', error)
@@ -100,7 +97,6 @@ export const userService = {
    */
   async getUserByUserid(userid) {
     try {
-      console.log(`👤 Fetching user by ID: ${userid}`)
       return await apiGet(`/utils/users/getByUserID/${userid}`, true)
     } catch (error) {
       console.error(`❌ Error getting user by userid ${userid}:`, error)
@@ -113,7 +109,6 @@ export const userService = {
    */
   async getUserByName(firstName, lastName) {
     try {
-      console.log(`👤 Fetching user by name: ${firstName} ${lastName}`)
       return await apiGet(`/utils/users/getByName/firstname/${firstName}/lastname/${lastName}`, true)
     } catch (error) {
       console.error(`❌ Error getting user by name ${firstName} ${lastName}:`, error)
@@ -126,7 +121,6 @@ export const userService = {
    */
   async createUser(userData) {
     try {
-      console.log('👥 Creating new user:', userData)
       return await apiPost('/utils/users/create', userData, true)
     } catch (error) {
       console.error('❌ Error creating user:', error)
@@ -139,7 +133,6 @@ export const userService = {
    */
   async deleteUserById(userId) {
     try {
-      console.log(`🗑️ Deleting user by ID: ${userId}`)
       return await apiDelete(`/utils/users/deleteByID/${userId}`, true)
     } catch (error) {
       console.error(`❌ Error deleting user ${userId}:`, error)
@@ -152,7 +145,6 @@ export const userService = {
    */
   async resetPasswordByUserID(userId, newPassword) {
     try {
-      console.log(`🔑 Resetting password for user: ${userId}`)
       return await apiPut(`/utils/users/resetPasswordByUserID/${userId}/passwd/${newPassword}`, null, true)
     } catch (error) {
       console.error(`❌ Error resetting password for user ${userId}:`, error)
@@ -165,7 +157,6 @@ export const userService = {
    */
   async enableUserByID(userId) {
     try {
-      console.log(`✅ Enabling user: ${userId}`)
       return await apiPut(`/utils/users/enableByUserID/${userId}`, null, true)
     } catch (error) {
       console.error(`❌ Error enabling user ${userId}:`, error)
@@ -178,7 +169,6 @@ export const userService = {
    */
   async disableUserByID(userId) {
     try {
-      console.log(`❌ Disabling user: ${userId}`)
       return await apiPut(`/utils/users/disableByUserID/${userId}`, null, true)
     } catch (error) {
       console.error(`❌ Error disabling user ${userId}:`, error)
@@ -191,7 +181,6 @@ export const userService = {
    */
   async activateUserByID(userId) {
     try {
-      console.log(`🟢 Activating user: ${userId}`)
       return await apiPut(`/utils/users/activateByUserID/${userId}`, null, true)
     } catch (error) {
       console.error(`❌ Error activating user ${userId}:`, error)
@@ -204,7 +193,6 @@ export const userService = {
    */
   async deactivateUserByID(userId) {
     try {
-      console.log(`🔴 Deactivating user: ${userId}`)
       return await apiPut(`/utils/users/deactivateByUserID/${userId}`, null, true)
     } catch (error) {
       console.error(`❌ Error deactivating user ${userId}:`, error)
@@ -220,7 +208,6 @@ export const roleService = {
    */
   async getAllRoles() {
     try {
-      console.log('🎭 Fetching all roles')
       return await apiGet('/utils/roles/getAll', true)
     } catch (error) {
       console.error('❌ Error getting all roles:', error)
@@ -233,7 +220,6 @@ export const roleService = {
    */
   async createRole(roleData) {
     try {
-      console.log('🎭 Creating new role:', roleData)
       return await apiPost('/utils/roles/create', roleData, true)
     } catch (error) {
       console.error('❌ Error creating role:', error)
@@ -249,7 +235,6 @@ export const userRoleService = {
    */
   async getAllUserRoles() {
     try {
-      console.log('🔗 Fetching all user-role relationships')
       return await apiGet('/rel/users/roles/getAll', true)
     } catch (error) {
       console.error('❌ Error getting all user-role relationships:', error)
@@ -262,7 +247,6 @@ export const userRoleService = {
    */
   async getRolesForUserID(userId) {
     try {
-      console.log(`🔗 Fetching roles for user: ${userId}`)
       return await apiGet(`/rel/users/roles/getRolesForUserID/${userId}`, true)
     } catch (error) {
       console.error(`❌ Error getting roles for user ${userId}:`, error)
@@ -275,7 +259,6 @@ export const userRoleService = {
    */
   async getAllByUserID(userId) {
     try {
-      console.log(`🔗 Fetching all relationships for user: ${userId}`)
       return await apiGet(`/rel/users/roles/getAllByUserID/${userId}`, true)
     } catch (error) {
       console.error(`❌ Error getting relationships for user ${userId}:`, error)
@@ -288,7 +271,6 @@ export const userRoleService = {
    */
   async getAllByRoleID(roleId) {
     try {
-      console.log(`🔗 Fetching all relationships for role: ${roleId}`)
       return await apiGet(`/rel/users/roles/getAllByRoleID/${roleId}`, true)
     } catch (error) {
       console.error(`❌ Error getting relationships for role ${roleId}:`, error)
@@ -301,7 +283,6 @@ export const userRoleService = {
    */
   async createUserRoleRelation(userId, roleId) {
     try {
-      console.log(`🔗 Creating user-role relationship: ${userId} -> ${roleId}`)
       return await apiPost(`/rel/users/roles/createByUserIDAndRoleID/user_id/${userId}/role_id/${roleId}`, null, true)
     } catch (error) {
       console.error(`❌ Error creating user-role relationship ${userId} -> ${roleId}:`, error)
@@ -314,7 +295,6 @@ export const userRoleService = {
    */
   async deleteUserRoleRelation(relationId) {
     try {
-      console.log(`🗑️ Deleting user-role relationship: ${relationId}`)
       return await apiDelete(`/rel/users/roles/deleteByID/${relationId}`, true)
     } catch (error) {
       console.error(`❌ Error deleting user-role relationship ${relationId}:`, error)
