@@ -14,6 +14,17 @@
           Add a User
         </button>
         <button 
+          v-if="selectedUsers.length > 0"
+          class="btn btn-error gap-2"
+          @click="showBulkDeleteModal = true"
+          :disabled="isLoading || isProcessing"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          Delete Selected ({{ selectedUsers.length }})
+        </button>
+        <button 
           class="btn btn-primary gap-2"
           @click="refreshUsers"
           :disabled="isRefreshing || isLoading"
@@ -60,19 +71,29 @@
           <table class="table w-full">
             <thead>
               <tr>
+                <th>
+                  <label>
+                    <input 
+                      type="checkbox" 
+                      class="checkbox" 
+                      @change="toggleSelectAll"
+                      :checked="selectedUsers.length === appStore.users.length && appStore.users.length > 0"
+                    />
+                  </label>
+                </th>
                 <th>User name</th>
                 <th>Full name</th>
                 <th>Email</th>
                 <th>Phone</th>
                 <th>Status</th>
                 <th>Enabled</th>
-                <th>Admin</th>
+                <th>Role</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="appStore.users.length === 0 && !isLoading">
-                <td colspan="8" class="text-center py-8">
+                <td colspan="9" class="text-center py-8">
                   <div class="flex flex-col items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
@@ -83,7 +104,23 @@
               </tr>
               <tr v-for="user in appStore.users" :key="user.id" class="hover">
                 <td>
-                  <div class="font-medium">{{ user.userid || '-' }}</div>
+                  <label>
+                    <input 
+                      type="checkbox" 
+                      class="checkbox" 
+                      :value="user.id"
+                      v-model="selectedUsers"
+                      :disabled="isCurrentUser(user) || user.isAdmin"
+                      :title="isCurrentUser(user) ? 'Cannot select your own account' : user.isAdmin ? 'Cannot select administrator account' : ''"
+                    />
+                  </label>
+                </td>
+                <td>
+                  <div class="font-medium flex items-center gap-2">
+                    {{ user.userid || '-' }}
+                    <span v-if="isCurrentUser(user)" class="badge badge-info badge-xs">You</span>
+                    <span v-if="user.isAdmin" class="badge badge-warning badge-xs">Admin</span>
+                  </div>
                 </td>
                 <td>
                   <div class="flex items-center gap-3">
@@ -119,9 +156,9 @@
                 <td>
                   <span 
                     class="badge badge-sm" 
-                    :class="user.admin ? 'badge-primary' : 'badge-ghost'"
+                    :class="getRoleBadgeClass(user.primaryRole)"
                   >
-                    {{ user.admin ? 'Admin' : 'User' }}
+                    {{ user.primaryRole || 'guest' }}
                   </span>
                 </td>
                 <td>
@@ -158,7 +195,13 @@
                         </button>
                       </li>
                       <li>
-                        <button @click="deleteUser(user)" :disabled="isProcessing" class="text-error">
+                        <button 
+                          @click="deleteUser(user)" 
+                          :disabled="isProcessing || isCurrentUser(user) || user.isAdmin" 
+                          class="text-error"
+                          :class="{ 'opacity-50 cursor-not-allowed': isCurrentUser(user) || user.isAdmin }"
+                          :title="isCurrentUser(user) ? 'Cannot delete your own account' : user.isAdmin ? 'Cannot delete administrator account' : 'Delete user'"
+                        >
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
@@ -177,128 +220,154 @@
 
     <!-- User Create Modal -->
     <div v-if="appStore.showUserCreateModal" class="modal modal-open">
-      <div class="modal-box max-w-2xl">
+      <div class="modal-box max-w-4xl">
         <h3 class="font-bold text-lg mb-4">Create a new user</h3>
         
-        <form @submit.prevent="handleCreateUser" class="space-y-4">
-          <!-- User ID -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">User ID *</span>
-            </label>
-            <input 
-              type="text" 
-              v-model="newUser.userid" 
-              class="input input-bordered" 
-              placeholder="Ex: sylvain"
-              required 
-            />
-          </div>
-
-          <!-- Password -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Password *</span>
-            </label>
-            <input 
-              type="password" 
-              v-model="newUser.password" 
-              class="input input-bordered" 
-              placeholder="Password"
-              required 
-            />
-          </div>
-
-          <!-- First Name -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">First Name *</span>
-            </label>
-            <input 
-              type="text" 
-              v-model="newUser.firstName" 
-              class="input input-bordered" 
-              placeholder="Ex: John"
-              required 
-            />
-          </div>
-
-          <!-- Last Name -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Last Name *</span>
-            </label>
-            <input 
-              type="text" 
-              v-model="newUser.lastName" 
-              class="input input-bordered" 
-              placeholder="Ex: Doe"
-              required 
-            />
-          </div>
-
-          <!-- Email -->
-          <div class="form-control">
-            <label class="label">
-            <span class="label-text">Email *</span>
-            </label>
-            <input 
-              type="email" 
-              v-model="newUser.email" 
-              class="input input-bordered" 
-              placeholder="Ex: john.doe@gmail.com"
-              required 
-            />
-          </div>
-
-          <!-- Phone -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">Phone</span>
-            </label>
-            <input 
-              type="tel" 
-              v-model="newUser.phone" 
-              class="input input-bordered" 
-              placeholder="Ex: +336 12 78 94 36"
-            />
-          </div>
-
-          <!-- Checkboxes for boolean fields -->
-          <div class="grid grid-cols-2 gap-4">
-            <div class="form-control">
-              <label class="label cursor-pointer">
-                <span class="label-text">User enabled</span>
+        <form @submit.prevent="handleCreateUser" class="space-y-6">
+          <!-- Two Column Layout -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Left Column -->
+            <div class="space-y-4">
+              <!-- User ID -->
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text">User ID *</span>
+                </label>
                 <input 
-                  type="checkbox" 
-                  v-model="newUser.enabled" 
-                  class="checkbox checkbox-primary" 
+                  type="text" 
+                  v-model="newUser.userid" 
+                  class="input input-bordered" 
+                  placeholder="Ex: sylvain"
+                  required 
                 />
-              </label>
+              </div>
+
+              <!-- Password -->
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text">Password *</span>
+                </label>
+                <input 
+                  type="password" 
+                  v-model="newUser.password" 
+                  class="input input-bordered" 
+                  placeholder="Password"
+                  required 
+                />
+              </div>
+
+              <!-- First Name -->
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text">First Name *</span>
+                </label>
+                <input 
+                  type="text" 
+                  v-model="newUser.firstName" 
+                  class="input input-bordered" 
+                  placeholder="Ex: John"
+                  required 
+                />
+              </div>
+
+              <!-- User enabled -->
+              <div class="form-control">
+                <label class="label cursor-pointer">
+                  <span class="label-text">User enabled</span>
+                  <input 
+                    type="checkbox" 
+                    v-model="newUser.enabled" 
+                    class="checkbox checkbox-primary" 
+                  />
+                </label>
+              </div>
             </div>
 
-            <div class="form-control">
-              <label class="label cursor-pointer">
-                <span class="label-text">Account active</span>
+            <!-- Right Column -->
+            <div class="space-y-4">
+              <!-- Last Name -->
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text">Last Name *</span>
+                </label>
                 <input 
-                  type="checkbox" 
-                  v-model="newUser.active" 
-                  class="checkbox checkbox-primary" 
+                  type="text" 
+                  v-model="newUser.lastName" 
+                  class="input input-bordered" 
+                  placeholder="Ex: Doe"
+                  required 
                 />
+              </div>
+
+              <!-- Email -->
+              <div class="form-control">
+                <label class="label">
+                 <span class="label-text">Email *</span>
+                </label>
+                <input 
+                  type="email" 
+                  v-model="newUser.email" 
+                  class="input input-bordered" 
+                  placeholder="Ex: john.doe@gmail.com"
+                  required 
+                />
+              </div>
+
+              <!-- Phone -->
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text">Phone</span>
+                </label>
+                <input 
+                  type="tel" 
+                  v-model="newUser.phone" 
+                  class="input input-bordered" 
+                  placeholder="Ex: +336 12 78 94 36"
+                />
+              </div>
+
+              <!-- Account active -->
+              <div class="form-control">
+                <label class="label cursor-pointer">
+                  <span class="label-text">Account active</span>
+                  <input 
+                    type="checkbox" 
+                    v-model="newUser.active" 
+                    class="checkbox checkbox-primary" 
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Full Width Fields -->
+          <div class="space-y-4">
+            <!-- Role Selection -->
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Role *</span>
               </label>
+              <select 
+                v-model="newUser.selectedRole" 
+                class="select select-bordered"
+                required
+              >
+                <option value="">Select a role</option>
+                <option 
+                  v-for="role in availableRoles" 
+                  :key="role.id || role.name" 
+                  :value="role.id || role.name"
+                >
+                  {{ role.name || role }}
+                </option>
+              </select>
+              <div v-if="isLoadingRoles" class="label">
+                <span class="label-text-alt">Loading roles...</span>
+              </div>
             </div>
 
-            <div class="form-control">
-              <label class="label cursor-pointer">
-                <span class="label-text">Administrator</span>
-                <input 
-                  type="checkbox" 
-                  v-model="newUser.admin" 
-                  class="checkbox checkbox-primary" 
-                />
-              </label>
-            </div>
-
+            <!-- Must change password -->
             <div class="form-control">
               <label class="label cursor-pointer">
                 <span class="label-text">Must change password</span>
@@ -341,10 +410,109 @@
           <p><strong>Username:</strong> {{ appStore.currentUserProfile.userid }}</p>
           <p><strong>Name:</strong> {{ `${appStore.currentUserProfile.firstName || ''} ${appStore.currentUserProfile.lastName || ''}`.trim() }}</p>
           <p><strong>Email:</strong> {{ appStore.currentUserProfile.email }}</p>
-          <p><strong>Admin:</strong> {{ appStore.currentUserProfile.admin ? 'Yes' : 'No' }}</p>
+          <p><strong>Role:</strong> {{ appStore.currentUserProfile.primaryRole || 'guest' }}</p>
+          <p><strong>All Roles:</strong> {{ appStore.currentUserProfile.roleNames || 'None' }}</p>
         </div>
         <div class="modal-action">
           <button class="btn" @click="appStore.showUserProfileModal = false">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal" class="modal modal-open">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg text-error">⚠️ Confirm Deletion</h3>
+        <div class="py-4">
+          <p class="mb-4">Are you sure you want to delete the user <strong>"{{ userToDelete?.userid }}"</strong>?</p>
+          <div class="bg-warning/10 border border-warning rounded-lg p-3 mb-4">
+            <div class="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <span class="text-sm font-medium">This action cannot be undone!</span>
+            </div>
+          </div>
+          <div class="text-sm text-gray-600">
+            <p><strong>User:</strong> {{ userToDelete?.userid }}</p>
+            <p><strong>Name:</strong> {{ getFullName(userToDelete) }}</p>
+            <p><strong>Email:</strong> {{ userToDelete?.email || 'N/A' }}</p>
+            <p><strong>Role:</strong> {{ userToDelete?.primaryRole || 'guest' }}</p>
+          </div>
+        </div>
+        <div class="modal-action">
+          <button 
+            class="btn btn-error" 
+            @click="confirmDeleteUser"
+            :disabled="isProcessing"
+          >
+            <svg v-if="isProcessing" class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            {{ isProcessing ? 'Deleting...' : 'Delete User' }}
+          </button>
+          <button 
+            class="btn btn-ghost" 
+            @click="cancelDeleteUser"
+            :disabled="isProcessing"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk Delete Confirmation Modal -->
+    <div v-if="showBulkDeleteModal" class="modal modal-open">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg text-error">⚠️ Confirm Bulk Deletion</h3>
+        <div class="py-4">
+          <p class="mb-4">Are you sure you want to delete <strong>{{ selectedUsers.length }}</strong> selected user(s)?</p>
+          <div class="bg-error/10 border border-error rounded-lg p-3 mb-4">
+            <div class="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <span class="text-sm font-medium">This action cannot be undone!</span>
+            </div>
+          </div>
+          <div class="text-sm text-gray-600 max-h-32 overflow-y-auto">
+            <p class="font-medium mb-2">Users to be deleted:</p>
+            <ul class="space-y-1">
+              <li v-for="userId in selectedUsers" :key="userId" class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-error rounded-full"></span>
+                {{ appStore.users.find(u => u.id === userId)?.userid || 'Unknown' }}
+                ({{ appStore.users.find(u => u.id === userId)?.primaryRole || 'guest' }})
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-action">
+          <button 
+            class="btn btn-error" 
+            @click="confirmBulkDelete"
+            :disabled="isProcessing"
+          >
+            <svg v-if="isProcessing" class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            {{ isProcessing ? 'Deleting...' : `Delete ${selectedUsers.length} User(s)` }}
+          </button>
+          <button 
+            class="btn btn-ghost" 
+            @click="cancelBulkDelete"
+            :disabled="isProcessing"
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>
@@ -355,10 +523,15 @@
 import { ref, onMounted } from 'vue'
 import { useAppStore } from '../stores/app.js'
 import { UserController } from '../controllers/UserController.js'
+import { roleService, userRoleService } from '../services/api.js'
 
 const appStore = useAppStore()
 const isRefreshing = ref(false)
 const isCreatingUser = ref(false)
+
+// Available roles for dropdown
+const availableRoles = ref([])
+const isLoadingRoles = ref(false)
 
 // Data for the new user
 const newUser = ref({
@@ -370,16 +543,25 @@ const newUser = ref({
   phone: '',
   enabled: true,
   active: true,
-  admin: false,
-  mustChangePassword: false
+  mustChangePassword: false,
+  selectedRole: '' // Role selected from dropdown
 })
 const isLoading = ref(false)
 const isProcessing = ref(false)
 const error = ref(null)
 const successMessage = ref(null)
 
+// Delete confirmation modal
+const showDeleteModal = ref(false)
+const userToDelete = ref(null)
+
+// Multiple selection for bulk operations
+const selectedUsers = ref([])
+const showBulkDeleteModal = ref(false)
+
 onMounted(() => {
   loadUsers()
+  loadAvailableRoles()
 })
 
 // Utility functions
@@ -399,6 +581,73 @@ function getInitials(user) {
     return user.userid.substring(0, 2).toUpperCase()
   }
   return 'U'
+}
+
+function isCurrentUser(user) {
+  const currentSession = localStorage.getItem('session')
+  if (!currentSession) return false
+  
+  try {
+    const sessionData = JSON.parse(currentSession)
+    return user.userid === sessionData.username
+  } catch {
+    return false
+  }
+}
+
+// Get badge class based on role
+function getRoleBadgeClass(role) {
+  switch (role?.toLowerCase()) {
+    case 'admin':
+      return 'badge-error'
+    case 'user':
+      return 'badge-primary'
+    case 'guest':
+      return 'badge-ghost'
+    default:
+      return 'badge-neutral'
+  }
+}
+
+// Load available roles for dropdown
+async function loadAvailableRoles() {
+  isLoadingRoles.value = true
+  try {
+    console.log('🎭 Loading available roles...')
+    const roles = await roleService.getAllRoles()
+    
+    // Handle different response formats
+    if (Array.isArray(roles)) {
+      availableRoles.value = roles
+    } else if (roles && typeof roles === 'object') {
+      // If it's an object, try to extract the array
+      availableRoles.value = Object.values(roles)
+    } else {
+      availableRoles.value = []
+    }
+    
+    console.log(`✅ Loaded ${availableRoles.value.length} roles:`, availableRoles.value)
+    
+    // Debug: Show role structure
+    availableRoles.value.forEach((role, index) => {
+      console.log(`🎭 Role ${index + 1}:`, {
+        id: role.id,
+        name: role.name,
+        roletype: role.roletype
+      })
+    })
+  } catch (err) {
+    console.error('❌ Error loading roles:', err)
+    // Set default roles if API fails - use known ADMIN role ID from your example
+    availableRoles.value = [
+      { id: '75666666-646e-6047-3146-6f7566666664', name: 'ADMIN' },
+      { id: 'user-role-id', name: 'USER' },
+      { id: 'guest-role-id', name: 'GUEST' }
+    ]
+    console.log('🔄 Using fallback roles:', availableRoles.value)
+  } finally {
+    isLoadingRoles.value = false
+  }
 }
 
 // Data loading methods
@@ -445,8 +694,8 @@ async function refreshUsers() {
 async function handleCreateUser() {
   // Validation basique
   if (!newUser.value.userid || !newUser.value.password || !newUser.value.firstName || 
-      !newUser.value.lastName || !newUser.value.email) {
-    error.value = 'Please fill in all required fields'
+      !newUser.value.lastName || !newUser.value.email || !newUser.value.selectedRole) {
+    error.value = 'Please fill in all required fields including role'
     return
   }
 
@@ -460,6 +709,8 @@ async function handleCreateUser() {
 
   try {
     console.log('👥 Creating new user with data:', newUser.value)
+    console.log('🎭 Selected role ID:', newUser.value.selectedRole)
+    console.log('🎭 Available roles for reference:', availableRoles.value)
     
     // Create the user with the exact structure required by the API
     const userData = {
@@ -471,15 +722,26 @@ async function handleCreateUser() {
       phone: newUser.value.phone || '',
       enabled: newUser.value.enabled,
       active: newUser.value.active,
-      admin: newUser.value.admin,
       mustChangePassword: newUser.value.mustChangePassword
     }
 
     // ✅ MVC: Vue → Controller → Service
-    await UserController.createUser(userData)
+    const createdUser = await UserController.createUser(userData)
+    
+    // Assign the selected role to the user
+    try {
+      console.log(`🎭 Assigning role "${newUser.value.selectedRole}" to user "${createdUser.id}" (${createdUser.userid})`)
+      await userRoleService.createUserRoleRelation(createdUser.id, newUser.value.selectedRole)
+      console.log('✅ Role assigned successfully')
+    } catch (roleError) {
+      console.error('❌ User created but role assignment failed:', roleError)
+      // Don't fail the entire operation, but show error to user
+      error.value = `User created but role assignment failed: ${roleError.message}`
+    }
+    
     // Reload users list after creation
     await loadUsers()
-    successMessage.value = `User "${userData.userid}" created successfully`
+    successMessage.value = `User "${userData.userid}" created successfully with role "${newUser.value.selectedRole}"`
     console.log('✅ User created successfully')
     
     // Close the modal and reset the form
@@ -504,34 +766,157 @@ function closeCreateModal() {
     phone: '',
     enabled: true,
     active: true,
-    admin: false,
-    mustChangePassword: false
+    mustChangePassword: false,
+    selectedRole: ''
   }
   error.value = null
 }
 
-async function deleteUser(user) {
-  if (!confirm(`Are you sure you want to delete the user "${user.userid}" ?`)) {
+function deleteUser(user) {
+  // SECURITY: Prevent deletion of current user
+  const currentSession = localStorage.getItem('session')
+  if (currentSession) {
+    const sessionData = JSON.parse(currentSession)
+    if (user.userid === sessionData.username) {
+      error.value = `Cannot delete your own account "${user.userid}". You are currently logged in with this account.`
+      return
+    }
+  }
+  
+  // SECURITY: Prevent deletion of administrators
+  if (user.isAdmin) {
+    error.value = `Cannot delete administrator "${user.userid}". Administrator accounts are protected.`
     return
   }
+  
+  console.log(`🗑️ Preparing to delete user: "${user.userid}" (ID: ${user.id})`)
+  userToDelete.value = user
+  showDeleteModal.value = true
+}
+
+async function confirmDeleteUser() {
+  if (!userToDelete.value) return
   
   isProcessing.value = true
   error.value = null
   
   try {
-    console.log(`🗑️ Deleting user: ${user.userid}`)
+    console.log(`🗑️ Deleting user: ${userToDelete.value.userid}`)
     // ✅ MVC: Vue → Controller → Service
-    await UserController.deleteUser(user.userid)
+    await UserController.deleteUser(userToDelete.value.userid)
     // Reload users list after deletion
     await loadUsers()
-    successMessage.value = `User "${user.userid}" deleted successfully`
+    successMessage.value = `User "${userToDelete.value.userid}" deleted successfully`
     console.log('✅ User deleted successfully')
+    
+    // Close modal
+    showDeleteModal.value = false
+    userToDelete.value = null
   } catch (err) {
     console.error('❌ Error deleting user:', err)
     error.value = `Error deleting user: ${err.message}`
   } finally {
     isProcessing.value = false
   }
+}
+
+function cancelDeleteUser() {
+  showDeleteModal.value = false
+  userToDelete.value = null
+}
+
+// Multiple selection functions
+function toggleSelectAll() {
+  if (selectedUsers.value.length === appStore.users.length) {
+    selectedUsers.value = []
+  } else {
+    selectedUsers.value = appStore.users.map(user => user.id)
+  }
+}
+
+async function confirmBulkDelete() {
+  if (selectedUsers.value.length === 0) return
+  
+  isProcessing.value = true
+  error.value = null
+  
+  try {
+    console.log(`🗑️ Bulk deleting ${selectedUsers.value.length} users`)
+    
+    // SECURITY: Check for current user and administrators in selection
+    const currentSession = localStorage.getItem('session')
+    const currentUsername = currentSession ? JSON.parse(currentSession).username : null
+    
+    let successCount = 0
+    let errorCount = 0
+    let skippedCount = 0
+    const errors = []
+    
+    // Delete users one by one
+    for (const userId of selectedUsers.value) {
+      try {
+        const user = appStore.users.find(u => u.id === userId)
+        if (user) {
+          // SECURITY: Skip current user
+          if (user.userid === currentUsername) {
+            console.warn(`⚠️ Skipping deletion of current user: ${user.userid}`)
+            errors.push(`Skipped: Cannot delete your own account "${user.userid}"`)
+            skippedCount++
+            continue
+          }
+          
+          // SECURITY: Skip administrators
+          if (user.isAdmin) {
+            console.warn(`⚠️ Skipping deletion of administrator: ${user.userid}`)
+            errors.push(`Skipped: Cannot delete administrator "${user.userid}"`)
+            skippedCount++
+            continue
+          }
+          
+          console.log(`🗑️ Deleting user: "${user.userid}" (ID: ${user.id})`)
+          await UserController.deleteUser(user.userid)
+          successCount++
+        }
+      } catch (err) {
+        errorCount++
+        errors.push(`Error deleting ${appStore.users.find(u => u.id === userId)?.userid || userId}: ${err.message}`)
+        console.error(`❌ Error deleting user ${userId}:`, err)
+      }
+    }
+    
+    // Show results
+    let resultMessage = ''
+    if (successCount > 0) {
+      resultMessage += `${successCount} user(s) deleted successfully`
+    }
+    if (skippedCount > 0) {
+      if (resultMessage) resultMessage += '. '
+      resultMessage += `${skippedCount} user(s) skipped for security reasons`
+    }
+    if (resultMessage) {
+      successMessage.value = resultMessage
+    }
+    
+    if (errorCount > 0) {
+      error.value = `${errorCount} user(s) could not be deleted: ${errors.join(', ')}`
+    }
+    
+    // Reload users list and clear selection
+    await loadUsers()
+    selectedUsers.value = []
+    showBulkDeleteModal.value = false
+    
+    console.log(`✅ Bulk delete completed: ${successCount} success, ${errorCount} errors, ${skippedCount} skipped`)
+  } catch (err) {
+    console.error('❌ Error during bulk delete:', err)
+    error.value = `Error during bulk delete: ${err.message}`
+  } finally {
+    isProcessing.value = false
+  }
+}
+
+function cancelBulkDelete() {
+  showBulkDeleteModal.value = false
 }
 
 async function toggleUserStatus(user) {

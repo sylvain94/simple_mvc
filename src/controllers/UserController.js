@@ -10,7 +10,7 @@
  */
 
 import { User } from '../models/User.js'
-import { userService } from '../services/api.js'
+import { userService, userRoleService } from '../services/api.js'
 
 export class UserController {
   
@@ -25,8 +25,6 @@ export class UserController {
         throw new Error('User ID is required')
       }
 
-      console.log(`🔍 Getting user by User ID: ${userid}`)
-      
       // API service call
       const apiResponse = await userService.getUserByUserid(userid)
       
@@ -39,7 +37,6 @@ export class UserController {
         console.warn('⚠️ User data is invalid:', validation.errors)
       }
 
-      console.log(`✅ User retrieved: ${user.displayName}`)
       return user
       
     } catch (error) {
@@ -49,20 +46,36 @@ export class UserController {
   }
 
   /**
-   * Retrieves all users
-   * @returns {Promise<User[]>} - List of users
+   * Retrieves all users with their roles
+   * @returns {Promise<User[]>} - List of users with roles
    */
   static async getAllUsers() {
     try {
-      console.log('📋 Getting all users')
       
       const apiResponse = await userService.getAllUsers()
       
       // Transformation into User models
       const users = apiResponse.map(userData => User.fromApiResponse(userData))
       
+      // Enrich users with their roles
+      const usersWithRoles = await Promise.all(
+        users.map(async (user) => {
+          try {
+            console.log(`🎭 Fetching roles for user: "${user.userid}" (ID: ${user.id})`)
+            const userRoles = await userRoleService.getRolesForUserID(user.id) // Use UUID instead of userid
+            console.log(`✅ Retrieved ${Array.isArray(userRoles) ? userRoles.length : 0} roles for user "${user.userid}":`, userRoles)
+            user.roles = Array.isArray(userRoles) ? userRoles : []
+            return user
+          } catch (error) {
+            console.warn(`⚠️ Could not fetch roles for user ${user.userid} (ID: ${user.id}):`, error)
+            user.roles = []
+            return user
+          }
+        })
+      )
+      
       // Filtering and sorting
-      const validUsers = users.filter(user => {
+      const validUsers = usersWithRoles.filter(user => {
         const validation = user.validate()
         if (!validation.isValid) {
           console.warn(`⚠️ Invalid user ignored: ${user.displayName}`, validation.errors)
@@ -78,7 +91,6 @@ export class UserController {
         return nameA.localeCompare(nameB)
       })
 
-      console.log(`✅ ${validUsers.length} users retrieved`)
       return validUsers
       
     } catch (error) {
@@ -94,8 +106,6 @@ export class UserController {
    */
   static async createUser(userData) {
     try {
-      console.log('➕ Creation of a new user')
-      
       // Creation of the User model for validation
       const user = new User(userData)
       
@@ -114,7 +124,6 @@ export class UserController {
       const apiResponse = await userService.createUser(user.toJSON())
       const createdUser = User.fromApiResponse(apiResponse)
 
-      console.log(`✅ User created: ${createdUser.displayName}`)
       return createdUser
       
     } catch (error) {
@@ -131,8 +140,6 @@ export class UserController {
    */
   static async updateUser(userid, updateData) {
     try {
-      console.log(`📝 Update of the user: ${userid}`)
-      
       // Retrieving the existing user
       const existingUser = await this.getUserByUserid(userid)
       
@@ -149,7 +156,6 @@ export class UserController {
       // const apiResponse = await userService.updateUser(userid, updatedUser.toJSON())
       // const finalUser = User.fromApiResponse(apiResponse)
 
-      console.log(`✅ User updated: ${updatedUser.displayName}`)
       return updatedUser
       
     } catch (error) {
@@ -165,19 +171,18 @@ export class UserController {
    */
   static async deleteUser(userid) {
     try {
-      console.log(`🗑️ Deletion of the user: ${userid}`)
-      
-      // Business logic checks
+      // Business logic checks - get user details first
       const user = await this.getUserByUserid(userid)
       
-      if (user.admin) {
+      // Check if user has admin role (prevent deletion of administrators)
+      if (user.isAdmin) {
+        console.warn(`🛡️ Attempted to delete administrator: ${user.userid}`)
         throw new Error('Impossible to delete an administrator')
       }
+      
+      // API service call - use user.id (UUID) instead of userid (username)
+      await userService.deleteUserById(user.id)
 
-      // API service call
-      await userService.deleteUserById(userid)
-
-      console.log(`✅ User deleted: ${userid}`)
       return true
       
     } catch (error) {
@@ -192,8 +197,6 @@ export class UserController {
    */
   static async getUserStats() {
     try {
-      console.log('📊 Generation of user statistics')
-      
       const users = await this.getAllUsers()
       
       const stats = {
@@ -206,7 +209,6 @@ export class UserController {
         mustChangePassword: users.filter(u => u.mustChangePassword).length
       }
 
-      console.log('✅ User statistics generated:', stats)
       return stats
       
     } catch (error) {
@@ -236,8 +238,6 @@ export class UserController {
    */
   static async searchUsers(criteria) {
     try {
-      console.log('🔍 Search for users with criteria:', criteria)
-      
       const allUsers = await this.getAllUsers()
       
       let filteredUsers = allUsers
@@ -267,7 +267,6 @@ export class UserController {
         }
       }
 
-      console.log(`✅ ${filteredUsers.length} users found`)
       return filteredUsers
       
     } catch (error) {
@@ -284,15 +283,12 @@ export class UserController {
    */
   static async toggleUserStatus(userid, enabled) {
     try {
-      console.log(`${enabled ? '✅' : '❌'} ${enabled ? 'Enabling' : 'Disabling'} user: ${userid}`)
-      
       if (enabled) {
         await userService.enableUserByID(userid)
       } else {
         await userService.disableUserByID(userid)
       }
 
-      console.log(`✅ User ${enabled ? 'enabled' : 'disabled'}: ${userid}`)
       return true
       
     } catch (error) {
@@ -309,8 +305,6 @@ export class UserController {
    */
   static async resetPassword(userid, newPassword) {
     try {
-      console.log(`🔑 Resetting password for user: ${userid}`)
-      
       // Validation of the password
       if (!newPassword || newPassword.length < 6) {
         throw new Error('The password must contain at least 6 characters')
@@ -318,7 +312,6 @@ export class UserController {
 
       await userService.resetPasswordByUserID(userid, newPassword)
 
-      console.log(`✅ Password reset for user: ${userid}`)
       return true
       
     } catch (error) {

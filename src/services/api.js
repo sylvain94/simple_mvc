@@ -24,18 +24,36 @@ export async function apiPost(endpoint, body, useAuth = false) {
     if (sessionData) {
       const { token } = JSON.parse(sessionData)
       headers['Authorization'] = `Bearer ${token}`
+      console.log('🔐 Using auth token for POST request')
     } else {
       console.warn('⚠️ useAuth=true but no session found')
     }
   }
 
+  const url = `${API_BASE}${endpoint}`
+  console.log('📤 POST Request:', {
+    url,
+    headers,
+    body: JSON.stringify(body, null, 2)
+  })
   
-  const res = await fetch(`${API_BASE}${endpoint}`, {
+  const res = await fetch(url, {
     method: 'POST',
     headers,
     body: JSON.stringify(body),
   })
-  if (!res.ok) throw new Error(`POST ${endpoint} failed: ${res.status}`)
+  
+  console.log('📥 POST Response:', {
+    status: res.status,
+    statusText: res.statusText,
+    url: res.url
+  })
+  
+  if (!res.ok) {
+    const errorText = await res.text()
+    console.error('❌ POST Error details:', errorText)
+    throw new Error(`POST ${endpoint} failed: ${res.status} - ${errorText}`)
+  }
   return res.json()
 }
 
@@ -97,7 +115,16 @@ export const userService = {
    */
   async getUserByUserid(userid) {
     try {
-      return await apiGet(`/utils/users/getByUserID/${userid}`, true)
+      console.log(`🔍 API: Getting user by userid: "${userid}"`)
+      const result = await apiGet(`/utils/users/getByUserID/${userid}`, true)
+      console.log(`✅ API: Retrieved user:`, {
+        id: result.id,
+        userid: result.userid,
+        firstName: result.firstName,
+        lastName: result.lastName,
+        email: result.email
+      })
+      return result
     } catch (error) {
       console.error(`❌ Error getting user by userid ${userid}:`, error)
       throw error
@@ -121,7 +148,10 @@ export const userService = {
    */
   async createUser(userData) {
     try {
-      return await apiPost('/utils/users/create', userData, true)
+      console.log('📤 Sending user creation request with data:', JSON.stringify(userData, null, 2))
+      const result = await apiPost('/utils/users/create', userData, true)
+      console.log('✅ User creation API response:', result)
+      return result
     } catch (error) {
       console.error('❌ Error creating user:', error)
       throw error
@@ -133,7 +163,10 @@ export const userService = {
    */
   async deleteUserById(userId) {
     try {
-      return await apiDelete(`/utils/users/deleteByID/${userId}`, true)
+      console.log(`🗑️ API: Deleting user by ID: "${userId}"`)
+      const result = await apiDelete(`/utils/users/deleteByID/${userId}`, true)
+      console.log(`✅ API: User deleted successfully: ${userId}`)
+      return result
     } catch (error) {
       console.error(`❌ Error deleting user ${userId}:`, error)
       throw error
@@ -247,7 +280,10 @@ export const userRoleService = {
    */
   async getRolesForUserID(userId) {
     try {
-      return await apiGet(`/rel/users/roles/getRolesForUserID/${userId}`, true)
+      console.log(`🎭 API: Getting roles for user ID: "${userId}"`)
+      const result = await apiGet(`/rel/users/roles/getRolesForUserID/${userId}`, true)
+      console.log(`✅ API: Retrieved roles for user ${userId}:`, result)
+      return result
     } catch (error) {
       console.error(`❌ Error getting roles for user ${userId}:`, error)
       throw error

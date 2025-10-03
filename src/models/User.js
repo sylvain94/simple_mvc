@@ -13,13 +13,14 @@ export class User {
     this.id = data.id || null
     this.usertype = data.usertype || 'UserEntity'
     this.userid = data.userid || ''
+    this.password = data.password || null // Password for creation only
     this.firstName = data.firstName || data.first_name || null
     this.lastName = data.lastName || data.last_name || null
     this.email = data.email || null
     this.phone = data.phone || null
     this.enabled = Boolean(data.enabled)
     this.active = Boolean(data.active)
-    this.admin = Boolean(data.admin)
+    this.roles = data.roles || [] // Array of role objects
     this.mustChangePassword = Boolean(data.mustChangePassword || data.must_change_password)
     this.createdAt = data.createdAt ? new Date(data.createdAt) : null
     this.updatedAt = data.updatedAt ? new Date(data.updatedAt) : null
@@ -46,6 +47,59 @@ export class User {
 
   get displayName() {
     return this.fullName !== this.userid ? this.fullName : this.userid
+  }
+
+  // Role management getters
+  get primaryRole() {
+    if (this.roles.length === 0) {
+      console.log(`🎭 User "${this.userid}" has no roles, returning 'guest'`)
+      return 'guest'
+    }
+    
+    console.log(`🎭 User "${this.userid}" roles:`, this.roles)
+    
+    // Priority order: admin > user > guest
+    if (this.hasRole('admin')) {
+      console.log(`🎭 User "${this.userid}" has admin role`)
+      return 'admin'
+    }
+    if (this.hasRole('user')) {
+      console.log(`🎭 User "${this.userid}" has user role`)
+      return 'user'
+    }
+    
+    const fallbackRole = this.roles[0]?.name || 'guest'
+    console.log(`🎭 User "${this.userid}" fallback to first role: "${fallbackRole}"`)
+    return fallbackRole
+  }
+
+  get roleNames() {
+    return this.roles.map(role => role.name || role).join(', ')
+  }
+
+  get isAdmin() {
+    return this.hasRole('admin')
+  }
+
+  // Role management methods
+  hasRole(roleName) {
+    return this.roles.some(role => {
+      const roleNameToCheck = typeof role === 'string' ? role : role.name
+      return roleNameToCheck?.toLowerCase() === roleName?.toLowerCase()
+    })
+  }
+
+  addRole(role) {
+    const roleName = typeof role === 'string' ? role : role.name
+    if (!this.hasRole(roleName)) {
+      this.roles.push(role)
+    }
+  }
+
+  removeRole(roleName) {
+    this.roles = this.roles.filter(role => 
+      (typeof role === 'string' ? role : role.name) !== roleName
+    )
   }
 
   // Validation methods
@@ -84,7 +138,7 @@ export class User {
 
   // Transformation methods
   toJSON() {
-    return {
+    const json = {
       id: this.id,
       usertype: this.usertype,
       userid: this.userid,
@@ -94,11 +148,18 @@ export class User {
       phone: this.phone,
       enabled: this.enabled,
       active: this.active,
-      admin: this.admin,
+      roles: this.roles,
       mustChangePassword: this.mustChangePassword,
       createdAt: this.createdAt?.toISOString(),
       updatedAt: this.updatedAt?.toISOString()
     }
+    
+    // Include password only if it exists (for creation)
+    if (this.password) {
+      json.password = this.password
+    }
+    
+    return json
   }
 
   // Method to create a user from API data
@@ -113,7 +174,7 @@ export class User {
       phone: apiData.phone,
       enabled: apiData.enabled,
       active: apiData.active,
-      admin: apiData.admin,
+      roles: apiData.roles || [],
       mustChangePassword: apiData.mustChangePassword
     })
   }
