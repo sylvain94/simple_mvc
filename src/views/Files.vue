@@ -369,12 +369,22 @@
         </form>
       </div>
     </div>
+
+    <!-- Analyze Modal -->
+    <AnalyzeModal
+      :is-visible="showAnalyzeModal"
+      :input-file="analyzingFile"
+      @close="closeAnalyzeModal"
+      @analysis-complete="onAnalysisComplete"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { InputFileController } from '../controllers/InputFileController.js'
+import { AnalyzeController } from '../controllers/AnalyzeController.js'
+import AnalyzeModal from '../components/AnalyzeModal.vue'
 
 // Reactive data
 const inputFiles = ref([])
@@ -389,6 +399,8 @@ const stats = ref(null)
 // Modal state
 const showEditModal = ref(false)
 const isCreatingFile = ref(false)
+const showAnalyzeModal = ref(false)
+const analyzingFile = ref(null)
 const editingFile = ref({
   id: null,
   name: '',
@@ -573,6 +585,30 @@ function closeEditModal() {
     enabled: true,
     persistent: true
   }
+}
+
+// Analysis methods
+function analyzeFile(file) {
+  console.log('🔍 Analyzing file:', file.name)
+  
+  if (!AnalyzeController.validateInputFileForAnalysis(file)) {
+    error.value = 'Ce fichier ne peut pas être analysé dans son état actuel'
+    return
+  }
+  
+  analyzingFile.value = file
+  showAnalyzeModal.value = true
+}
+
+function closeAnalyzeModal() {
+  showAnalyzeModal.value = false
+  analyzingFile.value = null
+}
+
+function onAnalysisComplete(result) {
+  console.log('✅ Analysis completed for file:', analyzingFile.value?.name, result)
+  // Optionally refresh files to update status
+  // refreshFiles()
 }
 
 async function saveFile() {

@@ -9,9 +9,11 @@ export { UserController } from './UserController.js'
 export { ProjectController } from './ProjectController.js'
 export { default as DashboardController } from './DashboardController.js'
 export { InputFileController } from './InputFileController.js'
+export { AnalyzeController } from './AnalyzeController.js'
 
 // Default reexport
-export { default as UserCtrl } from './UserController.js'
+export { default as UserCtrll } from './UserController.js'
 export { default as ProjectCtrl } from './ProjectController.js'
 export { default as DashboardCtrl } from './DashboardController.js'
 export { default as InputFileCtrl } from './InputFileController.js'
+export { default as AnalyzeCtrl } from './AnalyzeController.js'

@@ -338,3 +338,103 @@ export const userRoleService = {
     }
   }
 }
+
+/**
+ * Analyze Service
+ * Handles analysis-related API operations
+ */
+export const analyzeService = {
+  /**
+   * Start analysis for an input file
+   * @param {string} inputFileId - The ID of the input file to analyze
+   * @returns {Promise<Object>} Analysis result
+   */
+  async startAnalysis(inputFileId) {
+    try {
+      console.log(`🔍 Starting analysis for input file: ${inputFileId}`)
+      
+      const result = await apiPut(`/functions/input_files/analyzeByID/${inputFileId}`, null, true)
+      
+      console.log('✅ Analysis started successfully:', result)
+      return result
+    } catch (error) {
+      console.error(`❌ Error starting analysis for file ${inputFileId}:`, error)
+      throw error
+    }
+  },
+
+  /**
+   * Get analysis results for an input file
+   * @param {string} inputFileId - The ID of the input file
+   * @returns {Promise<Object>} Analysis results
+   */
+  async getAnalysisResults(inputFileId) {
+    try {
+      console.log(`📊 Getting analysis results for input file: ${inputFileId}`)
+      
+      const result = await apiGet(`/functions/input_files/analysis/${inputFileId}`, true)
+      
+      console.log('✅ Analysis results retrieved:', result)
+      return result
+    } catch (error) {
+      console.error(`❌ Error getting analysis results for file ${inputFileId}:`, error)
+      throw error
+    }
+  },
+
+  /**
+   * Get analysis status for an input file
+   * @param {string} inputFileId - The ID of the input file
+   * @returns {Promise<Object>} Analysis status
+   */
+  async getAnalysisStatus(inputFileId) {
+    try {
+      console.log(`⏳ Getting analysis status for input file: ${inputFileId}`)
+      
+      const result = await apiGet(`/functions/input_files/analysis/status/${inputFileId}`, true)
+      
+      console.log('✅ Analysis status retrieved:', result)
+      return result
+    } catch (error) {
+      console.error(`❌ Error getting analysis status for file ${inputFileId}:`, error)
+      throw error
+    }
+  },
+
+  /**
+   * Cancel analysis for an input file
+   * @param {string} inputFileId - The ID of the input file
+   * @returns {Promise<Object>} Cancellation result
+   */
+  async cancelAnalysis(inputFileId) {
+    try {
+      console.log(`🛑 Cancelling analysis for input file: ${inputFileId}`)
+      
+      const result = await apiDelete(`/functions/input_files/analysis/${inputFileId}`, true)
+      
+      console.log('✅ Analysis cancelled successfully:', result)
+      return result
+    } catch (error) {
+      console.error(`❌ Error cancelling analysis for file ${inputFileId}:`, error)
+      throw error
+    }
+  },
+
+  /**
+   * Get all analysis history
+   * @returns {Promise<Array>} List of analysis results
+   */
+  async getAllAnalysisHistory() {
+    try {
+      console.log('📋 Getting all analysis history')
+      
+      const result = await apiGet('/functions/input_files/analysis/history', true)
+      
+      console.log('✅ Analysis history retrieved:', result)
+      return result
+    } catch (error) {
+      console.error('❌ Error getting analysis history:', error)
+      throw error
+    }
+  }
+}
