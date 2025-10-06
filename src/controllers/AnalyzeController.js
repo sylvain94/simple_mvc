@@ -35,58 +35,7 @@ export class AnalyzeController {
     }
   }
 
-  /**
-   * Get analysis results for an input file
-   * @param {string} inputFileId - The ID of the input file
-   * @returns {Promise<AnalyzeResult>} Analysis results
-   */
-  static async getAnalysisResults(inputFileId) {
-    try {
-      console.log(`📊 AnalyzeController: Getting analysis results for file ${inputFileId}`)
-      
-      if (!inputFileId) {
-        throw new Error('Input file ID is required')
-      }
 
-      // Get analysis results via API
-      const apiResponse = await analyzeService.getAnalysisResults(inputFileId)
-      
-      // Convert API response to AnalyzeResult model
-      const analyzeResult = AnalyzeResult.fromApiResponse(apiResponse)
-      
-      console.log('✅ AnalyzeController: Analysis results retrieved:', analyzeResult)
-      return analyzeResult
-      
-    } catch (error) {
-      console.error(`❌ AnalyzeController: Error getting analysis results for file ${inputFileId}:`, error)
-      throw new Error(`Failed to get analysis results: ${error.message}`)
-    }
-  }
-
-  /**
-   * Get analysis status for an input file
-   * @param {string} inputFileId - The ID of the input file
-   * @returns {Promise<Object>} Analysis status
-   */
-  static async getAnalysisStatus(inputFileId) {
-    try {
-      console.log(`⏳ AnalyzeController: Getting analysis status for file ${inputFileId}`)
-      
-      if (!inputFileId) {
-        throw new Error('Input file ID is required')
-      }
-
-      // Get analysis status via API
-      const statusResponse = await analyzeService.getAnalysisStatus(inputFileId)
-      
-      console.log('✅ AnalyzeController: Analysis status retrieved:', statusResponse)
-      return statusResponse
-      
-    } catch (error) {
-      console.error(`❌ AnalyzeController: Error getting analysis status for file ${inputFileId}:`, error)
-      throw new Error(`Failed to get analysis status: ${error.message}`)
-    }
-  }
 
   /**
    * Cancel analysis for an input file
@@ -113,66 +62,6 @@ export class AnalyzeController {
     }
   }
 
-  /**
-   * Poll analysis status until completion or timeout
-   * @param {string} inputFileId - The ID of the input file
-   * @param {number} maxAttempts - Maximum polling attempts (default: 30)
-   * @param {number} intervalMs - Polling interval in milliseconds (default: 2000)
-   * @returns {Promise<AnalyzeResult>} Final analysis result
-   */
-  static async pollAnalysisUntilComplete(inputFileId, maxAttempts = 30, intervalMs = 2000) {
-    try {
-      console.log(`🔄 AnalyzeController: Polling analysis status for file ${inputFileId}`)
-      
-      let attempts = 0
-      
-      while (attempts < maxAttempts) {
-        attempts++
-        
-        try {
-          // Check status
-          const status = await this.getAnalysisStatus(inputFileId)
-          
-          console.log(`🔄 Polling attempt ${attempts}/${maxAttempts}, status:`, status.status)
-          
-          // If completed, get full results
-          if (status.status === 'completed') {
-            console.log('✅ Analysis completed, fetching results...')
-            return await this.getAnalysisResults(inputFileId)
-          }
-          
-          // If error, throw
-          if (status.status === 'error') {
-            throw new Error(`Analysis failed: ${status.error || 'Unknown error'}`)
-          }
-          
-          // If still running, wait and continue
-          if (status.status === 'running' || status.status === 'pending') {
-            await new Promise(resolve => setTimeout(resolve, intervalMs))
-            continue
-          }
-          
-        } catch (statusError) {
-          console.warn(`⚠️ Status check failed on attempt ${attempts}:`, statusError.message)
-          
-          // If we can't get status, wait and try again
-          if (attempts < maxAttempts) {
-            await new Promise(resolve => setTimeout(resolve, intervalMs))
-            continue
-          } else {
-            throw statusError
-          }
-        }
-      }
-      
-      // Timeout reached
-      throw new Error(`Analysis polling timeout after ${maxAttempts} attempts`)
-      
-    } catch (error) {
-      console.error(`❌ AnalyzeController: Error polling analysis for file ${inputFileId}:`, error)
-      throw error
-    }
-  }
 
   /**
    * Start analysis and wait for completion
@@ -182,19 +71,13 @@ export class AnalyzeController {
    */
   static async analyzeAndWait(inputFileId, options = {}) {
     try {
-      console.log(`🚀 AnalyzeController: Starting analysis and waiting for completion for file ${inputFileId}`)
+      console.log(`🚀 AnalyzeController: Starting analysis for file ${inputFileId}`)
       
-      // Start analysis
-      await this.startAnalysis(inputFileId)
+      // For now, just start analysis and return the result directly
+      // The API might return results immediately instead of requiring polling
+      const result = await this.startAnalysis(inputFileId)
       
-      // Poll until complete
-      const result = await this.pollAnalysisUntilComplete(
-        inputFileId, 
-        options.maxAttempts || 30, 
-        options.intervalMs || 2000
-      )
-      
-      console.log('🎉 AnalyzeController: Analysis completed successfully:', result)
+      console.log('🎉 AnalyzeController: Analysis completed:', result)
       return result
       
     } catch (error) {
@@ -244,8 +127,8 @@ export class AnalyzeController {
       return false
     }
 
-    if (inputFile.status !== 'active' && inputFile.status !== 'running') {
-      console.warn(`⚠️ Input file status '${inputFile.status}' not suitable for analysis`)
+    if (!inputFile.running) {
+      console.warn(`⚠️ Input file must be running to be analyzed. Current status: '${inputFile.status}', running: ${inputFile.running}`)
       return false
     }
 

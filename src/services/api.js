@@ -96,6 +96,54 @@ export async function apiDelete(endpoint, useAuth = false) {
   return res.json()
 }
 
+/**
+ * Specialized API function for analysis endpoints that expect text/plain
+ */
+export async function apiPutAnalyze(endpoint, useAuth = true) {
+  const headers = { 
+    'accept': 'text/plain',
+    'Content-Type': 'application/json'
+  }
+  
+  if (useAuth) {
+    const sessionData = localStorage.getItem('session')
+    if (sessionData) {
+      const { token } = JSON.parse(sessionData)
+      headers['Authorization'] = `Bearer ${token}`
+    }
+  }
+
+  console.log('🔍 Analysis PUT Request:', {
+    url: `${API_BASE}${endpoint}`,
+    headers,
+    method: 'PUT'
+  })
+
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    method: 'PUT',
+    headers
+  })
+  
+  console.log('📥 Analysis PUT Response:', {
+    status: res.status,
+    statusText: res.statusText,
+    url: res.url
+  })
+  
+  if (!res.ok) throw new Error(`PUT ${endpoint} failed: ${res.status}`)
+  
+  // Handle text/plain response
+  const responseText = await res.text()
+  console.log('📄 Analysis response text:', responseText)
+  
+  // Try to parse as JSON if possible, otherwise return as text
+  try {
+    return JSON.parse(responseText)
+  } catch {
+    return { result: responseText, status: 'completed' }
+  }
+}
+
 // Service for users
 export const userService = {
   /**
@@ -353,7 +401,7 @@ export const analyzeService = {
     try {
       console.log(`🔍 Starting analysis for input file: ${inputFileId}`)
       
-      const result = await apiPut(`/functions/input_files/analyzeByID/${inputFileId}`, null, true)
+      const result = await apiPutAnalyze(`/functions/input_files/analyzeByID/${inputFileId}`, true)
       
       console.log('✅ Analysis started successfully:', result)
       return result
@@ -363,43 +411,6 @@ export const analyzeService = {
     }
   },
 
-  /**
-   * Get analysis results for an input file
-   * @param {string} inputFileId - The ID of the input file
-   * @returns {Promise<Object>} Analysis results
-   */
-  async getAnalysisResults(inputFileId) {
-    try {
-      console.log(`📊 Getting analysis results for input file: ${inputFileId}`)
-      
-      const result = await apiGet(`/functions/input_files/analysis/${inputFileId}`, true)
-      
-      console.log('✅ Analysis results retrieved:', result)
-      return result
-    } catch (error) {
-      console.error(`❌ Error getting analysis results for file ${inputFileId}:`, error)
-      throw error
-    }
-  },
-
-  /**
-   * Get analysis status for an input file
-   * @param {string} inputFileId - The ID of the input file
-   * @returns {Promise<Object>} Analysis status
-   */
-  async getAnalysisStatus(inputFileId) {
-    try {
-      console.log(`⏳ Getting analysis status for input file: ${inputFileId}`)
-      
-      const result = await apiGet(`/functions/input_files/analysis/status/${inputFileId}`, true)
-      
-      console.log('✅ Analysis status retrieved:', result)
-      return result
-    } catch (error) {
-      console.error(`❌ Error getting analysis status for file ${inputFileId}:`, error)
-      throw error
-    }
-  },
 
   /**
    * Cancel analysis for an input file

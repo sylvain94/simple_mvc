@@ -167,16 +167,6 @@
       <!-- Modal Actions -->
       <div class="modal-action">
         <button 
-          v-if="!analysisResult && !isAnalyzing" 
-          class="btn btn-primary" 
-          @click="startAnalysis"
-          :disabled="!inputFile"
-        >
-          <span class="mr-2">🚀</span>
-          Démarrer l'analyse
-        </button>
-        
-        <button 
           v-if="isAnalyzing" 
           class="btn btn-warning" 
           @click="cancelAnalysis"
@@ -187,11 +177,11 @@
         
         <button 
           v-if="analysisResult && !isAnalyzing" 
-          class="btn btn-secondary" 
-          @click="refreshAnalysis"
+          class="btn btn-primary" 
+          @click="startAnalysis"
         >
           <span class="mr-2">🔄</span>
-          Actualiser
+          Relancer l'analyse
         </button>
         
         <button class="btn btn-ghost" @click="closeModal">
@@ -309,27 +299,12 @@ const cancelAnalysis = async () => {
   }
 }
 
-const refreshAnalysis = async () => {
-  if (!props.inputFile?.id) return
-  
-  try {
-    error.value = null
-    console.log('🔄 Refreshing analysis results for file:', props.inputFile.id)
-    
-    const result = await AnalyzeController.getAnalysisResults(props.inputFile.id)
-    analysisResult.value = result
-    
-  } catch (err) {
-    console.error('❌ Error refreshing analysis:', err)
-    error.value = err.message || 'Erreur lors de l\'actualisation'
-  }
-}
 
 const startProgressSimulation = () => {
   analysisProgress.value = 0
   progressInterval.value = setInterval(() => {
     if (analysisProgress.value < 90) {
-      analysisProgress.value += Math.random() * 10
+      analysisProgress.value += Math.floor(Math.random() * 10) + 1 // Entre 1 et 10, nombres entiers
     }
   }, 1000)
 }
@@ -458,9 +433,10 @@ const downloadFile = (content, filename, mimeType) => {
 watch(() => props.isVisible, (newValue) => {
   if (newValue) {
     resetState()
-    // Auto-load existing analysis if available
+    // Auto-start analysis when modal opens
+    console.log('🔍 Analysis modal opened for file:', props.inputFile?.fileName)
     if (props.inputFile?.id) {
-      refreshAnalysis()
+      startAnalysis()
     }
   }
 })

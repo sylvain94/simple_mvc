@@ -172,6 +172,8 @@
                     <button 
                       @click="editFile(file)"
                       class="btn btn-xs btn-primary"
+                      :disabled="file.running || isProcessing.includes(file.id)"
+                      :title="file.running ? 'Le fichier doit être arrêté pour être modifié' : 'Modifier ce fichier'"
                     >
                       Edit
                     </button>
@@ -180,7 +182,8 @@
                     <button 
                       @click="analyzeFile(file)"
                       class="btn btn-xs btn-info"
-                      :disabled="!file.running"
+                      :disabled="!file.running || isProcessing.includes(file.id)"
+                      :title="!file.running ? 'Le fichier doit être en cours d\'exécution pour être analysé' : 'Analyser ce fichier'"
                     >
                       Analyze
                     </button>
@@ -509,21 +512,6 @@ async function toggleFile(file) {
   }
 }
 
-async function analyzeFile(file) {
-  try {
-    
-    const analysis = await InputFileController.analyzeInputFile(file.id)
-    
-    // You can open a modal with the analysis results
-
-    // TODO: Implement the display of the analysis results
-    alert(`Analysis completed for ${file.name}. Check console for details.`)
-    
-  } catch (err) {
-    console.error(`❌ Error analyzing file ${file.name}:`, err)
-    error.value = `Failed to analyze file: ${err.message}`
-  }
-}
 
 function editFile(file) {
   console.log('✏️ Editing file:', file.name)
@@ -592,7 +580,7 @@ function analyzeFile(file) {
   console.log('🔍 Analyzing file:', file.name)
   
   if (!AnalyzeController.validateInputFileForAnalysis(file)) {
-    error.value = 'Ce fichier ne peut pas être analysé dans son état actuel'
+    error.value = 'This file cannot be analyzed in its current state'
     return
   }
   

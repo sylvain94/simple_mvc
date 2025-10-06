@@ -222,24 +222,6 @@ export const InputFileController = {
   },
 
   /**
-   * Analyze an input file
-   */
-  async analyzeInputFile(id) {
-    try {
-      console.log(`🔍 Analyzing input file ${id}`);
-      
-      const response = await apiGet(`/functions/input_files/analyze/${id}`, true);
-      
-      console.log(`✅ Input file ${id} analysis completed:`, response);
-      return response;
-      
-    } catch (error) {
-      console.error(`❌ Error analyzing input file ${id}:`, error);
-      throw new Error(`Failed to analyze input file: ${error.message}`);
-    }
-  },
-
-  /**
    * Refresh the list of input files
    */
   async refreshInputFiles() {
