@@ -5,7 +5,7 @@
       <div class="flex justify-between items-center mb-4">
         <h3 class="font-bold text-lg">
           <span class="mr-2">🔍</span>
-          Analyse - {{ inputFile?.fileName || 'Fichier' }}
+          Analysis - {{ inputFile?.fileName || 'File' }}
         </h3>
         <button 
           class="btn btn-sm btn-circle btn-ghost" 
@@ -30,7 +30,7 @@
         <!-- Progress Bar (when analyzing) -->
         <div v-if="isAnalyzing" class="w-full">
           <div class="flex justify-between text-sm mb-1">
-            <span>Analyse en cours...</span>
+            <span>Analysis in progress...</span>
             <span>{{ analysisProgress }}%</span>
           </div>
           <progress 
@@ -81,7 +81,7 @@
             </div>
             <div class="stat-title">Status</div>
             <div class="stat-value" :class="summary?.hasErrors ? 'text-error' : 'text-success'">
-              {{ summary?.hasErrors ? 'Erreurs' : 'OK' }}
+              {{ summary?.hasErrors ? 'Errors' : 'OK' }}
             </div>
           </div>
         </div>
@@ -91,7 +91,7 @@
           <div class="card-body">
             <h4 class="card-title mb-4">
               <span class="mr-2">🌳</span>
-              Arbre d'analyse
+              Analysis Tree
             </h4>
             
             <div v-if="analysisTree" class="analysis-tree">
@@ -103,7 +103,7 @@
             </div>
             
             <div v-else class="text-center text-gray-500 py-8">
-              Aucune donnée d'analyse disponible
+              No analysis data available
             </div>
           </div>
         </div>
@@ -113,7 +113,7 @@
           <div class="card-body">
             <h4 class="card-title mb-4">
               <span class="mr-2">ℹ️</span>
-              Détails - {{ selectedNode.label }}
+              Details - {{ selectedNode.label }}
             </h4>
             
             <div class="overflow-x-auto">
@@ -172,7 +172,7 @@
           @click="cancelAnalysis"
         >
           <span class="mr-2">🛑</span>
-          Annuler
+          Cancel
         </button>
         
         <button 
@@ -181,11 +181,11 @@
           @click="startAnalysis"
         >
           <span class="mr-2">🔄</span>
-          Relancer l'analyse
+          Restart analysis
         </button>
         
         <button class="btn btn-ghost" @click="closeModal">
-          Fermer
+          Close
         </button>
       </div>
     </div>
@@ -249,7 +249,7 @@ const resetState = () => {
 
 const startAnalysis = async () => {
   if (!props.inputFile?.id) {
-    error.value = 'Aucun fichier sélectionné pour l\'analyse'
+    error.value = 'No file selected for analysis'
     return
   }
 
@@ -277,7 +277,7 @@ const startAnalysis = async () => {
     
   } catch (err) {
     console.error('❌ Analysis failed:', err)
-    error.value = err.message || 'Erreur lors de l\'analyse'
+    error.value = err.message || 'Error during analysis'
   } finally {
     isAnalyzing.value = false
     clearProgressInterval()
@@ -304,7 +304,7 @@ const startProgressSimulation = () => {
   analysisProgress.value = 0
   progressInterval.value = setInterval(() => {
     if (analysisProgress.value < 90) {
-      analysisProgress.value += Math.floor(Math.random() * 10) + 1 // Entre 1 et 10, nombres entiers
+      analysisProgress.value += Math.floor(Math.random() * 10) + 1 // Between 1 and 10, integers
     }
   }, 1000)
 }
@@ -324,14 +324,14 @@ const getStatusBadgeClass = () => {
 }
 
 const getStatusText = () => {
-  if (isAnalyzing.value) return 'En cours'
-  if (error.value) return 'Erreur'
-  if (analysisResult.value?.isComplete()) return 'Terminé'
-  return 'En attente'
+  if (isAnalyzing.value) return 'In progress'
+  if (error.value) return 'Error'
+  if (analysisResult.value?.isComplete()) return 'Completed'
+  return 'Pending'
 }
 
 const formatTimestamp = (timestamp) => {
-  return new Date(timestamp).toLocaleString('fr-FR')
+  return new Date(timestamp).toLocaleString('en-US')
 }
 
 const onNodeClick = (node) => {
@@ -352,9 +352,9 @@ const formatKey = (key) => {
 }
 
 const formatValue = (value) => {
-  if (typeof value === 'boolean') return value ? 'Oui' : 'Non'
-  if (typeof value === 'number') return value.toLocaleString('fr-FR')
-  if (Array.isArray(value)) return `${value.length} éléments`
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+  if (typeof value === 'number') return value.toLocaleString('en-US')
+  if (Array.isArray(value)) return `${value.length} items`
   if (typeof value === 'object') return '[Objet]'
   return String(value)
 }
@@ -386,15 +386,15 @@ const exportAsCsv = () => {
 const exportAsText = () => {
   if (!analysisResult.value) return
   
-  let text = `Analyse - ${props.inputFile?.fileName || 'Fichier'}\n`
+  let text = `Analysis - ${props.inputFile?.fileName || 'File'}\n`
   text += `Date: ${formatTimestamp(analysisResult.value.timestamp)}\n\n`
   
   const summary = analysisResult.value.getSummary()
-  text += `Résumé:\n`
+  text += `Summary:\n`
   text += `- Services: ${summary.totalServices}\n`
   text += `- PIDs: ${summary.totalPids}\n`
   text += `- Tables: ${summary.totalTables}\n`
-  text += `- Erreurs: ${summary.hasErrors ? 'Oui' : 'Non'}\n\n`
+  text += `- Errors: ${summary.hasErrors ? 'Yes' : 'No'}\n\n`
   
   // Add tree structure
   text += generateTextTree(analysisTree.value, 0)
