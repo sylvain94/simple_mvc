@@ -1,56 +1,54 @@
 <template>
   <div class="container mx-auto p-6">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-2xl font-bold">SRT Gateways</h2>
+    <!-- Header with stats and actions -->
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-2xl font-bold">SRT Gateways Management</h2>
+        <p class="text-base-content/70 mt-1" v-if="stats">
+          {{ stats.total }} gateways total • {{ stats.active }} active • {{ stats.enabled }} enabled
+        </p>
+      </div>
       <div class="flex gap-2">
         <button 
-          class="btn btn-success gap-2 hover:scale-105 transition-transform"
           @click="createGateway"
+          class="btn btn-secondary gap-2"
+          :disabled="isLoading"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
           Add Gateway
         </button>
         <button 
-          class="btn btn-primary gap-2 hover:scale-105 transition-transform"
           @click="refreshGateways"
-          :disabled="isRefreshing"
+          class="btn btn-primary gap-2"
+          :class="{ 'loading': isLoading }"
+          :disabled="isLoading"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :class="{ 'animate-spin': isRefreshing }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg v-if="!isLoading" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
           Refresh
         </button>
       </div>
     </div>
-    
-    <!-- Statistics cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div class="card bg-base-200 shadow-xl">
-        <div class="card-body">
-          <h3 class="card-title">Total Gateways</h3>
-          <div class="stat">
-            <div class="stat-value">{{ gateways.length }}</div>
-          </div>
-        </div>
-      </div>
 
-      <div class="card bg-base-200 shadow-xl">
-        <div class="card-body">
-          <h3 class="card-title">Running Gateways</h3>
-          <div class="stat">
-            <div class="stat-value text-success">{{ runningGateways }}</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card bg-base-200 shadow-xl">
-        <div class="card-body">
-          <h3 class="card-title">Active Gateways</h3>
-          <div class="stat">
-            <div class="stat-value text-primary">{{ activeGateways }}</div>
-          </div>
+    <!-- Search bar -->
+    <div class="mb-4">
+      <div class="form-control">
+        <div class="input-group">
+          <input 
+            v-model="searchQuery"
+            @input="onSearchInput"
+            type="text" 
+            placeholder="Search gateways by name, address, mode, or type..." 
+            class="input input-bordered flex-1"
+          />
+          <button class="btn btn-square">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>
@@ -58,28 +56,43 @@
     <!-- Gateways table -->
     <div class="card bg-base-100 shadow-xl">
       <div class="card-body">
-        <h3 class="card-title">SRT Gateways List</h3>
-        
-        <!-- Loading state -->
-        <div v-if="isLoading" class="text-center py-8">
-          <span class="loading loading-spinner loading-lg"></span>
-          <p class="mt-2">Loading SRT gateways...</p>
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="card-title">SRT Gateways</h3>
+          <div class="text-sm text-base-content/70">
+            Last updated: {{ lastUpdated ? lastUpdated.toLocaleTimeString() : 'Never' }}
+          </div>
         </div>
-
-        <!-- Error state -->
+        
+        <!-- Loading State -->
+        <div v-if="isLoading && gateways.length === 0" class="text-center py-8">
+          <div class="loading loading-spinner loading-lg"></div>
+          <p class="mt-4">Loading SRT gateways...</p>
+        </div>
+        
+        <!-- Error State -->
         <div v-else-if="error" class="alert alert-error">
           <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span>{{ error }}</span>
-          <button class="btn btn-sm" @click="loadGateways">Retry</button>
+          <button @click="refreshGateways" class="btn btn-sm">Retry</button>
         </div>
-
-        <!-- Gateways table -->
+        
+        <!-- Gateways Table -->
         <div v-else class="overflow-x-auto">
           <table class="table w-full">
             <thead>
               <tr>
+                <th>
+                  <label>
+                    <input 
+                      type="checkbox" 
+                      class="checkbox"
+                      :checked="allSelected"
+                      @change="toggleAllSelection"
+                    />
+                  </label>
+                </th>
                 <th>Name</th>
                 <th>Type</th>
                 <th>Status</th>
@@ -89,16 +102,31 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-if="gateways.length === 0">
-                <td colspan="6" class="text-center py-4">
-                  No SRT gateways found
-                  <br>
-                  <button class="btn btn-sm btn-primary mt-2" @click="createGateway">
-                    Create your first gateway
-                  </button>
+              <!-- No gateways message -->
+              <tr v-if="filteredGateways.length === 0 && !isLoading">
+                <td colspan="7" class="text-center py-8">
+                  <div class="text-base-content/50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p class="font-medium">No SRT gateways found</p>
+                    <p class="text-sm">{{ searchQuery ? 'Try adjusting your search criteria' : 'Add your first SRT gateway to get started' }}</p>
+                  </div>
                 </td>
               </tr>
-              <tr v-for="gateway in gateways" :key="gateway.id" class="hover">
+              
+              <!-- Gateway rows -->
+              <tr v-for="gateway in filteredGateways" :key="gateway.id" class="hover">
+                <td>
+                  <label>
+                    <input 
+                      type="checkbox" 
+                      class="checkbox"
+                      :checked="selectedGateways.includes(gateway.id)"
+                      @change="toggleGatewaySelection(gateway.id)"
+                    />
+                  </label>
+                </td>
                 <td>
                   <div class="font-medium">{{ gateway.name || '-' }}</div>
                   <div class="text-sm opacity-50">{{ gateway.id?.substring(0, 8) }}</div>
@@ -165,6 +193,18 @@
             </tbody>
           </table>
         </div>
+        
+        <!-- Bulk actions -->
+        <div v-if="selectedGateways.length > 0" class="mt-4 p-4 bg-base-200 rounded-lg">
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-medium">{{ selectedGateways.length }} gateway(s) selected</span>
+            <div class="flex gap-2">
+              <button @click="startSelectedGateways" class="btn btn-xs btn-success">Start Selected</button>
+              <button @click="stopSelectedGateways" class="btn btn-xs btn-error">Stop Selected</button>
+              <button @click="deleteSelectedGateways" class="btn btn-xs btn-error">Delete Selected</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -191,6 +231,12 @@ const showCreateModal = ref(false)
 const editingGateway = ref(null)
 const isProcessing = ref([])
 
+// Search and selection
+const searchQuery = ref('')
+const selectedGateways = ref([])
+const lastUpdated = ref(null)
+const stats = ref(null)
+
 // Use reactive data from store
 const gateways = computed(() => appStore.srtGateways)
 
@@ -206,6 +252,29 @@ const enabledGateways = computed(() =>
   gateways.value.filter(g => g.enabled).length
 )
 
+// Computed properties for search and selection
+const filteredGateways = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return gateways.value
+  }
+  
+  const query = searchQuery.value.toLowerCase().trim()
+  return gateways.value.filter(gateway => 
+    (gateway.name && gateway.name.toLowerCase().includes(query)) ||
+    (gateway.description && gateway.description.toLowerCase().includes(query)) ||
+    (gateway.gatewayType && gateway.gatewayType.toLowerCase().includes(query)) ||
+    (gateway.srtConfig?.srtMode && gateway.srtConfig.srtMode.toLowerCase().includes(query)) ||
+    (gateway.srtConfig?.foreignSRTAddress && gateway.srtConfig.foreignSRTAddress.includes(query)) ||
+    (gateway.localMCAddress && gateway.localMCAddress.includes(query)) ||
+    (gateway.localSRTListenAddress && gateway.localSRTListenAddress.includes(query))
+  )
+})
+
+const allSelected = computed(() => {
+  return filteredGateways.value.length > 0 && 
+         filteredGateways.value.every(gateway => selectedGateways.value.includes(gateway.id))
+})
+
 onMounted(() => {
   loadGateways()
 })
@@ -216,6 +285,15 @@ async function loadGateways() {
     error.value = null
     console.log('🚪 Loading SRT gateways...')
     await appStore.loadSRTGateways()
+    
+    // Calculate stats
+    const total = gateways.value.length
+    const active = activeGateways.value
+    const enabled = enabledGateways.value
+    
+    stats.value = { total, active, enabled }
+    lastUpdated.value = new Date()
+    
     console.log(`✅ Loaded ${gateways.value.length} SRT gateways`)
   } catch (err) {
     console.error('❌ Error loading SRT gateways:', err)
@@ -353,5 +431,116 @@ async function handleGatewaySubmit({ data, type, isEditing }) {
     console.error(`❌ Error ${isEditing ? 'updating' : 'creating'} SRT gateway:`, err)
     alert(`Failed to ${isEditing ? 'update' : 'create'} gateway: ${err.message}`)
   }
+}
+
+// Selection methods
+function toggleGatewaySelection(gatewayId) {
+  const index = selectedGateways.value.indexOf(gatewayId)
+  if (index > -1) {
+    selectedGateways.value.splice(index, 1)
+  } else {
+    selectedGateways.value.push(gatewayId)
+  }
+}
+
+function toggleAllSelection() {
+  if (allSelected.value) {
+    selectedGateways.value = []
+  } else {
+    selectedGateways.value = filteredGateways.value.map(gateway => gateway.id)
+  }
+}
+
+// Bulk actions
+async function startSelectedGateways() {
+  const selected = gateways.value.filter(g => 
+    selectedGateways.value.includes(g.id) && !g.running
+  )
+  
+  if (selected.length === 0) {
+    return
+  }
+  
+  try {
+    console.log(`🚪 Starting ${selected.length} selected gateways...`)
+    
+    await Promise.all(
+      selected.map(gateway => appStore.startSRTGateway(gateway.id))
+    )
+    
+    // Refresh the list
+    await loadGateways()
+    selectedGateways.value = []
+    
+    console.log(`✅ Started ${selected.length} gateways`)
+  } catch (err) {
+    console.error('❌ Error starting selected gateways:', err)
+    alert(`Failed to start selected gateways: ${err.message}`)
+  }
+}
+
+async function stopSelectedGateways() {
+  const selected = gateways.value.filter(g => 
+    selectedGateways.value.includes(g.id) && g.running
+  )
+  
+  if (selected.length === 0) {
+    return
+  }
+  
+  try {
+    console.log(`🚪 Stopping ${selected.length} selected gateways...`)
+    
+    await Promise.all(
+      selected.map(gateway => appStore.stopSRTGateway(gateway.id))
+    )
+    
+    // Refresh the list
+    await loadGateways()
+    selectedGateways.value = []
+    
+    console.log(`✅ Stopped ${selected.length} gateways`)
+  } catch (err) {
+    console.error('❌ Error stopping selected gateways:', err)
+    alert(`Failed to stop selected gateways: ${err.message}`)
+  }
+}
+
+async function deleteSelectedGateways() {
+  if (selectedGateways.value.length === 0) {
+    return
+  }
+  
+  const confirmed = confirm(`Are you sure you want to delete ${selectedGateways.value.length} gateway(s)?`)
+  if (!confirmed) {
+    return
+  }
+  
+  try {
+    console.log(`🚪 Deleting ${selectedGateways.value.length} selected gateways...`)
+    
+    await Promise.all(
+      selectedGateways.value.map(gatewayId => appStore.deleteSRTGateway(gatewayId))
+    )
+    
+    // Refresh the list
+    await loadGateways()
+    selectedGateways.value = []
+    
+    console.log(`✅ Deleted selected gateways`)
+  } catch (err) {
+    console.error('❌ Error deleting selected gateways:', err)
+    alert(`Failed to delete selected gateways: ${err.message}`)
+  }
+}
+
+// Search handling with debounce
+let searchTimeout = null
+function onSearchInput() {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    // Search is reactive, no need to do anything here
+    console.log('🔍 Search query:', searchQuery.value)
+  }, 300)
 }
 </script>
