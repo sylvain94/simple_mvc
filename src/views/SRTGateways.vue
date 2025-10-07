@@ -128,45 +128,36 @@
                   <span class="badge badge-ghost">{{ gateway.srtConfig?.srtMode || gateway.mode || '-' }}</span>
                 </td>
                 <td>
-                  <div class="btn-group">
+                  <div class="flex gap-1">
+                    <!-- Start/Stop button -->
                     <button 
-                      v-if="!gateway.running"
-                      class="btn btn-sm btn-success"
-                      @click="startGateway(gateway.id)"
-                      title="Start gateway"
+                      @click="toggleGateway(gateway)"
+                      :class="gateway.running ? 'btn-error' : 'btn-success'"
+                      class="btn btn-xs"
+                      :disabled="isProcessing.includes(gateway.id)"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m6-10V7a3 3 0 11-6 0V4h6zM7 7a3 3 0 016 0v3H7V7z" />
-                      </svg>
+                      <span v-if="isProcessing.includes(gateway.id)" class="loading loading-spinner loading-xs"></span>
+                      <span v-else>{{ gateway.running ? 'Stop' : 'Start' }}</span>
                     </button>
+                    
+                    <!-- Edit button -->
                     <button 
-                      v-if="gateway.running"
-                      class="btn btn-sm btn-error"
-                      @click="stopGateway(gateway.id)"
-                      title="Stop gateway"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h6v4H9z" />
-                      </svg>
-                    </button>
-                    <button 
-                      class="btn btn-sm btn-info"
                       @click="editGateway(gateway.id)"
-                      title="Edit gateway"
+                      class="btn btn-xs btn-primary"
+                      :disabled="gateway.running || isProcessing.includes(gateway.id)"
+                      :title="gateway.running ? 'The gateway must be stopped to be edited' : 'Edit this gateway'"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
+                      Edit
                     </button>
+                    
+                    <!-- Delete button -->
                     <button 
-                      class="btn btn-sm btn-error btn-outline"
                       @click="deleteGateway(gateway.id)"
-                      title="Delete gateway"
+                      class="btn btn-xs btn-error btn-outline"
+                      :disabled="gateway.running || isProcessing.includes(gateway.id)"
+                      :title="gateway.running ? 'The gateway must be stopped to be deleted' : 'Delete this gateway'"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
+                      Delete
                     </button>
                   </div>
                 </td>
@@ -198,6 +189,7 @@ const isLoading = ref(false)
 const error = ref(null)
 const showCreateModal = ref(false)
 const editingGateway = ref(null)
+const isProcessing = ref([])
 
 // Use reactive data from store
 const gateways = computed(() => appStore.srtGateways)
@@ -242,31 +234,44 @@ async function refreshGateways() {
   }
 }
 
+async function toggleGateway(gateway) {
+  if (isProcessing.value.includes(gateway.id)) {
+    return // Already processing
+  }
+
+  isProcessing.value.push(gateway.id)
+  
+  try {
+    if (gateway.running) {
+      console.log('🚪 Stopping gateway:', gateway.name)
+      await appStore.stopSRTGateway(gateway.id)
+      console.log('✅ Gateway stopped successfully')
+    } else {
+      console.log('🚪 Starting gateway:', gateway.name)
+      await appStore.startSRTGateway(gateway.id)
+      console.log('✅ Gateway started successfully')
+    }
+    
+    await loadGateways() // Refresh to get updated status
+  } catch (err) {
+    console.error(`❌ Error ${gateway.running ? 'stopping' : 'starting'} gateway:`, err)
+    alert(`Failed to ${gateway.running ? 'stop' : 'start'} gateway: ${err.message}`)
+  } finally {
+    isProcessing.value = isProcessing.value.filter(id => id !== gateway.id)
+  }
+}
+
 async function startGateway(id) {
   const gateway = gateways.value.find(g => g.id === id)
-  if (gateway && confirm(`Start gateway ${gateway.name}?`)) {
-    try {
-      console.log(`🚪 Starting gateway ${gateway.name}...`)
-      await appStore.startSRTGateway(id)
-      console.log(`✅ Started gateway ${gateway.name}`)
-    } catch (err) {
-      console.error(`❌ Error starting gateway ${gateway.name}:`, err)
-      alert(`Failed to start gateway: ${err.message}`)
-    }
+  if (gateway && !gateway.running) {
+    await toggleGateway(gateway)
   }
 }
 
 async function stopGateway(id) {
   const gateway = gateways.value.find(g => g.id === id)
-  if (gateway && confirm(`Stop gateway ${gateway.name}?`)) {
-    try {
-      console.log(`🚪 Stopping gateway ${gateway.name}...`)
-      await appStore.stopSRTGateway(id)
-      console.log(`✅ Stopped gateway ${gateway.name}`)
-    } catch (err) {
-      console.error(`❌ Error stopping gateway ${gateway.name}:`, err)
-      alert(`Failed to stop gateway: ${err.message}`)
-    }
+  if (gateway && gateway.running) {
+    await toggleGateway(gateway)
   }
 }
 
@@ -282,13 +287,22 @@ async function editGateway(id) {
 async function deleteGateway(id) {
   const gateway = gateways.value.find(g => g.id === id)
   if (gateway && confirm(`Delete gateway ${gateway.name}? This action cannot be undone.`)) {
+    if (isProcessing.value.includes(gateway.id)) {
+      return // Already processing
+    }
+
+    isProcessing.value.push(gateway.id)
+    
     try {
       console.log(`🚪 Deleting gateway ${gateway.name}...`)
       await appStore.deleteSRTGateway(id)
       console.log(`✅ Deleted gateway ${gateway.name}`)
+      await loadGateways() // Refresh to remove deleted gateway
     } catch (err) {
       console.error(`❌ Error deleting gateway ${gateway.name}:`, err)
       alert(`Failed to delete gateway: ${err.message}`)
+    } finally {
+      isProcessing.value = isProcessing.value.filter(gatewayId => gatewayId !== gateway.id)
     }
   }
 }
