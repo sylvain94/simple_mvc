@@ -360,7 +360,13 @@ const getNodeDetails = (node) => {
   // For audio PIDs, keep relevant fields
   if (node.type === 'pid' && node.data.audio === false) {
     delete details.language // Not relevant for audio
-  }  
+  }
+
+  // For All Tables, remove irrelevant fields
+  if (node.type === 'table') {
+    delete details.tid         // Remove TID field
+    delete details.tidExt      // Remove TID extension field
+  }
   
   return details
 }
