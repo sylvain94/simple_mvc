@@ -86,24 +86,53 @@
           </div>
         </div>
 
-        <!-- Analysis Tree -->
+        <!-- Analysis Tabs -->
         <div class="card bg-base-100 shadow-xl">
           <div class="card-body">
-            <h4 class="card-title mb-4">
-              <span class="mr-2">🌳</span>
-              Analysis Tree
-            </h4>
-            
-            <div v-if="analysisTree" class="analysis-tree">
-              <AnalysisTreeNode 
-                :node="analysisTree" 
-                :level="0"
-                @node-click="onNodeClick"
-              />
+            <!-- Tab Navigation -->
+            <div class="tabs tabs-bordered mb-4">
+              <button 
+                class="tab tab-lg"
+                :class="{ 'tab-active': activeTab === 'tree' }"
+                @click="activeTab = 'tree'"
+              >
+                <span class="mr-2">🌳</span>
+                Analysis Tree
+              </button>
+              <button 
+                class="tab tab-lg"
+                :class="{ 'tab-active': activeTab === 'charts' }"
+                @click="activeTab = 'charts'"
+              >
+                <span class="mr-2">📊</span>
+                Charts
+              </button>
             </div>
-            
-            <div v-else class="text-center text-gray-500 py-8">
-              No analysis data available
+
+            <!-- Analysis Tree Tab -->
+            <div v-show="activeTab === 'tree'">
+              <div v-if="analysisTree" class="analysis-tree">
+                <AnalysisTreeNode 
+                  :node="analysisTree" 
+                  :level="0"
+                  @node-click="onNodeClick"
+                />
+              </div>
+              
+              <div v-else class="text-center text-gray-500 py-8">
+                No analysis data available
+              </div>
+            </div>
+
+            <!-- Charts Tab -->
+            <div v-show="activeTab === 'charts'">
+              <div v-if="analysisResult" class="chart-container">
+                <canvas ref="bitrateChart" id="bitrateChart"></canvas>
+              </div>
+              
+              <div v-else class="text-center text-gray-500 py-8">
+                No analysis data available for charts
+              </div>
             </div>
           </div>
         </div>
@@ -157,7 +186,7 @@
                 @click="exportAsText"
                 :disabled="!analysisResult"
               >
-                📝 Texte
+                📝 Text
               </button>
             </div>
           </div>
@@ -192,8 +221,40 @@
   </div>
 </template>
 
+<style scoped>
+.chart-container {
+  height: 400px;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: var(--fallback-b1, oklch(var(--b1)));
+}
+
+.analysis-tree {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.tabs {
+  border-bottom: 1px solid var(--fallback-bc, oklch(var(--bc) / 0.2));
+}
+
+.tab {
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background-color: var(--fallback-b2, oklch(var(--b2)));
+}
+
+.tab-active {
+  border-bottom-color: var(--fallback-p, oklch(var(--p)));
+  background-color: var(--fallback-b1, oklch(var(--b1)));
+}
+</style>
+
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { AnalyzeController } from '../controllers/AnalyzeController.js'
 import AnalysisTreeNode from './AnalysisTreeNode.vue'
 
@@ -219,6 +280,9 @@ const error = ref(null)
 const analysisProgress = ref(0)
 const selectedNode = ref(null)
 const progressInterval = ref(null)
+const activeTab = ref('tree')
+const bitrateChart = ref(null)
+let chartInstance = null
 
 // Computed properties
 const summary = computed(() => {
@@ -244,7 +308,9 @@ const resetState = () => {
   error.value = null
   analysisProgress.value = 0
   selectedNode.value = null
+  activeTab.value = 'tree'
   clearProgressInterval()
+  destroyChart()
 }
 
 const startAnalysis = async () => {
@@ -383,6 +449,127 @@ const formatValue = (value) => {
   return String(value)
 }
 
+// Chart methods
+const createBitrateChart = () => {
+  if (!analysisResult.value || !bitrateChart.value) return
+  
+  destroyChart() // Destroy existing chart
+  
+  const ctx = bitrateChart.value.getContext('2d')
+  const data = analysisResult.value
+  
+  // Prepare datasets
+  const datasets = []
+  
+  // Add Transport Stream bitrate
+  if (data.transportStream?.bitrate) {
+    datasets.push({
+      label: 'TS Bitrate',
+      data: [data.transportStream.bitrate, data.transportStream.bitrate],
+      borderColor: 'rgb(75, 192, 192)',
+      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+      tension: 0.1
+    })
+  }
+  
+  // Add Service bitrates
+  data.services.forEach((service, index) => {
+    const serviceColor = `hsl(${index * 60}, 70%, 50%)`
+    datasets.push({
+      label: `Service ${service.name}`,
+      data: [service.bitrate, service.bitrate],
+      borderColor: serviceColor,
+      backgroundColor: serviceColor.replace('50%', '20%'),
+      tension: 0.1
+    })
+  })
+  
+  // Add PID bitrates
+  data.services.forEach(service => {
+    const servicePids = data.pids.filter(pid => service.pids.includes(pid.id))
+    servicePids.forEach(pid => {
+      let color
+      let label = `PID ${pid.id}`
+      
+      if (pid.video) {
+        color = 'rgb(255, 99, 132)'
+        label = `🎥 Video PID ${pid.id}`
+      } else if (pid.audio) {
+        color = 'rgb(54, 162, 235)'
+        label = `🔊 Audio PID ${pid.id}`
+      } else if (pid.pmt) {
+        color = 'rgb(255, 206, 86)'
+        label = `📋 PMT PID ${pid.id}`
+      } else {
+        color = 'rgb(153, 102, 255)'
+        label = `Data PID ${pid.id}`
+      }
+      
+      datasets.push({
+        label: label,
+        data: [pid.bitrate, pid.bitrate],
+        borderColor: color,
+        backgroundColor: color.replace('rgb', 'rgba').replace(')', ', 0.2)'),
+        tension: 0.1
+      })
+    })
+  })
+  
+  // Create chart
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['t=0s', 't=2s'],
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: {
+          display: true,
+          text: 'Bitrate evolution'
+        },
+        legend: {
+          position: 'right'
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Bitrate (bps)'
+          },
+          ticks: {
+            callback: function(value) {
+              if (value >= 1000000) {
+                return (value / 1000000).toFixed(1) + 'M'
+              } else if (value >= 1000) {
+                return (value / 1000).toFixed(1) + 'k'
+              }
+              return value
+            }
+          }
+        },
+        x: {
+          title: {
+            display: true,
+            text: 'Time (seconds)'
+          }
+        }
+      }
+    }
+  })
+}
+
+const destroyChart = () => {
+  if (chartInstance) {
+    chartInstance.destroy()
+    chartInstance = null
+  }
+}
+
 const exportAsJson = () => {
   if (!analysisResult.value) return
   
@@ -465,9 +652,29 @@ watch(() => props.isVisible, (newValue) => {
   }
 })
 
+// Watch for analysis result changes to create chart
+watch(analysisResult, (newResult) => {
+  if (newResult && activeTab.value === 'charts') {
+    // Use nextTick to ensure DOM is updated
+    nextTick(() => {
+      createBitrateChart()
+    })
+  }
+})
+
+// Watch for tab changes to create chart when switching to charts tab
+watch(activeTab, (newTab) => {
+  if (newTab === 'charts' && analysisResult.value) {
+    nextTick(() => {
+      createBitrateChart()
+    })
+  }
+})
+
 // Cleanup on unmount
 onUnmounted(() => {
   clearProgressInterval()
+  destroyChart()
 })
 </script>
 
