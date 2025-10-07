@@ -301,6 +301,121 @@ export const useAppStore = defineStore('app', {
       };
     },
 
+    // SRT Gateway actions
+    async loadSRTGateways() {
+      try {
+        console.log('🏪 Store: Loading SRT gateways')
+        const { SRTGatewayController } = await import('../controllers/SRTGatewayController.js')
+        const gateways = await SRTGatewayController.getAllSRTGateways()
+        this.srtGateways = gateways
+        console.log(`✅ Store: Loaded ${gateways.length} SRT gateways`)
+        return gateways
+      } catch (error) {
+        console.error('❌ Store: Error loading SRT gateways:', error)
+        throw error
+      }
+    },
+
+    async createSRTGateway(gatewayData, type = 'incoming') {
+      try {
+        console.log(`🏪 Store: Creating ${type} SRT gateway:`, gatewayData)
+        const { SRTGatewayController } = await import('../controllers/SRTGatewayController.js')
+        
+        let gateway
+        if (type === 'incoming') {
+          gateway = await SRTGatewayController.createIncomingSRTGateway(gatewayData)
+        } else {
+          gateway = await SRTGatewayController.createOutgoingSRTGateway(gatewayData)
+        }
+        
+        this.srtGateways.push(gateway)
+        console.log(`✅ Store: Created ${type} SRT gateway:`, gateway.name)
+        return gateway
+      } catch (error) {
+        console.error(`❌ Store: Error creating ${type} SRT gateway:`, error)
+        throw error
+      }
+    },
+
+    async updateSRTGateway(id, gatewayData) {
+      try {
+        console.log(`🏪 Store: Updating SRT gateway ${id}:`, gatewayData)
+        const { SRTGatewayController } = await import('../controllers/SRTGatewayController.js')
+        
+        const updatedGateway = await SRTGatewayController.updateSRTGateway(id, gatewayData)
+        
+        const index = this.srtGateways.findIndex(g => g.id === id)
+        if (index !== -1) {
+          this.srtGateways[index] = updatedGateway
+        }
+        
+        console.log(`✅ Store: Updated SRT gateway:`, updatedGateway.name)
+        return updatedGateway
+      } catch (error) {
+        console.error(`❌ Store: Error updating SRT gateway ${id}:`, error)
+        throw error
+      }
+    },
+
+    async deleteSRTGateway(id) {
+      try {
+        console.log(`🏪 Store: Deleting SRT gateway ${id}`)
+        const { SRTGatewayController } = await import('../controllers/SRTGatewayController.js')
+        
+        await SRTGatewayController.deleteSRTGateway(id)
+        
+        this.srtGateways = this.srtGateways.filter(g => g.id !== id)
+        
+        console.log(`✅ Store: Deleted SRT gateway ${id}`)
+        return true
+      } catch (error) {
+        console.error(`❌ Store: Error deleting SRT gateway ${id}:`, error)
+        throw error
+      }
+    },
+
+    async startSRTGateway(id) {
+      try {
+        console.log(`🏪 Store: Starting SRT gateway ${id}`)
+        const { SRTGatewayController } = await import('../controllers/SRTGatewayController.js')
+        
+        const result = await SRTGatewayController.startSRTGateway(id)
+        
+        // Update gateway status in store
+        const gateway = this.srtGateways.find(g => g.id === id)
+        if (gateway) {
+          gateway.running = true
+        }
+        
+        console.log(`✅ Store: Started SRT gateway ${id}`)
+        return result
+      } catch (error) {
+        console.error(`❌ Store: Error starting SRT gateway ${id}:`, error)
+        throw error
+      }
+    },
+
+    async stopSRTGateway(id) {
+      try {
+        console.log(`🏪 Store: Stopping SRT gateway ${id}`)
+        const { SRTGatewayController } = await import('../controllers/SRTGatewayController.js')
+        
+        const result = await SRTGatewayController.stopSRTGateway(id)
+        
+        // Update gateway status in store
+        const gateway = this.srtGateways.find(g => g.id === id)
+        if (gateway) {
+          gateway.running = false
+        }
+        
+        console.log(`✅ Store: Stopped SRT gateway ${id}`)
+        return result
+      } catch (error) {
+        console.error(`❌ Store: Error stopping SRT gateway ${id}:`, error)
+        throw error
+      }
+    },
+
     // Handle logout
     handleLogout() {
       const authStore = useAuthStore();

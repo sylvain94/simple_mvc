@@ -449,3 +449,232 @@ export const analyzeService = {
     }
   }
 }
+
+/**
+ * SRT Gateway Service
+ * Handles SRT Gateway-related API operations
+ */
+export const srtGatewayService = {
+  /**
+   * Get all SRT gateways
+   * @returns {Promise<Object>} List of SRT gateways
+   */
+  async getAllSRTGateways() {
+    try {
+      console.log('🚪 Getting all SRT gateways')
+      const result = await apiGet('/functions/gateways/srt/getAll', true)
+      console.log('✅ SRT gateways retrieved:', result)
+      return result
+    } catch (error) {
+      console.error('❌ Error getting all SRT gateways:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Get SRT gateway by ID
+   * @param {string} id - Gateway ID
+   * @returns {Promise<Object>} SRT gateway data
+   */
+  async getSRTGatewayById(id) {
+    try {
+      console.log(`🚪 Getting SRT gateway by ID: ${id}`)
+      const result = await apiGet(`/functions/gateways/srt/getByID/${id}`, true)
+      console.log('✅ SRT gateway retrieved:', result)
+      return result
+    } catch (error) {
+      console.error(`❌ Error getting SRT gateway ${id}:`, error)
+      throw error
+    }
+  },
+
+  /**
+   * Create incoming SRT gateway
+   * @param {Object} gatewayData - Gateway configuration
+   * @returns {Promise<Object>} Created gateway
+   */
+  async createIncomingSRTGateway(gatewayData) {
+    try {
+      console.log('🚪 Creating incoming SRT gateway:', gatewayData)
+      const result = await apiPost('/functions/gateways/srt/createIncoming', gatewayData, true)
+      console.log('✅ Incoming SRT gateway created:', result)
+      return result
+    } catch (error) {
+      console.error('❌ Error creating incoming SRT gateway:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Create outgoing SRT gateway
+   * @param {Object} gatewayData - Gateway configuration
+   * @returns {Promise<Object>} Created gateway
+   */
+  async createOutgoingSRTGateway(gatewayData) {
+    try {
+      console.log('🚪 Creating outgoing SRT gateway:', gatewayData)
+      const result = await apiPost('/functions/gateways/srt/createOutgoing', gatewayData, true)
+      console.log('✅ Outgoing SRT gateway created:', result)
+      return result
+    } catch (error) {
+      console.error('❌ Error creating outgoing SRT gateway:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Create incoming SRT gateway for specific instance
+   * @param {string} instanceId - Instance ID
+   * @param {Object} gatewayData - Gateway configuration
+   * @returns {Promise<Object>} Created gateway
+   */
+  async createIncomingSRTGatewayForInstance(instanceId, gatewayData) {
+    try {
+      console.log(`🚪 Creating incoming SRT gateway for instance ${instanceId}:`, gatewayData)
+      const result = await apiPost(`/functions/gateways/srt/createIncomingForInstanceID/instanceID/${instanceId}`, gatewayData, true)
+      console.log('✅ Incoming SRT gateway created for instance:', result)
+      return result
+    } catch (error) {
+      console.error(`❌ Error creating incoming SRT gateway for instance ${instanceId}:`, error)
+      throw error
+    }
+  },
+
+  /**
+   * Create outgoing SRT gateway for specific instance
+   * @param {string} instanceId - Instance ID
+   * @param {Object} gatewayData - Gateway configuration
+   * @returns {Promise<Object>} Created gateway
+   */
+  async createOutgoingSRTGatewayForInstance(instanceId, gatewayData) {
+    try {
+      console.log(`🚪 Creating outgoing SRT gateway for instance ${instanceId}:`, gatewayData)
+      const result = await apiPost(`/functions/gateways/srt/createOutgoingForInstanceID/instanceID/${instanceId}`, gatewayData, true)
+      console.log('✅ Outgoing SRT gateway created for instance:', result)
+      return result
+    } catch (error) {
+      console.error(`❌ Error creating outgoing SRT gateway for instance ${instanceId}:`, error)
+      throw error
+    }
+  },
+
+  /**
+   * Update SRT gateway
+   * @param {string} id - Gateway ID
+   * @param {Object} gatewayData - Updated gateway data
+   * @returns {Promise<Object>} Updated gateway
+   */
+  async updateSRTGateway(id, gatewayData) {
+    try {
+      console.log(`🚪 Updating SRT gateway ${id}:`, gatewayData)
+      const result = await apiPut(`/functions/gateways/srt/updateByID/${id}`, gatewayData, true)
+      console.log('✅ SRT gateway updated:', result)
+      return result
+    } catch (error) {
+      console.error(`❌ Error updating SRT gateway ${id}:`, error)
+      throw error
+    }
+  },
+
+  /**
+   * Start SRT gateway
+   * @param {string} id - Gateway ID
+   * @returns {Promise<Object>} Start result
+   */
+  async startSRTGateway(id) {
+    try {
+      console.log(`🚪 Starting SRT gateway: ${id}`)
+      const result = await apiPut(`/functions/gateways/srt/startByID/${id}`, null, true)
+      console.log('✅ SRT gateway started:', result)
+      return result
+    } catch (error) {
+      console.error(`❌ Error starting SRT gateway ${id}:`, error)
+      throw error
+    }
+  },
+
+  /**
+   * Stop SRT gateway
+   * @param {string} id - Gateway ID
+   * @returns {Promise<Object>} Stop result
+   */
+  async stopSRTGateway(id) {
+    try {
+      console.log(`🚪 Stopping SRT gateway: ${id}`)
+      const result = await apiPut(`/functions/gateways/srt/stopByID/${id}`, null, true)
+      console.log('✅ SRT gateway stopped:', result)
+      return result
+    } catch (error) {
+      console.error(`❌ Error stopping SRT gateway ${id}:`, error)
+      throw error
+    }
+  },
+
+  /**
+   * Delete SRT gateway
+   * @param {string} id - Gateway ID
+   * @returns {Promise<Object>} Delete result
+   */
+  async deleteSRTGateway(id) {
+    try {
+      console.log(`🚪 Deleting SRT gateway: ${id}`)
+      const result = await apiDelete(`/functions/gateways/srt/deleteByID/${id}`, true)
+      console.log('✅ SRT gateway deleted:', result)
+      return result
+    } catch (error) {
+      console.error(`❌ Error deleting SRT gateway ${id}:`, error)
+      throw error
+    }
+  },
+
+  /**
+   * Get SRT gateways by listen IP address
+   * @param {string} listenIp - Listen IP address
+   * @returns {Promise<Object>} List of SRT gateways
+   */
+  async getAllSRTGatewaysByListenIP(listenIp) {
+    try {
+      console.log(`🚪 Getting SRT gateways by listen IP: ${listenIp}`)
+      const result = await apiGet(`/functions/gateways/srt/getAllByListenIPAddress/${listenIp}`, true)
+      console.log('✅ SRT gateways by listen IP retrieved:', result)
+      return result
+    } catch (error) {
+      console.error(`❌ Error getting SRT gateways by listen IP ${listenIp}:`, error)
+      throw error
+    }
+  },
+
+  /**
+   * Get SRT gateways by input multicast address
+   * @param {string} inputMulticast - Input multicast address
+   * @returns {Promise<Object>} List of SRT gateways
+   */
+  async getAllSRTGatewaysByInputMCAddress(inputMulticast) {
+    try {
+      console.log(`🚪 Getting SRT gateways by input MC address: ${inputMulticast}`)
+      const result = await apiGet(`/functions/gateways/srt/getAllByInputMCAddress/${inputMulticast}`, true)
+      console.log('✅ SRT gateways by input MC address retrieved:', result)
+      return result
+    } catch (error) {
+      console.error(`❌ Error getting SRT gateways by input MC address ${inputMulticast}:`, error)
+      throw error
+    }
+  },
+
+  /**
+   * Get SRT gateways by foreign IP address
+   * @param {string} foreignIp - Foreign IP address
+   * @returns {Promise<Object>} List of SRT gateways
+   */
+  async getAllSRTGatewaysByForeignIP(foreignIp) {
+    try {
+      console.log(`🚪 Getting SRT gateways by foreign IP: ${foreignIp}`)
+      const result = await apiGet(`/functions/gateways/srt/getAllByForeignIPAddress/${foreignIp}`, true)
+      console.log('✅ SRT gateways by foreign IP retrieved:', result)
+      return result
+    } catch (error) {
+      console.error(`❌ Error getting SRT gateways by foreign IP ${foreignIp}:`, error)
+      throw error
+    }
+  }
+}
