@@ -178,14 +178,14 @@
                       Edit
                     </button>
                     
-                    <!-- Delete button -->
+                    <!-- Analyze button -->
                     <button 
-                      @click="deleteGateway(gateway.id)"
-                      class="btn btn-xs btn-error btn-outline"
-                      :disabled="gateway.running || isProcessing.includes(gateway.id)"
-                      :title="gateway.running ? 'The gateway must be stopped to be deleted' : 'Delete this gateway'"
+                      @click="analyzeGateway(gateway)"
+                      class="btn btn-xs btn-info"
+                      :disabled="!gateway.running || isProcessing.includes(gateway.id)"
+                      :title="!gateway.running ? 'The gateway must be running to be analyzed' : 'Analyze this gateway'"
                     >
-                      Delete
+                      Analyze
                     </button>
                   </div>
                 </td>
@@ -201,7 +201,7 @@
             <div class="flex gap-2">
               <button @click="startSelectedGateways" class="btn btn-xs btn-success">Start Selected</button>
               <button @click="stopSelectedGateways" class="btn btn-xs btn-error">Stop Selected</button>
-              <button @click="deleteSelectedGateways" class="btn btn-xs btn-error">Delete Selected</button>
+              <button @click="analyzeSelectedGateways" class="btn btn-xs btn-info">Analyze Selected</button>
             </div>
           </div>
         </div>
@@ -362,27 +362,11 @@ async function editGateway(id) {
   }
 }
 
-async function deleteGateway(id) {
-  const gateway = gateways.value.find(g => g.id === id)
-  if (gateway && confirm(`Delete gateway ${gateway.name}? This action cannot be undone.`)) {
-    if (isProcessing.value.includes(gateway.id)) {
-      return // Already processing
-    }
-
-    isProcessing.value.push(gateway.id)
-    
-    try {
-      console.log(`🚪 Deleting gateway ${gateway.name}...`)
-      await appStore.deleteSRTGateway(id)
-      console.log(`✅ Deleted gateway ${gateway.name}`)
-      await loadGateways() // Refresh to remove deleted gateway
-    } catch (err) {
-      console.error(`❌ Error deleting gateway ${gateway.name}:`, err)
-      alert(`Failed to delete gateway: ${err.message}`)
-    } finally {
-      isProcessing.value = isProcessing.value.filter(gatewayId => gatewayId !== gateway.id)
-    }
-  }
+function analyzeGateway(gateway) {
+  console.log('🔍 Analyzing gateway:', gateway.name)
+  
+  // Show "Coming soon" popup
+  alert('🚧 Gateway Analysis - Coming Soon!\n\nThis feature is currently under development and will be available in a future update.')
 }
 
 function createGateway() {
@@ -506,32 +490,27 @@ async function stopSelectedGateways() {
   }
 }
 
-async function deleteSelectedGateways() {
+function analyzeSelectedGateways() {
   if (selectedGateways.value.length === 0) {
     return
   }
   
-  const confirmed = confirm(`Are you sure you want to delete ${selectedGateways.value.length} gateway(s)?`)
-  if (!confirmed) {
+  const runningSelected = gateways.value.filter(g => 
+    selectedGateways.value.includes(g.id) && g.running
+  )
+  
+  if (runningSelected.length === 0) {
+    alert('⚠️ No running gateways selected.\n\nOnly running gateways can be analyzed.')
     return
   }
   
-  try {
-    console.log(`🚪 Deleting ${selectedGateways.value.length} selected gateways...`)
-    
-    await Promise.all(
-      selectedGateways.value.map(gatewayId => appStore.deleteSRTGateway(gatewayId))
-    )
-    
-    // Refresh the list
-    await loadGateways()
-    selectedGateways.value = []
-    
-    console.log(`✅ Deleted selected gateways`)
-  } catch (err) {
-    console.error('❌ Error deleting selected gateways:', err)
-    alert(`Failed to delete selected gateways: ${err.message}`)
-  }
+  console.log(`🔍 Analyzing ${runningSelected.length} selected gateways...`)
+  
+  // Show "Coming soon" popup
+  alert(`🚧 Bulk Gateway Analysis - Coming Soon!\n\nThis feature will allow you to analyze ${runningSelected.length} running gateway(s) simultaneously.\n\nCurrently under development.`)
+  
+  // Clear selection after showing the popup
+  selectedGateways.value = []
 }
 
 // Search handling with debounce
