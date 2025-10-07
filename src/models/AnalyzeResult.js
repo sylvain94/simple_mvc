@@ -106,12 +106,22 @@ export class AnalyzeResult {
       tree.children.push({
         type: 'tables',
         label: 'Tables',
-        children: this.tables.map(table => ({
-          type: 'table',
-          label: `${table.getTableName()} (PID: ${table.pid})`,
-          data: table,
-          children: []
-        }))
+        children: this.tables.map(table => {
+          const tableName = table.getTableName();
+          let displayPid = table.pid;
+          
+          // Special case for PAT : display PID 0 instead of null
+          if (tableName === 'PAT' && (table.pid === null || table.pid === undefined)) {
+            displayPid = 0;
+          }
+          
+          return {
+            type: 'table',
+            label: `${tableName} (PID: ${displayPid})`,
+            data: table,
+            children: []
+          };
+        })
       });
     }
 
@@ -308,12 +318,12 @@ export class Table {
       112: 'TDT'   // TID 112 = TDT
     };
     
-    // Si on a un PID valide et reconnu, l'utiliser
+    // If we have a valid and recognized PID, use it
     if (this.pid !== null && this.pid !== undefined && pidToName[this.pid]) {
       return pidToName[this.pid];
     }
     
-    // Si le PID est null mais qu'on a un TID, utiliser le TID
+    // If the PID is null but we have a TID, use the TID
     if (this.tid !== null && this.tid !== undefined) {
       const nameFromTid = tidToName[this.tid];
       if (nameFromTid) {
@@ -321,13 +331,13 @@ export class Table {
       }
     }
     
-    // Cas spéciaux basés sur les patterns observés
+    // Special cases based on observed patterns
     if (this.tid === null && this.tidExt === 1) {
-      // Probablement PAT si TID est null et tidExt est 1
+      // Probably PAT if TID is null and tidExt is 1
       return 'PAT';
     }
     
-    // Fallback pour PID non reconnu
+    // Fallback for unrecognized PID
     if (this.pid !== null && this.pid !== undefined) {
       return `Table PID ${this.pid}`;
     }

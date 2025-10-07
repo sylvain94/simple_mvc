@@ -344,6 +344,24 @@ const getNodeDetails = (node) => {
   
   const details = { ...node.data }
   delete details.children // Remove children from details view
+  
+  // For All PIDs, remove irrelevant fields
+  if (node.type === 'pid') {
+    delete details.video    // Always "No" for all pids
+    delete details.audio    // Always "No" for all pids
+    delete details.pmt      // Always "No" for all pids
+    
+    // Replace packets object with discontinuities value
+    if (details.packets && typeof details.packets === 'object') {
+      details.discontinuities = details.packets.discontinuities || 0
+      delete details.packets
+    }
+  }
+  // For audio PIDs, keep relevant fields
+  if (node.type === 'pid' && node.data.audio === false) {
+    delete details.language // Not relevant for audio
+  }  
+  
   return details
 }
 
