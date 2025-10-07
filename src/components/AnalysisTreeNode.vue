@@ -126,7 +126,7 @@ const getTypeIcon = () => {
     case 'service':
       return props.node.data?.isScrambled ? '🔒' : '🔓'
     case 'pid':
-      return '📌'
+      return ''
     case 'tables':
       return '📋'
     case 'table':

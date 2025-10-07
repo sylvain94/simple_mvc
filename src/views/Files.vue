@@ -173,7 +173,7 @@
                       @click="editFile(file)"
                       class="btn btn-xs btn-primary"
                       :disabled="file.running || isProcessing.includes(file.id)"
-                      :title="file.running ? 'Le fichier doit être arrêté pour être modifié' : 'Modifier ce fichier'"
+                      :title="file.running ? 'The file must be stopped to be edited' : 'Edit this file'"
                     >
                       Edit
                     </button>
@@ -183,7 +183,7 @@
                       @click="analyzeFile(file)"
                       class="btn btn-xs btn-info"
                       :disabled="!file.running || isProcessing.includes(file.id)"
-                      :title="!file.running ? 'Le fichier doit être en cours d\'exécution pour être analysé' : 'Analyser ce fichier'"
+                      :title="!file.running ? 'The file must be running to be analyzed' : 'Analyze this file'"
                     >
                       Analyze
                     </button>
