@@ -251,6 +251,9 @@ export class SRTGatewayController {
    */
   static transformSRTGatewayFromAPI(apiData) {
     try {
+      // Debug: Log raw API data to see what we receive
+      console.log('🔍 Raw API data for gateway:', apiData.name, 'gatewayType:', apiData.gatewayType)
+      
       // Map SRT-specific fields to Gateway model
       const gatewayData = {
         id: apiData.id,
