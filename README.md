@@ -212,6 +212,7 @@ npm run dev
 ### Environment Variables
 
 Create a file `.env` based on `.env.example`:
+
 ```env
 VITE_API_BASE=http://localhost:8080/api/v1
 VITE_APP_NAME=Simple MVC
