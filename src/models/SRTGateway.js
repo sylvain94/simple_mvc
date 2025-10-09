@@ -22,8 +22,8 @@ class SRTGateway extends Gateway {
     this.srtParameters = data.srtParameters || []
     this.mcParameters = data.mcParameters || []
     
-    // Override default gateway type
-    this.gatewayType = data.gatewayType || 'SRT-Gateway'
+    // Override default gateway type - preserve API type for proper display
+    this.gatewayType = data.gatewayType || 'SRT_MC'
   }
 
   // SRT-specific constants
