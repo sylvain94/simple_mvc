@@ -9,7 +9,7 @@ A modern application based on MVC architecture with Vue 3, built with best pract
 - **Routing:** Vue Router 4
 - **State Management:** Pinia
 - **Build Tool:** Vite
-- **Runtime:** Node.js 22.19.0 (managed with NVM)
+- **Runtime:** Node.js 18.20+ (compatible with Vite 5.x) or 20.19+ (for Vite 7.x)
 
 ## 📁 Project Structure
 
@@ -58,30 +58,69 @@ src/
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 20.19+ ou 22.12+ (recommended: 22.19.0 with NVM)
-- npm or yarn
+- Node.js 18.20+ (minimum) or 20.19+ (recommended)
+- npm 8.0+
 
 ### Installation
+
+#### Option 1: Standard Installation (Node.js 18.20+)
 ```bash
-# Clone the projet
+# Clone the project
 git clone https://github.com/sylvain94/simple_mvc.git
 cd simple_mvc
 
-# Install the dependancies
+# Install dependencies
 npm install
 
 # Launch the development server
 npm run dev
 ```
 
-### NVM Configuration (recommended)
+#### Option 2: With Node.js Update (if you have Node.js < 18.20)
 ```bash
-# Install if not already done
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+# Update Node.js to version 20.x (LTS)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
 
-# Install and use Node.js 22
-nvm install --lts
-nvm use --lts
+# Verify versions
+node --version  # Should be v20.x.x
+npm --version   # Should be 10.x.x
+
+# Clone and install
+git clone https://github.com/sylvain94/simple_mvc.git
+cd simple_mvc
+npm install
+npm run dev
+```
+
+#### Option 3: Using NVM (Node Version Manager)
+```bash
+# Install NVM if not already done
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+source ~/.bashrc
+
+# Install and use Node.js 20 (LTS)
+nvm install 20
+nvm use 20
+
+# Clone and install
+git clone https://github.com/sylvain94/simple_mvc.git
+cd simple_mvc
+npm install
+npm run dev
+```
+
+### 🐧 Linux Server Installation (Headless)
+If you're installing on a Linux server without GUI:
+
+```bash
+# Configure environment for headless server
+export QT_QPA_PLATFORM=offscreen
+echo 'export QT_QPA_PLATFORM=offscreen' >> ~/.bashrc
+
+# Then follow standard installation
+npm install
+npm run dev
 ```
 
 ## 📖 Available Scripts
@@ -90,6 +129,59 @@ nvm use --lts
 npm run dev          # Serveur de développement
 npm run build        # Build de production
 npm run preview      # Prévisualisation du build
+```
+
+## 🔧 Troubleshooting
+
+### Common Issues and Solutions
+
+#### ❌ "vite: not found" Error
+```bash
+# Solution: Install dependencies first
+npm install
+```
+
+#### ❌ "Unsupported engine" or Node.js Version Error
+```bash
+# Check your Node.js version
+node --version
+
+# If < 18.20, update Node.js:
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Then reinstall dependencies
+rm -rf node_modules package-lock.json
+npm install
+```
+
+#### ❌ Qt/XCB Display Errors on Linux Servers
+```bash
+# Add environment variable for headless servers
+export QT_QPA_PLATFORM=offscreen
+echo 'export QT_QPA_PLATFORM=offscreen' >> ~/.bashrc
+source ~/.bashrc
+```
+
+#### ❌ Permission Errors with npm
+```bash
+# Fix npm permissions
+sudo chown -R $USER:$USER ~/.npm
+# Or install with sudo and fix ownership
+sudo npm install
+sudo chown -R $USER:$USER node_modules
+```
+
+#### ✅ Verify Installation
+```bash
+# Check versions
+node --version    # Should be >= 18.20
+npm --version     # Should be >= 8.0
+npx vite --version # Should show Vite version
+
+# Test the application
+npm run dev
+# Should show: "VITE ready in XXX ms" and network URLs
 ```
 
 ## 🎯 Available Pages
