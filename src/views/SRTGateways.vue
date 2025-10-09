@@ -201,7 +201,7 @@
             <div class="flex gap-2">
               <button @click="startSelectedGateways" class="btn btn-xs btn-success">Start Selected</button>
               <button @click="stopSelectedGateways" class="btn btn-xs btn-error">Stop Selected</button>
-              <button @click="analyzeSelectedGateways" class="btn btn-xs btn-info">Analyze Selected</button>
+              <button @click="deleteSelectedGateways" class="btn btn-xs btn-error">Delete Selected</button>
             </div>
           </div>
         </div>
@@ -499,27 +499,44 @@ async function stopSelectedGateways() {
   }
 }
 
-function analyzeSelectedGateways() {
+async function deleteSelectedGateways() {
   if (selectedGateways.value.length === 0) {
     return
   }
   
+  // Check if any selected gateways are running
   const runningSelected = gateways.value.filter(g => 
     selectedGateways.value.includes(g.id) && g.running
   )
   
-  if (runningSelected.length === 0) {
-    alert('⚠️ No running gateways selected.\n\nOnly running gateways can be analyzed.')
+  if (runningSelected.length > 0) {
+    alert(`⚠️ Cannot delete running gateways.\n\n${runningSelected.length} selected gateway(s) are currently running. Please stop them first before deletion.`)
     return
   }
   
-  console.log(`🔍 Analyzing ${runningSelected.length} selected gateways...`)
+  const confirmed = confirm(`Are you sure you want to delete ${selectedGateways.value.length} gateway(s)?\n\nThis action cannot be undone.`)
+  if (!confirmed) {
+    return
+  }
   
-  // Show "Coming soon" popup
-  alert(`🚧 Bulk Gateway Analysis - Coming Soon!\n\nThis feature will allow you to analyze ${runningSelected.length} running gateway(s) simultaneously.\n\nCurrently under development.`)
-  
-  // Clear selection after showing the popup
-  selectedGateways.value = []
+  try {
+    console.log(`🗑️ Deleting ${selectedGateways.value.length} selected gateways...`)
+    
+    // Delete all selected gateways in parallel
+    await Promise.all(
+      selectedGateways.value.map(gatewayId => appStore.deleteSRTGateway(gatewayId))
+    )
+    
+    console.log(`✅ Successfully deleted ${selectedGateways.value.length} gateways`)
+    
+    // Clear selection and refresh the list
+    selectedGateways.value = []
+    await loadGateways()
+    
+  } catch (err) {
+    console.error('❌ Error deleting selected gateways:', err)
+    alert(`Failed to delete selected gateways: ${err.message}`)
+  }
 }
 
 // Search handling with debounce
