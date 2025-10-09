@@ -383,10 +383,19 @@ function formatAddress(gateway) {
 }
 
 function formatType(gateway) {
-  if (gateway.srtConfig?.srtMode) {
-    return `${gateway.gatewayType} (${gateway.srtConfig.srtMode})`
+  // Map gatewayType to user-friendly names
+  let displayType = gateway.gatewayType
+  if (gateway.gatewayType === 'SRT_MC') {
+    displayType = 'Incoming'
+  } else if (gateway.gatewayType === 'MC_SRT') {
+    displayType = 'Outgoing'
   }
-  return gateway.gatewayType
+  
+  // Add SRT mode if available
+  if (gateway.srtConfig?.srtMode) {
+    return `${displayType} (${gateway.srtConfig.srtMode})`
+  }
+  return displayType
 }
 
 function closeModal() {
