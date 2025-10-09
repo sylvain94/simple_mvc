@@ -383,9 +383,6 @@ function formatAddress(gateway) {
 }
 
 function formatType(gateway) {
-  // Debug: Log what we receive in formatType
-  console.log('🎯 formatType received gateway:', gateway.name, 'gatewayType:', gateway.gatewayType)
-  
   // Map gatewayType to user-friendly names
   let displayType = gateway.gatewayType
   if (gateway.gatewayType === 'SRT_MC') {

@@ -45,7 +45,6 @@ export class SRTGatewayController {
       // Transform API data to Gateway model instances
       const gateways = gatewaysData.map(gatewayData => {
         try {
-          console.log('🔄 About to transform gateway:', gatewayData.name, 'with gatewayType:', gatewayData.gatewayType)
           return this.transformSRTGatewayFromAPI(gatewayData)
         } catch (error) {
           console.error('❌ Error transforming SRT gateway:', gatewayData, error)
@@ -252,9 +251,6 @@ export class SRTGatewayController {
    */
   static transformSRTGatewayFromAPI(apiData) {
     try {
-      // Debug: Log raw API data to see what we receive
-      console.log('🔍 Raw API data for gateway:', apiData.name, 'gatewayType:', apiData.gatewayType)
-      
       // Map SRT-specific fields to Gateway model
       const gatewayData = {
         id: apiData.id,
