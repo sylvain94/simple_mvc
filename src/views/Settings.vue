@@ -89,13 +89,13 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v6a2 2 0 002 2h4a2 2 0 002-2V5z" />
               </svg>
-              Thème et Apparence
+              Theme and Appearance
             </h2>
             
             <!-- Theme Selection Cards -->
             <div class="form-control mb-8">
               <label class="label">
-                <span class="label-text font-semibold">Sélection du thème</span>
+                <span class="label-text font-semibold">Theme selection</span>
                 <span class="label-text-alt text-sm opacity-70">Thème actuel: {{ appStore.theme }}</span>
               </label>
               
@@ -114,8 +114,8 @@
                         </svg>
                       </div>
                       <div>
-                        <h3 class="font-semibold text-sm">Mode Clair</h3>
-                        <p class="text-xs opacity-70">Interface lumineuse</p>
+                        <h3 class="font-semibold text-sm">Light mode</h3>
+                        <p class="text-xs opacity-70">Light mode</p>
                       </div>
                     </div>
                   </div>
@@ -135,8 +135,8 @@
                         </svg>
                       </div>
                       <div>
-                        <h3 class="font-semibold text-sm">Mode Sombre</h3>
-                        <p class="text-xs opacity-70">Interface sombre</p>
+                        <h3 class="font-semibold text-sm">Dark mode</h3>
+                        <p class="text-xs opacity-70">Dark mode</p>
                       </div>
                     </div>
                   </div>
@@ -156,8 +156,8 @@
                         </svg>
                       </div>
                       <div>
-                        <h3 class="font-semibold text-sm">Automatique</h3>
-                        <p class="text-xs opacity-70">Suit le système</p>
+                        <h3 class="font-semibold text-sm">Automatic</h3>
+                        <p class="text-xs opacity-70">Automatic</p>
                       </div>
                     </div>
                   </div>
@@ -175,31 +175,31 @@
                   <div class="w-3 h-3 rounded-full bg-primary"></div>
                   <div class="w-3 h-3 rounded-full bg-secondary"></div>
                   <div class="w-3 h-3 rounded-full bg-accent"></div>
-                  <span class="text-sm">Couleurs du thème actuel</span>
+                  <span class="text-sm">Current theme colors</span>
                 </div>
               </div>
             </div>
             
             <!-- Additional Options -->
-            <div class="divider">Options avancées</div>
+            <div class="divider">Advanced options</div>
             
             <div class="form-control mb-4">
               <label class="label cursor-pointer">
-                <span class="label-text">Animations réduites</span>
+                <span class="label-text">Reduced animations</span>
                 <input v-model="reducedMotion" type="checkbox" class="toggle toggle-primary" />
               </label>
               <label class="label">
-                <span class="label-text-alt">Réduit les animations pour améliorer les performances</span>
+                <span class="label-text-alt">Reduces animations to improve performance</span>
               </label>
             </div>
             
             <div class="form-control">
               <label class="label cursor-pointer">
-                <span class="label-text">Transitions fluides</span>
+                <span class="label-text">Smooth transitions</span>
                 <input v-model="smoothTransitions" type="checkbox" class="toggle toggle-primary" />
               </label>
               <label class="label">
-                <span class="label-text-alt">Active les transitions fluides entre les thèmes</span>
+                <span class="label-text-alt">Active smooth transitions between themes</span>
               </label>
             </div>
           </div>
@@ -304,9 +304,9 @@ const lastLogin = ref('26 septembre 2025, 11:06')
 // Categories for settings navigation
 const categories = ref([
   { id: 'profile', name: 'Profile', icon: 'user' },
-  { id: 'appearance', name: 'Apparence', icon: 'palette' },
+  { id: 'appearance', name: 'Appearance', icon: 'palette' },
   { id: 'notifications', name: 'Notifications', icon: 'bell' },
-  { id: 'security', name: 'Sécurité', icon: 'shield' }
+  { id: 'security', name: 'Security', icon: 'shield' }
 ])
 
 // User profile data (should come from a store in real app)
@@ -314,7 +314,7 @@ const userProfile = reactive({
   firstName: 'Sylvain',
   lastName: 'Renard',
   email: 's.renard94@gmail.com',
-  bio: 'Développeur passionné par les technologies modernes et l\'architecture MVC.'
+  bio: 'Developper passionate about modern technologies and MVC architecture.'
 })
 
 // Notification preferences
@@ -391,12 +391,12 @@ function saveNotifications() {
 
 function changePassword() {
   if (security.newPassword !== security.confirmPassword) {
-    alert('Les mots de passe ne correspondent pas');
+    alert('The passwords do not match');
     return;
   }
   
   if (security.newPassword.length < 8) {
-    alert('Le mot de passe doit contenir au moins 8 caractères');
+    alert('The password must contain at least 8 characters');
     return;
   }
   
