@@ -37,18 +37,21 @@ src/
 ## 🎨 Functionalities
 
 ### ✅ User interface
+
 - **Navigation responsive** with mobile menu
-- **Système de thèmes** (Light, Dark, Cupcake, etc.)
-- **Dashboard interactif** with statistics and quick actions
-- **Formulaire de connexion** with validation
-- **Page de paramètres** complete (profile, appearance, notifications, security)
+- **Theme System** (Light, Dark, Cupcake, etc.)
+- **Interactive Dashboard** with statistics and quick actions
+- **Connection Form** with validation
+- **Parameters Page** complete (profile, appearance, notifications, security)
 
 ### ✅ Architecture MVC
+
 - **Models:** Pinia Stores for Condition Management
 - **Views:** Component Vuejs with Routing
 - **Controllers:** API services for business logic
 
 ### ✅ Technologies Modernes
+
 - **Vue 3 Composition API** for a better reactivity
 - **Tailwind CSS** for utility-first styling
 - **DaisyUI** for ready-to-use components
@@ -58,12 +61,14 @@ src/
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18.20+ (minimum) or 20.19+ (recommended)
 - npm 8.0+
 
 ### Installation
 
 #### Option 1: Standard Installation (Node.js 18.20+)
+
 ```bash
 # Clone the project
 git clone https://github.com/sylvain94/simple_mvc.git
@@ -77,6 +82,7 @@ npm run dev
 ```
 
 #### Option 2: With Node.js Update (if you have Node.js < 18.20)
+
 ```bash
 # Update Node.js to version 20.x (LTS)
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
@@ -94,6 +100,7 @@ npm run dev
 ```
 
 #### Option 3: Using NVM (Node Version Manager)
+
 ```bash
 # Install NVM if not already done
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
@@ -111,6 +118,7 @@ npm run dev
 ```
 
 ### 🐧 Linux Server Installation (Headless)
+
 If you're installing on a Linux server without GUI:
 
 ```bash
@@ -136,12 +144,14 @@ npm run preview      # Prévisualisation du build
 ### Common Issues and Solutions
 
 #### ❌ "vite: not found" Error
+
 ```bash
 # Solution: Install dependencies first
 npm install
 ```
 
 #### ❌ "Unsupported engine" or Node.js Version Error
+
 ```bash
 # Check your Node.js version
 node --version
@@ -156,6 +166,7 @@ npm install
 ```
 
 #### ❌ Qt/XCB Display Errors on Linux Servers
+
 ```bash
 # Add environment variable for headless servers
 export QT_QPA_PLATFORM=offscreen
@@ -164,6 +175,7 @@ source ~/.bashrc
 ```
 
 #### ❌ Permission Errors with npm
+
 ```bash
 # Fix npm permissions
 sudo chown -R $USER:$USER ~/.npm
@@ -173,6 +185,7 @@ sudo chown -R $USER:$USER node_modules
 ```
 
 #### ✅ Verify Installation
+
 ```bash
 # Check versions
 node --version    # Should be >= 18.20
@@ -193,9 +206,11 @@ npm run dev
 ## 🔧 Configuration
 
 ### DaisyUI Themes Available
+
 - Light, Dark, Cupcake, Bumblebee, Emerald, Corporate, etc.
 
 ### Environment Variables
+
 Create a file `.env` based on `.env.example`:
 ```env
 VITE_API_BASE=http://localhost:8080/api/v1
