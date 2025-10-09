@@ -324,13 +324,8 @@ export class SRTGatewayController {
    * @returns {string} Gateway model type
    */
   static mapSRTGatewayType(apiType) {
-    const typeMap = {
-      'SRT_MC': 'SRT-Gateway',
-      'MC_SRT': 'SRT-Gateway',
-      'SRT_MBTS': 'SRT-Gateway',
-      'MBTS_SRT': 'SRT-Gateway'
-    }
-    return typeMap[apiType] || 'SRT-Gateway'
+    // Preserve the original API type so formatType() can display it correctly
+    return apiType || 'SRT_MC'
   }
 
   /**
