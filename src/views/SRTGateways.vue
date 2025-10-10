@@ -53,11 +53,26 @@
       </div>
     </div>
 
-    <!-- Gateways table -->
+    <!-- Tabs for Incoming/Outgoing -->
     <div class="card bg-base-100 shadow-xl">
       <div class="card-body">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="card-title">SRT Gateways</h3>
+          <div class="tabs tabs-boxed">
+            <a 
+              class="tab" 
+              :class="{ 'tab-active': activeTab === 'incoming' }"
+              @click="activeTab = 'incoming'"
+            >
+              Incoming ({{ incomingGateways.length }})
+            </a>
+            <a 
+              class="tab" 
+              :class="{ 'tab-active': activeTab === 'outgoing' }"
+              @click="activeTab = 'outgoing'"
+            >
+              Outgoing ({{ outgoingGateways.length }})
+            </a>
+          </div>
           <div class="text-sm text-base-content/70">
             Last updated: {{ lastUpdated ? lastUpdated.toLocaleTimeString() : 'Never' }}
           </div>
@@ -103,20 +118,20 @@
             </thead>
             <tbody>
               <!-- No gateways message -->
-              <tr v-if="filteredGateways.length === 0 && !isLoading">
+              <tr v-if="currentTabGateways.length === 0 && !isLoading">
                 <td colspan="7" class="text-center py-8">
                   <div class="text-base-content/50">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <p class="font-medium">No SRT gateways found</p>
-                    <p class="text-sm">{{ searchQuery ? 'Try adjusting your search criteria' : 'Add your first SRT gateway to get started' }}</p>
+                    <p class="font-medium">No {{ activeTab }} SRT gateways found</p>
+                    <p class="text-sm">{{ searchQuery ? 'Try adjusting your search criteria' : `Add your first ${activeTab} SRT gateway to get started` }}</p>
                   </div>
                 </td>
               </tr>
               
               <!-- Gateway rows -->
-              <tr v-for="gateway in filteredGateways" :key="gateway.id" class="hover">
+              <tr v-for="gateway in currentTabGateways" :key="gateway.id" class="hover">
                 <td>
                   <label>
                     <input 
@@ -219,7 +234,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useAppStore } from '../stores/app.js'
 import SRTGatewayModal from '../components/SRTGatewayModal.vue'
 
@@ -236,6 +251,7 @@ const searchQuery = ref('')
 const selectedGateways = ref([])
 const lastUpdated = ref(null)
 const stats = ref(null)
+const activeTab = ref('incoming')
 
 // Use reactive data from store
 const gateways = computed(() => appStore.srtGateways)
@@ -252,14 +268,25 @@ const enabledGateways = computed(() =>
   gateways.value.filter(g => g.enabled).length
 )
 
-// Computed properties for search and selection
-const filteredGateways = computed(() => {
+// Separate gateways by type
+const incomingGateways = computed(() => 
+  gateways.value.filter(g => g.gatewayType === 'SRT_MC')
+)
+
+const outgoingGateways = computed(() => 
+  gateways.value.filter(g => g.gatewayType === 'MC_SRT')
+)
+
+// Get gateways for current tab
+const currentTabGateways = computed(() => {
+  const baseGateways = activeTab.value === 'incoming' ? incomingGateways.value : outgoingGateways.value
+  
   if (!searchQuery.value.trim()) {
-    return gateways.value
+    return baseGateways
   }
   
   const query = searchQuery.value.toLowerCase().trim()
-  return gateways.value.filter(gateway => 
+  return baseGateways.filter(gateway => 
     (gateway.name && gateway.name.toLowerCase().includes(query)) ||
     (gateway.description && gateway.description.toLowerCase().includes(query)) ||
     (gateway.gatewayType && gateway.gatewayType.toLowerCase().includes(query)) ||
@@ -270,6 +297,9 @@ const filteredGateways = computed(() => {
   )
 })
 
+// Legacy computed for backward compatibility (used in bulk actions)
+const filteredGateways = computed(() => currentTabGateways.value)
+
 const allSelected = computed(() => {
   return filteredGateways.value.length > 0 && 
          filteredGateways.value.every(gateway => selectedGateways.value.includes(gateway.id))
@@ -277,6 +307,11 @@ const allSelected = computed(() => {
 
 onMounted(() => {
   loadGateways()
+})
+
+// Clear selection when switching tabs
+watch(activeTab, () => {
+  selectedGateways.value = []
 })
 
 async function loadGateways() {
