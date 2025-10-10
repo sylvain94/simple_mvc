@@ -683,7 +683,7 @@ const srtGatewayService = {
 const applicationService = {
   async getAllProperties() {
     console.log('🏢 Getting application properties')
-    const response = await apiGet('/utils/application/getAllProperties')
+    const response = await apiGet('/utils/application/getAllProperties', true)
     console.log('✅ Application properties retrieved:', response)
     return response
   }
