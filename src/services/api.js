@@ -691,11 +691,9 @@ const applicationService = {
 
 // Export all services
 export {
-  authService,
   userService,
   roleService,
   userRoleService,
-  inputFileService,
   analyzeService,
   srtGatewayService,
   applicationService
