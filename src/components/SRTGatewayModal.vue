@@ -147,8 +147,13 @@
                   type="text" 
                   v-model="formData.foreignSRTAddress"
                   class="input input-bordered" 
-                  placeholder="Remote SRT address"
+                  :class="{ 'input-disabled': formData.gatewayType === 'SRT_MC' }"
+                  :disabled="formData.gatewayType === 'SRT_MC'"
+                  placeholder="Remote SRT address (not used for Incoming gateways)"
                 />
+                <label v-if="formData.gatewayType === 'SRT_MC'" class="label">
+                  <span class="label-text-alt text-info">This field is not used for Incoming (SRT → Multicast) gateways</span>
+                </label>
               </div>
 
               <div class="form-control">
@@ -425,6 +430,14 @@ watch(() => props.isVisible, (newValue) => {
   }
   if (!newValue) {
     errors.value = {}
+  }
+})
+
+// Watch for gateway type changes to clear foreign SRT address for incoming gateways
+watch(() => formData.gatewayType, (newType) => {
+  if (newType === 'SRT_MC') {
+    // Clear foreign SRT address for incoming gateways as it's not used
+    formData.foreignSRTAddress = ''
   }
 })
 
