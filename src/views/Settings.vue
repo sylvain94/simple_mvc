@@ -19,7 +19,10 @@
                   :class="{ 'active': activeCategory === category.id }"
                   class="flex items-center gap-3"
                 >
-                  <svg v-if="category.id === 'profile'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                  <svg v-if="category.id === 'application'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  <svg v-else-if="category.id === 'profile'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                   <svg v-else-if="category.id === 'appearance'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
@@ -41,6 +44,121 @@
 
       <!-- Parameter content -->
       <div class="lg:col-span-3">
+        <!-- Application Properties -->
+        <div v-if="activeCategory === 'application'" class="card bg-base-100 shadow-lg">
+          <div class="card-body">
+            <h2 class="card-title mb-6 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              Application Properties
+            </h2>
+            
+            <!-- Loading State -->
+            <div v-if="applicationLoading" class="text-center py-8">
+              <div class="loading loading-spinner loading-lg"></div>
+              <p class="mt-4">Loading application properties...</p>
+            </div>
+            
+            <!-- Error State -->
+            <div v-else-if="applicationError" class="alert alert-error mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{{ applicationError }}</span>
+              <button @click="loadApplicationProperties" class="btn btn-sm">Retry</button>
+            </div>
+            
+            <!-- Application Properties Display -->
+            <div v-else-if="applicationProperties" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-medium">Application ID</span>
+                  </label>
+                  <input 
+                    :value="applicationProperties.id" 
+                    type="text" 
+                    class="input input-bordered" 
+                    readonly
+                  />
+                </div>
+                
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-medium">Serial Number</span>
+                  </label>
+                  <input 
+                    :value="applicationProperties.serialNumber" 
+                    type="text" 
+                    class="input input-bordered" 
+                    readonly
+                  />
+                </div>
+                
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-medium">Name</span>
+                  </label>
+                  <input 
+                    :value="applicationProperties.name" 
+                    type="text" 
+                    class="input input-bordered" 
+                    readonly
+                  />
+                </div>
+                
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-medium">Version</span>
+                  </label>
+                  <input 
+                    :value="applicationProperties.version" 
+                    type="text" 
+                    class="input input-bordered" 
+                    readonly
+                  />
+                </div>
+                
+                <div class="form-control md:col-span-2">
+                  <label class="label">
+                    <span class="label-text font-medium">Description</span>
+                  </label>
+                  <input 
+                    :value="applicationProperties.description || 'No description available'" 
+                    type="text" 
+                    class="input input-bordered" 
+                    readonly
+                  />
+                </div>
+                
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-medium">Configuration Status</span>
+                  </label>
+                  <div class="flex items-center gap-2">
+                    <span 
+                      class="badge" 
+                      :class="applicationProperties.configured ? 'badge-success' : 'badge-warning'"
+                    >
+                      {{ applicationProperties.configured ? 'Configured' : 'Not Configured' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card-actions justify-end mt-6">
+                <button @click="loadApplicationProperties" class="btn btn-primary">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Refresh
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- User Profile -->
         <div v-if="activeCategory === 'profile'" class="card bg-base-100 shadow-lg">
           <div class="card-body">
@@ -291,18 +409,25 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAppStore } from '../stores/app.js'
+import { ApplicationController } from '../controllers/index.js'
 
 // Store imports
 const appStore = useAppStore()
 
 // Reactive data
-const activeCategory = ref('profile')
+const activeCategory = ref('application')
 const reducedMotion = ref(false)
 const smoothTransitions = ref(true)
 const lastLogin = ref('26 septembre 2025, 11:06')
 
+// Application properties
+const applicationProperties = ref(null)
+const applicationLoading = ref(false)
+const applicationError = ref(null)
+
 // Categories for settings navigation
 const categories = ref([
+  { id: 'application', name: 'Application', icon: 'application' },
   { id: 'profile', name: 'Profile', icon: 'user' },
   { id: 'appearance', name: 'Appearance', icon: 'palette' },
   { id: 'notifications', name: 'Notifications', icon: 'bell' },
@@ -341,6 +466,8 @@ onMounted(() => {
   console.log('🔧 Settings component mounted');
   // Load user preferences from localStorage or API
   loadUserPreferences();
+  // Load application properties
+  loadApplicationProperties();
 })
 
 function loadUserPreferences() {
@@ -387,6 +514,24 @@ function saveProfile() {
 function saveNotifications() {
   console.log('🔔 Saving notifications:', notifications);
   // You would call a notifications API here
+}
+
+async function loadApplicationProperties() {
+  try {
+    applicationLoading.value = true
+    applicationError.value = null
+    console.log('🏢 Loading application properties...')
+    
+    const properties = await ApplicationController.getAllProperties()
+    applicationProperties.value = properties
+    
+    console.log('✅ Application properties loaded:', properties)
+  } catch (error) {
+    console.error('❌ Error loading application properties:', error)
+    applicationError.value = error.message || 'Failed to load application properties'
+  } finally {
+    applicationLoading.value = false
+  }
 }
 
 function changePassword() {

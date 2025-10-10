@@ -678,3 +678,23 @@ export const srtGatewayService = {
     }
   }
 }
+
+// Application service
+const applicationService = {
+  async getAllProperties() {
+    console.log('🏢 Getting application properties')
+    const response = await apiGet('/utils/application/getAllProperties')
+    console.log('✅ Application properties retrieved:', response)
+    return response
+  }
+}
+
+// Export all services
+export {
+  authService,
+  userService,
+  inputFileService,
+  analyzeService,
+  srtGatewayService,
+  applicationService
+}
