@@ -145,7 +145,7 @@ export async function apiPutAnalyze(endpoint, useAuth = true) {
 }
 
 // Service for users
-export const userService = {
+const userService = {
   /**
    * Retrieves all users
    */
@@ -283,7 +283,7 @@ export const userService = {
 }
 
 // Service for roles
-export const roleService = {
+const roleService = {
   /**
    * Retrieves all roles
    */
@@ -310,7 +310,7 @@ export const roleService = {
 }
 
 // Service for user-role relationships
-export const userRoleService = {
+const userRoleService = {
   /**
    * Retrieves all user-role relationships
    */
@@ -391,7 +391,7 @@ export const userRoleService = {
  * Analyze Service
  * Handles analysis-related API operations
  */
-export const analyzeService = {
+const analyzeService = {
   /**
    * Start analysis for an input file
    * @param {string} inputFileId - The ID of the input file to analyze
@@ -454,7 +454,7 @@ export const analyzeService = {
  * SRT Gateway Service
  * Handles SRT Gateway-related API operations
  */
-export const srtGatewayService = {
+const srtGatewayService = {
   /**
    * Get all SRT gateways
    * @returns {Promise<Object>} List of SRT gateways
@@ -693,6 +693,8 @@ const applicationService = {
 export {
   authService,
   userService,
+  roleService,
+  userRoleService,
   inputFileService,
   analyzeService,
   srtGatewayService,
