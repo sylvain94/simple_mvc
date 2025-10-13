@@ -111,6 +111,7 @@
                 <th>Name</th>
                 <th>Type</th>
                 <th>Status</th>
+                <th v-if="activeTab === 'incoming'">Incoming SRT</th>
                 <th>Address</th>
                 <th>Mode</th>
                 <th>Actions</th>
@@ -119,7 +120,7 @@
             <tbody>
               <!-- No gateways message -->
               <tr v-if="currentTabGateways.length === 0 && !isLoading">
-                <td colspan="7" class="text-center py-8">
+                <td :colspan="activeTab === 'incoming' ? 8 : 7" class="text-center py-8">
                   <div class="text-base-content/50">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -163,6 +164,9 @@
                     </span>
                     <span v-if="!gateway.enabled" class="badge badge-ghost badge-sm">Disabled</span>
                   </div>
+                </td>
+                <td v-if="activeTab === 'incoming'">
+                  <div class="text-sm font-mono">{{ formatIncomingSRTUrl(gateway) }}</div>
                 </td>
                 <td>
                   <div class="text-sm">{{ formatAddress(gateway) }}</div>
@@ -431,6 +435,18 @@ function formatType(gateway) {
     return `${displayType} (${gateway.srtConfig.srtMode})`
   }
   return displayType
+}
+
+function formatIncomingSRTUrl(gateway) {
+  // Format: srt://${Local SRT Listen Address}:${Foreign SRT Port}
+  const listenAddress = gateway.localSRTListenAddress || gateway.srtConfig?.localSRTListenAddress
+  const port = gateway.foreignSRTPort || gateway.srtConfig?.foreignSRTPort
+  
+  if (listenAddress && port) {
+    return `srt://${listenAddress}:${port}`
+  }
+  
+  return '-'
 }
 
 function closeModal() {
