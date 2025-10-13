@@ -439,13 +439,20 @@ function formatType(gateway) {
 
 function formatIncomingSRTUrl(gateway) {
   // Format: srt://${localSRTListenAddress}:${foreignSRTPort}
+  console.log('🔍 formatIncomingSRTUrl - Gateway object:', gateway)
+  console.log('🔍 formatIncomingSRTUrl - localSRTListenAddress:', gateway.localSRTListenAddress)
+  console.log('🔍 formatIncomingSRTUrl - foreignSRTPort:', gateway.foreignSRTPort)
+  
   const listenAddress = gateway.localSRTListenAddress
   const port = gateway.foreignSRTPort
   
   if (listenAddress && port) {
-    return `srt://${listenAddress}:${port}`
+    const url = `srt://${listenAddress}:${port}`
+    console.log('✅ formatIncomingSRTUrl - Generated URL:', url)
+    return url
   }
   
+  console.log('❌ formatIncomingSRTUrl - Missing data, returning "-"')
   return '-'
 }
 

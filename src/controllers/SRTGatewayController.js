@@ -10,12 +10,13 @@
  */
 
 import Gateway from '../models/Gateway.js'
+import SRTGateway from '../models/SRTGateway.js'
 import { srtGatewayService } from '../services/api.js'
 
 export class SRTGatewayController {
   /**
    * Get all SRT gateways
-   * @returns {Promise<Array<Gateway>>} Array of Gateway instances
+   * @returns {Promise<Array<SRTGateway>>} Array of SRTGateway instances
    */
   static async getAllSRTGateways() {
     try {
@@ -64,7 +65,7 @@ export class SRTGatewayController {
   /**
    * Get SRT gateway by ID
    * @param {string} id - Gateway ID
-   * @returns {Promise<Gateway>} Gateway instance
+   * @returns {Promise<SRTGateway>} SRTGateway instance
    */
   static async getSRTGatewayById(id) {
     try {
@@ -89,7 +90,7 @@ export class SRTGatewayController {
   /**
    * Create incoming SRT gateway
    * @param {Object} gatewayData - Gateway configuration
-   * @returns {Promise<Gateway>} Created gateway instance
+   * @returns {Promise<SRTGateway>} Created SRTGateway instance
    */
   static async createIncomingSRTGateway(gatewayData) {
     try {
@@ -116,7 +117,7 @@ export class SRTGatewayController {
   /**
    * Create outgoing SRT gateway
    * @param {Object} gatewayData - Gateway configuration
-   * @returns {Promise<Gateway>} Created gateway instance
+   * @returns {Promise<SRTGateway>} Created SRTGateway instance
    */
   static async createOutgoingSRTGateway(gatewayData) {
     try {
@@ -144,7 +145,7 @@ export class SRTGatewayController {
    * Update SRT gateway
    * @param {string} id - Gateway ID
    * @param {Object} gatewayData - Updated gateway data
-   * @returns {Promise<Gateway>} Updated gateway instance
+   * @returns {Promise<SRTGateway>} Updated SRTGateway instance
    */
   static async updateSRTGateway(id, gatewayData) {
     try {
@@ -245,42 +246,14 @@ export class SRTGatewayController {
   }
 
   /**
-   * Transform SRT gateway data from API response to Gateway model
+   * Transform SRT gateway data from API response to SRTGateway model
    * @param {Object} apiData - Raw API data
-   * @returns {Gateway} Gateway model instance
+   * @returns {SRTGateway} SRTGateway model instance
    */
   static transformSRTGatewayFromAPI(apiData) {
     try {
-      // Map SRT-specific fields to Gateway model
-      const gatewayData = {
-        id: apiData.id,
-        name: apiData.name || `SRT Gateway ${apiData.id?.substring(0, 8)}`,
-        gatewayType: this.mapSRTGatewayType(apiData.gatewayType),
-        technicalServiceName: apiData.technicalServiceName,
-        running: apiData.running || false,
-        enabled: apiData.enabled !== false,
-        host: apiData.foreignSRTAddress || apiData.localSRTListenAddress || 'localhost',
-        port: apiData.foreignSRTPort || apiData.localMCPort || 9998,
-        mode: this.mapSRTMode(apiData.srtMode),
-        latency: 120, // Default SRT latency
-        createdAt: apiData.createdAt,
-        updatedAt: apiData.updatedAt,
-        // Store SRT-specific data in a custom field
-        srtConfig: {
-          srtMode: apiData.srtMode,
-          foreignSRTAddress: apiData.foreignSRTAddress,
-          foreignSRTPort: apiData.foreignSRTPort,
-          localSRTListenAddress: apiData.localSRTListenAddress,
-          localMCAddress: apiData.localMCAddress,
-          localMCPort: apiData.localMCPort,
-          localSRCAddress: apiData.localSRCAddress,
-          srtPassPhrase: apiData.srtPassPhrase,
-          srtParameters: apiData.srtParameters || [],
-          mcParameters: apiData.mcParameters || []
-        }
-      }
-      
-      return Gateway.fromApiResponse(gatewayData)
+      // Use the specialized SRTGateway model which has all SRT fields at root level
+      return SRTGateway.fromApiResponse(apiData)
       
     } catch (error) {
       console.error('❌ Error transforming SRT gateway from API:', error)
