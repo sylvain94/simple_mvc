@@ -112,7 +112,7 @@
                 <th>Type</th>
                 <th>Status</th>
                 <th v-if="activeTab === 'incoming'">Incoming SRT</th>
-                <th>Address</th>
+                <th>Outgoing Multicast</th>
                 <th>Mode</th>
                 <th>Actions</th>
               </tr>
@@ -415,10 +415,15 @@ function createGateway() {
 }
 
 function formatAddress(gateway) {
-  if (gateway.srtConfig?.foreignSRTAddress && gateway.srtConfig?.foreignSRTPort) {
-    return `${gateway.srtConfig.foreignSRTAddress}:${gateway.srtConfig.foreignSRTPort}`
+  // Display outgoing multicast address (localMCAddress:localMCPort)
+  const mcAddress = gateway.localMCAddress
+  const mcPort = gateway.localMCPort
+  
+  if (mcAddress && mcPort) {
+    return `${mcAddress}:${mcPort}`
   }
-  return `${gateway.host}:${gateway.port}`
+  
+  return '-'
 }
 
 function formatType(gateway) {
@@ -439,20 +444,13 @@ function formatType(gateway) {
 
 function formatIncomingSRTUrl(gateway) {
   // Format: srt://${localSRTListenAddress}:${foreignSRTPort}
-  console.log('🔍 formatIncomingSRTUrl - Gateway object:', gateway)
-  console.log('🔍 formatIncomingSRTUrl - localSRTListenAddress:', gateway.localSRTListenAddress)
-  console.log('🔍 formatIncomingSRTUrl - foreignSRTPort:', gateway.foreignSRTPort)
-  
   const listenAddress = gateway.localSRTListenAddress
   const port = gateway.foreignSRTPort
   
   if (listenAddress && port) {
-    const url = `srt://${listenAddress}:${port}`
-    console.log('✅ formatIncomingSRTUrl - Generated URL:', url)
-    return url
+    return `srt://${listenAddress}:${port}`
   }
   
-  console.log('❌ formatIncomingSRTUrl - Missing data, returning "-"')
   return '-'
 }
 
