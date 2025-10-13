@@ -20,7 +20,6 @@ export class SRTGatewayController {
    */
   static async getAllSRTGateways() {
     try {
-      console.log('🎮 SRTGatewayController: Getting all SRT gateways')
       
       const response = await srtGatewayService.getAllSRTGateways()
       
@@ -41,8 +40,6 @@ export class SRTGatewayController {
         }
       }
       
-      console.log(`✅ SRTGatewayController: Processing ${gatewaysData.length} SRT gateways`)
-      
       // Transform API data to Gateway model instances
       const gateways = gatewaysData.map(gatewayData => {
         try {
@@ -53,7 +50,6 @@ export class SRTGatewayController {
         }
       }).filter(gateway => gateway !== null)
       
-      console.log(`✅ SRTGatewayController: Successfully processed ${gateways.length} SRT gateways`)
       return gateways
       
     } catch (error) {
@@ -69,7 +65,6 @@ export class SRTGatewayController {
    */
   static async getSRTGatewayById(id) {
     try {
-      console.log(`🎮 SRTGatewayController: Getting SRT gateway by ID: ${id}`)
       
       if (!id) {
         throw new Error('Gateway ID is required')
@@ -78,7 +73,6 @@ export class SRTGatewayController {
       const response = await srtGatewayService.getSRTGatewayById(id)
       const gateway = this.transformSRTGatewayFromAPI(response)
       
-      console.log(`✅ SRTGatewayController: Successfully retrieved SRT gateway: ${gateway.name}`)
       return gateway
       
     } catch (error) {
@@ -94,7 +88,6 @@ export class SRTGatewayController {
    */
   static async createIncomingSRTGateway(gatewayData) {
     try {
-      console.log('🎮 SRTGatewayController: Creating incoming SRT gateway:', gatewayData)
       
       // Validate required fields for incoming SRT gateway
       this.validateSRTGatewayData(gatewayData, 'incoming')
@@ -105,7 +98,6 @@ export class SRTGatewayController {
       const response = await srtGatewayService.createIncomingSRTGateway(apiData)
       const gateway = this.transformSRTGatewayFromAPI(response)
       
-      console.log(`✅ SRTGatewayController: Successfully created incoming SRT gateway: ${gateway.name}`)
       return gateway
       
     } catch (error) {
@@ -121,7 +113,6 @@ export class SRTGatewayController {
    */
   static async createOutgoingSRTGateway(gatewayData) {
     try {
-      console.log('🎮 SRTGatewayController: Creating outgoing SRT gateway:', gatewayData)
       
       // Validate required fields for outgoing SRT gateway
       this.validateSRTGatewayData(gatewayData, 'outgoing')
@@ -132,7 +123,6 @@ export class SRTGatewayController {
       const response = await srtGatewayService.createOutgoingSRTGateway(apiData)
       const gateway = this.transformSRTGatewayFromAPI(response)
       
-      console.log(`✅ SRTGatewayController: Successfully created outgoing SRT gateway: ${gateway.name}`)
       return gateway
       
     } catch (error) {
@@ -149,8 +139,7 @@ export class SRTGatewayController {
    */
   static async updateSRTGateway(id, gatewayData) {
     try {
-      console.log(`🎮 SRTGatewayController: Updating SRT gateway ${id}:`, gatewayData)
-      
+
       if (!id) {
         throw new Error('Gateway ID is required')
       }
@@ -164,7 +153,6 @@ export class SRTGatewayController {
       const response = await srtGatewayService.updateSRTGateway(id, apiData)
       const gateway = this.transformSRTGatewayFromAPI(response)
       
-      console.log(`✅ SRTGatewayController: Successfully updated SRT gateway: ${gateway.name}`)
       return gateway
       
     } catch (error) {
@@ -180,7 +168,6 @@ export class SRTGatewayController {
    */
   static async startSRTGateway(id) {
     try {
-      console.log(`🎮 SRTGatewayController: Starting SRT gateway: ${id}`)
       
       if (!id) {
         throw new Error('Gateway ID is required')
@@ -188,7 +175,6 @@ export class SRTGatewayController {
       
       const result = await srtGatewayService.startSRTGateway(id)
       
-      console.log(`✅ SRTGatewayController: Successfully started SRT gateway: ${id}`)
       return result
       
     } catch (error) {
@@ -204,15 +190,13 @@ export class SRTGatewayController {
    */
   static async stopSRTGateway(id) {
     try {
-      console.log(`🎮 SRTGatewayController: Stopping SRT gateway: ${id}`)
-      
+
       if (!id) {
         throw new Error('Gateway ID is required')
       }
       
       const result = await srtGatewayService.stopSRTGateway(id)
       
-      console.log(`✅ SRTGatewayController: Successfully stopped SRT gateway: ${id}`)
       return result
       
     } catch (error) {
@@ -228,15 +212,13 @@ export class SRTGatewayController {
    */
   static async deleteSRTGateway(id) {
     try {
-      console.log(`🎮 SRTGatewayController: Deleting SRT gateway: ${id}`)
-      
+
       if (!id) {
         throw new Error('Gateway ID is required')
       }
       
       const result = await srtGatewayService.deleteSRTGateway(id)
       
-      console.log(`✅ SRTGatewayController: Successfully deleted SRT gateway: ${id}`)
       return result
       
     } catch (error) {
