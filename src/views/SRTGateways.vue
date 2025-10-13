@@ -438,9 +438,9 @@ function formatType(gateway) {
 }
 
 function formatIncomingSRTUrl(gateway) {
-  // Format: srt://${Local SRT Listen Address}:${Foreign SRT Port}
-  const listenAddress = gateway.localSRTListenAddress || gateway.srtConfig?.localSRTListenAddress
-  const port = gateway.foreignSRTPort || gateway.srtConfig?.foreignSRTPort
+  // Format: srt://${localSRTListenAddress}:${foreignSRTPort}
+  const listenAddress = gateway.localSRTListenAddress
+  const port = gateway.foreignSRTPort
   
   if (listenAddress && port) {
     return `srt://${listenAddress}:${port}`
