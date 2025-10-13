@@ -112,7 +112,9 @@
                 <th>Type</th>
                 <th>Status</th>
                 <th v-if="activeTab === 'incoming'">Incoming SRT</th>
-                <th>Outgoing Multicast</th>
+                <th v-if="activeTab === 'incoming'">Outgoing Multicast</th>
+                <th v-if="activeTab === 'outgoing'">Incoming Multicast</th>
+                <th v-if="activeTab === 'outgoing'">Outgoing SRT</th>
                 <th>Mode</th>
                 <th>Actions</th>
               </tr>
@@ -120,7 +122,7 @@
             <tbody>
               <!-- No gateways message -->
               <tr v-if="currentTabGateways.length === 0 && !isLoading">
-                <td :colspan="activeTab === 'incoming' ? 8 : 7" class="text-center py-8">
+                <td colspan="8" class="text-center py-8">
                   <div class="text-base-content/50">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -168,8 +170,14 @@
                 <td v-if="activeTab === 'incoming'">
                   <div class="text-sm font-mono">{{ formatIncomingSRTUrl(gateway) }}</div>
                 </td>
-                <td>
-                  <div class="text-sm">{{ formatAddress(gateway) }}</div>
+                <td v-if="activeTab === 'incoming'">
+                  <div class="text-sm">{{ formatOutgoingMulticast(gateway) }}</div>
+                </td>
+                <td v-if="activeTab === 'outgoing'">
+                  <div class="text-sm">{{ formatIncomingMulticast(gateway) }}</div>
+                </td>
+                <td v-if="activeTab === 'outgoing'">
+                  <div class="text-sm font-mono">{{ formatOutgoingSRTUrl(gateway) }}</div>
                 </td>
                 <td>
                   <span class="badge badge-ghost">{{ gateway.srtConfig?.srtMode || gateway.mode || '-' }}</span>
@@ -414,13 +422,37 @@ function createGateway() {
   showCreateModal.value = true
 }
 
-function formatAddress(gateway) {
-  // Display outgoing multicast address (localMCAddress:localMCPort)
+function formatOutgoingMulticast(gateway) {
+  // For Incoming SRT Gateway: Display outgoing multicast address (localMCAddress:localMCPort)
   const mcAddress = gateway.localMCAddress
   const mcPort = gateway.localMCPort
   
   if (mcAddress && mcPort) {
     return `${mcAddress}:${mcPort}`
+  }
+  
+  return '-'
+}
+
+function formatIncomingMulticast(gateway) {
+  // For Outgoing SRT Gateway: Display incoming multicast address (localMCAddress:localMCPort)
+  const mcAddress = gateway.localMCAddress
+  const mcPort = gateway.localMCPort
+  
+  if (mcAddress && mcPort) {
+    return `${mcAddress}:${mcPort}`
+  }
+  
+  return '-'
+}
+
+function formatOutgoingSRTUrl(gateway) {
+  // For Outgoing SRT Gateway: Display outgoing SRT URL (foreignSRTAddress:foreignSRTPort)
+  const srtAddress = gateway.foreignSRTAddress
+  const srtPort = gateway.foreignSRTPort
+  
+  if (srtAddress && srtPort) {
+    return `srt://${srtAddress}:${srtPort}`
   }
   
   return '-'
