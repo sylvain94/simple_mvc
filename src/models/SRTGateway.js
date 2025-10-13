@@ -11,7 +11,7 @@ class SRTGateway extends Gateway {
     super(data)
     
     // SRT-specific properties
-    this.srtMode = data.srtMode || 'listener' // listener, caller, rendezvous
+    this.srtMode = data.srtMode || 'LISTENER' // LISTENER, CALLER, RENDEZ_VOUS
     this.foreignSRTAddress = data.foreignSRTAddress || ''
     this.foreignSRTPort = data.foreignSRTPort || 9998
     this.localSRTListenAddress = data.localSRTListenAddress || '0.0.0.0'
@@ -28,9 +28,9 @@ class SRTGateway extends Gateway {
 
   // SRT-specific constants
   static SRT_MODES = {
-    LISTENER: 'listener',
-    CALLER: 'caller',
-    RENDEZVOUS: 'rendezvous'
+    LISTENER: 'LISTENER',
+    CALLER: 'CALLER',
+    RENDEZVOUS: 'RENDEZ_VOUS'
   }
 
   static SRT_GATEWAY_TYPES = {
@@ -136,7 +136,7 @@ class SRTGateway extends Gateway {
       name: this.name,
       description: this.description || '',
       gatewayType: this.gatewayType,
-      srtMode: this.srtMode.toUpperCase(), // API expects uppercase
+      srtMode: this.srtMode, // Already in uppercase format
       foreignSRTAddress: this.foreignSRTAddress,
       foreignSRTPort: this.foreignSRTPort,
       localSRTListenAddress: this.localSRTListenAddress,
@@ -162,12 +162,12 @@ class SRTGateway extends Gateway {
       enabled: apiData.enabled !== false,
       host: apiData.foreignSRTAddress || apiData.localSRTListenAddress || 'localhost',
       port: apiData.foreignSRTPort || apiData.localMCPort || 9998,
-      mode: apiData.srtMode?.toLowerCase() || 'listener',
+      mode: apiData.srtMode || 'LISTENER',
       latency: 120, // Default SRT latency
       createdAt: apiData.createdAt,
       updatedAt: apiData.updatedAt,
       // SRT-specific fields
-      srtMode: apiData.srtMode?.toLowerCase() || 'listener',
+      srtMode: apiData.srtMode || 'LISTENER',
       foreignSRTAddress: apiData.foreignSRTAddress || '',
       foreignSRTPort: apiData.foreignSRTPort || 9998,
       localSRTListenAddress: apiData.localSRTListenAddress || '0.0.0.0',

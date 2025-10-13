@@ -289,12 +289,8 @@ export class SRTGatewayController {
    * @returns {string} Gateway model mode
    */
   static mapSRTMode(apiMode) {
-    const modeMap = {
-      'LISTENER': 'listener',
-      'CALLER': 'caller',
-      'RENDEZ_VOUS': 'rendezvous'
-    }
-    return modeMap[apiMode] || 'listener'
+    // No conversion needed - use API values directly (LISTENER, CALLER, RENDEZ_VOUS)
+    return apiMode || 'LISTENER'
   }
 
   /**
