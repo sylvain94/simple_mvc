@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-base-content mb-2">Transcoding</h1>
-      <p class="text-base-content/70">Manage transcoding functions and selections</p>
+      <p class="text-base-content/70">Manage transcoding functions, profiles and presets</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -19,10 +19,7 @@
                   :class="{ 'active': activeCategory === category.id }"
                   class="flex items-center gap-3"
                 >
-                  <svg v-if="category.id === 'selections'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                  </svg>
-                  <svg v-else-if="category.id === 'profiles'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                  <svg v-if="category.id === 'profiles'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                   <svg v-else-if="category.id === 'presets'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
@@ -41,13 +38,8 @@
 
       <!-- Content area -->
       <div class="lg:col-span-3">
-        <!-- Selections -->
-        <div v-if="activeCategory === 'selections'">
-          <Selections />
-        </div>
-
         <!-- Profiles -->
-        <div v-else-if="activeCategory === 'profiles'" class="card bg-base-100 shadow-lg">
+        <div v-if="activeCategory === 'profiles'" class="card bg-base-100 shadow-lg">
           <div class="card-body">
             <h2 class="card-title mb-6 flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -106,14 +98,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import Selections from './Selections.vue'
 
 // Reactive data
-const activeCategory = ref('selections')
+const activeCategory = ref('profiles')
 
-// Categories for transcoding navigation
+// Categories for transcoding navigation (removed selections)
 const categories = ref([
-  { id: 'selections', name: 'Selections', icon: 'selections' },
   { id: 'profiles', name: 'Profiles', icon: 'profiles' },
   { id: 'presets', name: 'Presets', icon: 'presets' },
   { id: 'jobs', name: 'Jobs', icon: 'jobs' }

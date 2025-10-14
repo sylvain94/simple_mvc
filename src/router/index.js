@@ -51,6 +51,12 @@ const routes = [
     meta: { requiresAuth: true, page: 'transcoding' }
   },
   { 
+    path: '/selections', 
+    name: 'Selections', 
+    component: () => import('../views/Selections.vue'),
+    meta: { requiresAuth: true, page: 'selections' }
+  },
+  { 
     path: '/settings', 
     name: 'Settings', 
     component: () => import('../views/Settings.vue'),
