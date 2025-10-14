@@ -212,7 +212,7 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text">First Name</span>
+                    <span class="label-text profile-label">First Name</span>
                   </label>
                   <input 
                     v-model="userProfile.firstName" 
@@ -228,7 +228,7 @@
                 
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text">Last Name</span>
+                    <span class="label-text profile-label">Last Name</span>
                   </label>
                   <input 
                     v-model="userProfile.lastName" 
@@ -244,7 +244,7 @@
                 
                 <div class="form-control md:col-span-2">
                   <label class="label">
-                    <span class="label-text">Email Address</span>
+                    <span class="label-text profile-label">Email Address</span>
                   </label>
                   <input 
                     v-model="userProfile.email" 
@@ -260,7 +260,7 @@
 
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text">Phone Number</span>
+                    <span class="label-text profile-label">Phone Number</span>
                   </label>
                   <input 
                     v-model="userProfile.phone" 
@@ -276,7 +276,7 @@
 
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text">Language</span>
+                    <span class="label-text profile-label">Language</span>
                   </label>
                   <select 
                     v-model="userProfile.language" 
@@ -790,3 +790,30 @@ function changePassword() {
   security.confirmPassword = '';
 }
 </script>
+
+<style scoped>
+/* Profile form alignment */
+.profile-label {
+  display: inline-block;
+  min-width: 120px;
+  text-align: left;
+}
+
+/* Ensure consistent spacing for form controls */
+.form-control .label {
+  margin-bottom: 0.5rem;
+}
+
+.form-control .input,
+.form-control .select {
+  margin-left: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profile-label {
+    min-width: auto;
+    display: block;
+  }
+}
+</style>
