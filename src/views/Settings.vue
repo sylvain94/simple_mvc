@@ -74,7 +74,7 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Application ID</span>
+                    <span class="label-text font-medium settings-label">Application ID</span>
                   </label>
                   <input 
                     :value="applicationProperties.id" 
@@ -86,7 +86,7 @@
                 
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Serial Number</span>
+                    <span class="label-text font-medium settings-label">Serial Number</span>
                   </label>
                   <input 
                     :value="applicationProperties.serialNumber" 
@@ -98,7 +98,7 @@
                 
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Name</span>
+                    <span class="label-text font-medium settings-label">Name</span>
                   </label>
                   <input 
                     :value="applicationProperties.name" 
@@ -110,7 +110,7 @@
                 
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Version</span>
+                    <span class="label-text font-medium settings-label">Version</span>
                   </label>
                   <input 
                     :value="applicationProperties.version" 
@@ -122,7 +122,7 @@
                 
                 <div class="form-control md:col-span-2">
                   <label class="label">
-                    <span class="label-text font-medium">Description</span>
+                    <span class="label-text font-medium settings-label">Description</span>
                   </label>
                   <input 
                     :value="applicationProperties.description || 'No description available'" 
@@ -134,7 +134,7 @@
                 
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Configuration Status</span>
+                    <span class="label-text font-medium settings-label">Configuration Status</span>
                   </label>
                   <div class="flex items-center gap-2">
                     <span 
@@ -212,7 +212,7 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text profile-label">First Name</span>
+                    <span class="label-text settings-label">First Name</span>
                   </label>
                   <input 
                     v-model="userProfile.firstName" 
@@ -228,7 +228,7 @@
                 
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text profile-label">Last Name</span>
+                    <span class="label-text settings-label">Last Name</span>
                   </label>
                   <input 
                     v-model="userProfile.lastName" 
@@ -244,7 +244,7 @@
                 
                 <div class="form-control md:col-span-2">
                   <label class="label">
-                    <span class="label-text profile-label">Email Address</span>
+                    <span class="label-text settings-label">Email Address</span>
                   </label>
                   <input 
                     v-model="userProfile.email" 
@@ -260,7 +260,7 @@
 
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text profile-label">Phone Number</span>
+                    <span class="label-text settings-label">Phone Number</span>
                   </label>
                   <input 
                     v-model="userProfile.phone" 
@@ -276,7 +276,7 @@
 
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text profile-label">Language</span>
+                    <span class="label-text settings-label">Language</span>
                   </label>
                   <select 
                     v-model="userProfile.language" 
@@ -792,10 +792,10 @@ function changePassword() {
 </script>
 
 <style scoped>
-/* Profile form alignment */
-.profile-label {
+/* Settings form alignment */
+.settings-label {
   display: inline-block;
-  min-width: 120px;
+  min-width: 160px;
   text-align: left;
 }
 
@@ -811,7 +811,7 @@ function changePassword() {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .profile-label {
+  .settings-label {
     min-width: auto;
     display: block;
   }
