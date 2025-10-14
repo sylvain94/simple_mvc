@@ -22,6 +22,9 @@
                   <svg v-if="category.id === 'application'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
+                  <svg v-else-if="category.id === 'instance'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                  </svg>
                   <svg v-else-if="category.id === 'profile'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
@@ -155,6 +158,117 @@
                   Refresh
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Instance Management -->
+        <div v-if="activeCategory === 'instance'" class="card bg-base-100 shadow-lg">
+          <div class="card-body">
+            <h2 class="card-title mb-6 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+              </svg>
+              Instance Management
+              <button 
+                @click="loadInstances" 
+                class="btn btn-sm btn-ghost ml-auto"
+                :class="{ 'loading': instanceLoading }"
+                :disabled="instanceLoading"
+              >
+                <svg v-if="!instanceLoading" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh
+              </button>
+            </h2>
+            
+            <!-- Loading State -->
+            <div v-if="instanceLoading" class="text-center py-8">
+              <div class="loading loading-spinner loading-lg"></div>
+              <p class="mt-4">Loading instances...</p>
+            </div>
+            
+            <!-- Error State -->
+            <div v-else-if="instanceError" class="alert alert-error mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <h3 class="font-bold">Error loading instances</h3>
+                <div class="text-xs">{{ instanceError }}</div>
+              </div>
+              <button @click="loadInstances" class="btn btn-sm">Retry</button>
+            </div>
+            
+            <!-- Instances Table -->
+            <div v-else-if="instances.length > 0" class="overflow-x-auto">
+              <table class="table table-zebra w-full">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Position</th>
+                    <th>IP Range</th>
+                    <th>Port Range</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="instance in instances" :key="instance.id" class="hover">
+                    <td>
+                      <div class="flex items-center gap-3">
+                        <div class="avatar">
+                          <div class="mask mask-squircle w-12 h-12 bg-primary/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                            </svg>
+                          </div>
+                        </div>
+                        <div>
+                          <div class="font-bold">{{ instance.name }}</div>
+                          <div class="text-sm opacity-50">{{ instance.serial }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge" :class="instance.getTypeBadgeClass()">
+                        {{ instance.type }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge" :class="instance.getStatusBadgeClass()">
+                        {{ instance.getStatus() }}
+                      </span>
+                      <div v-if="instance.configured" class="text-xs opacity-50 mt-1">Configured</div>
+                    </td>
+                    <td>
+                      <span class="text-sm">{{ instance.getPositionDisplay() }}</span>
+                    </td>
+                    <td>
+                      <div class="font-mono text-sm">{{ instance.ipRange }}</div>
+                    </td>
+                    <td>
+                      <div class="font-mono text-sm">{{ instance.portRange }}</div>
+                    </td>
+                    <td>
+                      <div class="text-sm max-w-xs truncate">
+                        {{ instance.description || '-' }}
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Empty State -->
+            <div v-else class="text-center py-8">
+              <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+              </svg>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">No instances found</h3>
+              <p class="text-gray-500">No instances are currently configured in the system.</p>
             </div>
           </div>
         </div>
@@ -560,7 +674,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAppStore } from '../stores/app.js'
 import { useAuthStore } from '../stores/auth.js'
-import { ApplicationController, UserProfileController } from '../controllers/index.js'
+import { ApplicationController, UserProfileController, InstanceController } from '../controllers/index.js'
 
 // Store imports
 const appStore = useAppStore()
@@ -577,9 +691,16 @@ const applicationProperties = ref(null)
 const applicationLoading = ref(false)
 const applicationError = ref(null)
 
+// Instance data
+const instances = ref([])
+const instanceLoading = ref(false)
+const instanceError = ref(null)
+const instanceStats = ref(null)
+
 // Categories for settings navigation
 const categories = ref([
   { id: 'application', name: 'Application', icon: 'application' },
+  { id: 'instance', name: 'Instances', icon: 'instance' },
   { id: 'profile', name: 'Profile', icon: 'user' },
   { id: 'appearance', name: 'Appearance', icon: 'palette' },
   { id: 'notifications', name: 'Notifications', icon: 'bell' },
@@ -637,6 +758,8 @@ onMounted(() => {
   loadUserPreferences();
   // Load application properties
   loadApplicationProperties();
+  // Load instances
+  loadInstances();
   // Load user profile
   loadUserProfile();
 })
@@ -768,6 +891,25 @@ async function loadApplicationProperties() {
     applicationError.value = error.message || 'Failed to load application properties'
   } finally {
     applicationLoading.value = false
+  }
+}
+
+async function loadInstances() {
+  try {
+    instanceLoading.value = true
+    instanceError.value = null
+    console.log('🏗️ Loading instances...')
+    
+    const instancesData = await InstanceController.getAllInstances()
+    instances.value = instancesData
+    instanceStats.value = InstanceController.getInstanceStatistics(instancesData)
+    
+    console.log('✅ Instances loaded:', instancesData)
+  } catch (error) {
+    console.error('❌ Error loading instances:', error)
+    instanceError.value = error.message || 'Failed to load instances'
+  } finally {
+    instanceLoading.value = false
   }
 }
 

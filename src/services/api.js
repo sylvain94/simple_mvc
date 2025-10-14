@@ -649,6 +649,29 @@ const selectionService = {
   }
 }
 
+// Instance service for managing instances
+const instanceService = {
+  async getAllInstances() {
+    const response = await apiGet('/utils/instances/getAll', true)
+    return response
+  },
+  
+  async getInstanceById(id) {
+    const response = await apiGet(`/utils/instances/getByID/${id}`, true)
+    return response
+  },
+  
+  async getDefaultInstance() {
+    const response = await apiGet('/utils/instances/getDefault', true)
+    return response
+  },
+  
+  async getAdminInstance() {
+    const response = await apiGet('/utils/instances/getAdmin', true)
+    return response
+  }
+}
+
 // Export all services
 export {
   userService,
@@ -658,5 +681,6 @@ export {
   srtGatewayService,
   applicationService,
   userProfileService,
-  selectionService
+  selectionService,
+  instanceService
 }
