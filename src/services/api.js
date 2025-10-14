@@ -628,6 +628,21 @@ const selectionService = {
     return response
   },
   
+  async updateSelection(id, selectionData) {
+    const response = await apiPut(`/functions/selections/updateByID/${id}`, selectionData, true)
+    return response
+  },
+  
+  async startSelection(id) {
+    const response = await apiPut(`/functions/selections/startByID/${id}`, {}, true)
+    return response
+  },
+  
+  async stopSelection(id) {
+    const response = await apiPut(`/functions/selections/stopByID/${id}`, {}, true)
+    return response
+  },
+  
   async deleteSelection(id) {
     const response = await apiDelete(`/functions/selections/deleteByID/${id}`, true)
     return response

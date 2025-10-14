@@ -257,6 +257,33 @@ class Selection {
   }
 
   /**
+   * Get formatted multicast address with port
+   * @returns {string} Formatted multicast address
+   */
+  get multicastAddressFormatted() {
+    if (this.multicastAddress && this.multicastPort) {
+      return `${this.multicastAddress}:${this.multicastPort}`
+    }
+    return this.multicastAddress || '-'
+  }
+
+  /**
+   * Get full path (for compatibility with Files interface)
+   * @returns {string} Full path representation
+   */
+  get fullPath() {
+    return this.multicastAddressFormatted
+  }
+
+  /**
+   * Get status for display (alias for getStatus for compatibility)
+   * @returns {string} Status string
+   */
+  get status() {
+    return this.getStatus()
+  }
+
+  /**
    * Clone the Selection
    * @returns {Selection} New Selection instance
    */

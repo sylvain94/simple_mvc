@@ -85,6 +85,73 @@ export class SelectionController {
   }
 
   /**
+   * Update selection
+   * @param {string} id - Selection ID
+   * @param {Object} selectionData - Updated selection data
+   * @returns {Promise<Selection>} Updated Selection instance
+   */
+  static async updateSelection(id, selectionData) {
+    try {
+      console.log(`🔄 SelectionController: Updating selection: ${id}`, selectionData)
+      
+      // Validate selection data
+      const selection = new Selection(selectionData)
+      const validation = selection.validate()
+      
+      if (!validation.isValid) {
+        throw new Error(`Validation failed: ${validation.errors.join(', ')}`)
+      }
+      
+      // Transform to API format
+      const apiData = selection.toApiFormat()
+      const response = await selectionService.updateSelection(id, apiData)
+      
+      const updatedSelection = Selection.fromApiResponse(response)
+      console.log('✅ SelectionController: Selection updated successfully')
+      return updatedSelection
+    } catch (error) {
+      console.error('❌ SelectionController: Error updating selection:', error)
+      throw new Error(`Failed to update selection: ${error.message}`)
+    }
+  }
+
+  /**
+   * Start selection
+   * @param {string} id - Selection ID
+   * @returns {Promise<boolean>} Success status
+   */
+  static async startSelection(id) {
+    try {
+      console.log(`▶️ SelectionController: Starting selection: ${id}`)
+      await selectionService.startSelection(id)
+      
+      console.log('✅ SelectionController: Selection started successfully')
+      return true
+    } catch (error) {
+      console.error('❌ SelectionController: Error starting selection:', error)
+      throw new Error(`Failed to start selection: ${error.message}`)
+    }
+  }
+
+  /**
+   * Stop selection
+   * @param {string} id - Selection ID
+   * @returns {Promise<boolean>} Success status
+   */
+  static async stopSelection(id) {
+    try {
+      console.log(`⏹️ SelectionController: Stopping selection: ${id}`)
+      await selectionService.stopSelection(id)
+      
+      console.log('✅ SelectionController: Selection stopped successfully')
+      return true
+    } catch (error) {
+      console.error('❌ SelectionController: Error stopping selection:', error)
+      throw new Error(`Failed to stop selection: ${error.message}`)
+    }
+  }
+
+  /**
    * Delete selection
    * @param {string} id - Selection ID
    * @returns {Promise<boolean>} Success status
