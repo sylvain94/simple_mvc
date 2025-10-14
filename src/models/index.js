@@ -10,6 +10,7 @@ export { Project } from './Project.js'
 export { default as Gateway } from './Gateway.js'
 export { default as SRTGateway } from './SRTGateway.js'
 export { default as InputFile } from './InputFile.js'
+export { default as Selection } from './Selection.js'
 
 // Default reexport to facilitate imports
 export { default as UserModel } from './User.js'
@@ -17,3 +18,4 @@ export { default as ProjectModel } from './Project.js'
 export { default as GatewayModel } from './Gateway.js'
 export { default as SRTGatewayModel } from './SRTGateway.js'
 export { default as InputFileModel } from './InputFile.js'
+export { default as SelectionModel } from './Selection.js'

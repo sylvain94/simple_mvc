@@ -611,6 +611,29 @@ const userProfileService = {
   }
 }
 
+// Selection service
+const selectionService = {
+  async getAllSelections() {
+    const response = await apiGet('/functions/selections/getAll', true)
+    return response
+  },
+  
+  async getSelectionById(id) {
+    const response = await apiGet(`/functions/selections/getByID/${id}`, true)
+    return response
+  },
+  
+  async createSelection(selectionData) {
+    const response = await apiPost('/functions/selections/create', selectionData, true)
+    return response
+  },
+  
+  async deleteSelection(id) {
+    const response = await apiDelete(`/functions/selections/deleteByID/${id}`, true)
+    return response
+  }
+}
+
 // Export all services
 export {
   userService,
@@ -619,5 +642,6 @@ export {
   analyzeService,
   srtGatewayService,
   applicationService,
-  userProfileService
+  userProfileService,
+  selectionService
 }

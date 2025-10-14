@@ -13,6 +13,7 @@ export { AnalyzeController } from './AnalyzeController.js'
 export { SRTGatewayController } from './SRTGatewayController.js'
 export { default as ApplicationController } from './ApplicationController.js'
 export { UserProfileController } from './UserProfileController.js'
+export { SelectionController } from './SelectionController.js'
 
 // Default reexport
 export { default as UserCtrll } from './UserController.js'
@@ -23,3 +24,4 @@ export { default as AnalyzeCtrl } from './AnalyzeController.js'
 export { default as SRTGatewayCtrl } from './SRTGatewayController.js'
 export { default as ApplicationCtrl } from './ApplicationController.js'
 export { default as UserProfileCtrl } from './UserProfileController.js'
+export { default as SelectionCtrl } from './SelectionController.js'
