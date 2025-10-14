@@ -6,13 +6,13 @@
       <p class="text-base-content/70">Configure your application according to your preferences</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 settings-grid">
       <!-- Navigation menu -->
       <div class="lg:col-span-1">
-        <div class="card bg-base-100 shadow-lg">
-          <div class="card-body p-4">
+        <div class="card bg-base-100 shadow-lg h-full">
+          <div class="card-body p-4 flex flex-col">
             <h2 class="card-title text-lg mb-4">Categories</h2>
-            <ul class="menu">
+            <ul class="menu flex-1">
               <li v-for="category in categories" :key="category.id">
                 <a 
                   @click="activeCategory = category.id"
@@ -809,11 +809,35 @@ function changePassword() {
   margin-left: 0;
 }
 
+/* Settings grid layout with equal heights */
+.settings-grid {
+  align-items: stretch;
+}
+
+.settings-grid > div {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure cards fill the full height */
+.settings-grid .card {
+  flex: 1;
+}
+
+/* Make the navigation menu card body flex */
+.settings-grid .card-body.flex.flex-col {
+  height: 100%;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .settings-label {
     min-width: auto;
     display: block;
+  }
+  
+  .settings-grid {
+    align-items: normal;
   }
 }
 </style>
