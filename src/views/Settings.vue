@@ -525,21 +525,21 @@
               
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">New password</span>
+                  <span class="label-text settings-label">New password</span>
                 </label>
                 <input v-model="security.newPassword" type="password" class="input input-bordered" />
               </div>
               
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text">Confirm password</span>
+                  <span class="label-text settings-label">Confirm password</span>
                 </label>
                 <input v-model="security.confirmPassword" type="password" class="input input-bordered" />
               </div>
               
               <div class="form-control">
                 <label class="label cursor-pointer">
-                  <span class="label-text">Two-factor authentication</span>
+                  <span class="label-text settings-label">Two-factor authentication</span>
                   <input v-model="security.twoFactor" type="checkbox" class="toggle toggle-primary" />
                 </label>
               </div>
@@ -795,7 +795,7 @@ function changePassword() {
 /* Settings form alignment */
 .settings-label {
   display: inline-block;
-  min-width: 160px;
+  min-width: 180px;
   text-align: left;
 }
 
