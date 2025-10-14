@@ -700,7 +700,7 @@ const userProfileService = {
   
   async updateUserProfile(userID, userData) {
     console.log(`👤 Updating user profile for ID: ${userID}`, userData)
-    const response = await apiPut(`/utils/users/update/${userID}`, userData, true)
+    const response = await apiPut(`/utils/users/updateByUserID/${userID}`, userData, true)
     console.log('✅ User profile updated:', response)
     return response
   }
