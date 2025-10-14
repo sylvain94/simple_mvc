@@ -689,6 +689,23 @@ const applicationService = {
   }
 }
 
+// User profile service
+const userProfileService = {
+  async getUserByID(userID) {
+    console.log(`👤 Getting user profile for ID: ${userID}`)
+    const response = await apiGet(`/utils/users/getByUserID/${userID}`, true)
+    console.log('✅ User profile retrieved:', response)
+    return response
+  },
+  
+  async updateUserProfile(userID, userData) {
+    console.log(`👤 Updating user profile for ID: ${userID}`, userData)
+    const response = await apiPut(`/utils/users/update/${userID}`, userData, true)
+    console.log('✅ User profile updated:', response)
+    return response
+  }
+}
+
 // Export all services
 export {
   userService,
@@ -696,5 +713,6 @@ export {
   userRoleService,
   analyzeService,
   srtGatewayService,
-  applicationService
+  applicationService,
+  userProfileService
 }

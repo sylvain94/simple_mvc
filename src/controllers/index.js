@@ -12,6 +12,7 @@ export { InputFileController } from './InputFileController.js'
 export { AnalyzeController } from './AnalyzeController.js'
 export { SRTGatewayController } from './SRTGatewayController.js'
 export { default as ApplicationController } from './ApplicationController.js'
+export { UserProfileController } from './UserProfileController.js'
 
 // Default reexport
 export { default as UserCtrll } from './UserController.js'
@@ -21,3 +22,4 @@ export { default as InputFileCtrl } from './InputFileController.js'
 export { default as AnalyzeCtrl } from './AnalyzeController.js'
 export { default as SRTGatewayCtrl } from './SRTGatewayController.js'
 export { default as ApplicationCtrl } from './ApplicationController.js'
+export { default as UserProfileCtrl } from './UserProfileController.js'

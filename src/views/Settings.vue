@@ -162,40 +162,190 @@
         <!-- User Profile -->
         <div v-if="activeCategory === 'profile'" class="card bg-base-100 shadow-lg">
           <div class="card-body">
-            <h2 class="card-title mb-6">User Profile</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div class="form-control">
-                <label class="label">
-                  <span class="label-text">First name</span>
-                </label>
-                <input v-model="userProfile.firstName" type="text" class="input input-bordered" />
-              </div>
-              
-              <div class="form-control">
-                <label class="label">
-                  <span class="label-text">Last name</span>
-                </label>
-                <input v-model="userProfile.lastName" type="text" class="input input-bordered" />
-              </div>
-              
-              <div class="form-control md:col-span-2">
-                <label class="label">
-                  <span class="label-text">Email</span>
-                </label>
-                <input v-model="userProfile.email" type="email" class="input input-bordered" />
-              </div>
-              
-              <div class="form-control md:col-span-2">
-                <label class="label">
-                  <span class="label-text">Bio</span>
-                </label>
-                <textarea v-model="userProfile.bio" class="textarea textarea-bordered" rows="3"></textarea>
+            <h2 class="card-title mb-6 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              User Profile
+              <button 
+                v-if="!profileLoading" 
+                @click="loadUserProfile" 
+                class="btn btn-ghost btn-sm ml-auto"
+                title="Refresh profile"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+            </h2>
+
+            <!-- Loading State -->
+            <div v-if="profileLoading" class="flex justify-center items-center py-8">
+              <span class="loading loading-spinner loading-lg"></span>
+              <span class="ml-3">Loading profile...</span>
+            </div>
+
+            <!-- Error State -->
+            <div v-else-if="profileError" class="alert alert-error mb-6">
+              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <h3 class="font-bold">Error loading profile</h3>
+                <div class="text-xs">{{ profileError }}</div>
               </div>
             </div>
-            
-            <div class="card-actions justify-end mt-6">
-              <button class="btn btn-primary">Save</button>
+
+            <!-- Profile Form -->
+            <div v-else>
+              <!-- User ID (Read-only) -->
+              <div class="alert alert-info mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                  <h3 class="font-bold">User ID: {{ userProfile.userID }}</h3>
+                  <div class="text-xs">User ID cannot be changed</div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text">First Name</span>
+                  </label>
+                  <input 
+                    v-model="userProfile.firstName" 
+                    type="text" 
+                    class="input input-bordered" 
+                    :class="{ 'input-error': profileErrors.firstName }"
+                    placeholder="Enter your first name"
+                  />
+                  <label v-if="profileErrors.firstName" class="label">
+                    <span class="label-text-alt text-error">{{ profileErrors.firstName }}</span>
+                  </label>
+                </div>
+                
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text">Last Name</span>
+                  </label>
+                  <input 
+                    v-model="userProfile.lastName" 
+                    type="text" 
+                    class="input input-bordered" 
+                    :class="{ 'input-error': profileErrors.lastName }"
+                    placeholder="Enter your last name"
+                  />
+                  <label v-if="profileErrors.lastName" class="label">
+                    <span class="label-text-alt text-error">{{ profileErrors.lastName }}</span>
+                  </label>
+                </div>
+                
+                <div class="form-control md:col-span-2">
+                  <label class="label">
+                    <span class="label-text">Email Address</span>
+                  </label>
+                  <input 
+                    v-model="userProfile.email" 
+                    type="email" 
+                    class="input input-bordered" 
+                    :class="{ 'input-error': profileErrors.email }"
+                    placeholder="Enter your email address"
+                  />
+                  <label v-if="profileErrors.email" class="label">
+                    <span class="label-text-alt text-error">{{ profileErrors.email }}</span>
+                  </label>
+                </div>
+
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text">Phone Number</span>
+                  </label>
+                  <input 
+                    v-model="userProfile.phone" 
+                    type="tel" 
+                    class="input input-bordered" 
+                    :class="{ 'input-error': profileErrors.phone }"
+                    placeholder="Enter your phone number"
+                  />
+                  <label v-if="profileErrors.phone" class="label">
+                    <span class="label-text-alt text-error">{{ profileErrors.phone }}</span>
+                  </label>
+                </div>
+
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text">Language</span>
+                  </label>
+                  <select 
+                    v-model="userProfile.language" 
+                    class="select select-bordered"
+                  >
+                    <option value="">Select language</option>
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="es">Español</option>
+                    <option value="de">Deutsch</option>
+                    <option value="it">Italiano</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Account Status -->
+              <div class="divider mt-8">Account Status</div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="form-control">
+                  <label class="label cursor-pointer">
+                    <span class="label-text">Account Enabled</span>
+                    <input 
+                      v-model="userProfile.enabled" 
+                      type="checkbox" 
+                      class="toggle toggle-primary" 
+                      disabled
+                    />
+                  </label>
+                  <div class="text-xs text-base-content/60 mt-1">Contact administrator to change</div>
+                </div>
+
+                <div class="form-control">
+                  <label class="label cursor-pointer">
+                    <span class="label-text">Account Active</span>
+                    <input 
+                      v-model="userProfile.active" 
+                      type="checkbox" 
+                      class="toggle toggle-primary" 
+                      disabled
+                    />
+                  </label>
+                  <div class="text-xs text-base-content/60 mt-1">Contact administrator to change</div>
+                </div>
+
+                <div class="form-control">
+                  <label class="label cursor-pointer">
+                    <span class="label-text">Must Change Password</span>
+                    <input 
+                      v-model="userProfile.mustChangePassword" 
+                      type="checkbox" 
+                      class="toggle toggle-warning" 
+                      disabled
+                    />
+                  </label>
+                  <div class="text-xs text-base-content/60 mt-1">System managed</div>
+                </div>
+              </div>
+              
+              <div class="card-actions justify-end mt-8">
+                <button 
+                  @click="saveProfile" 
+                  class="btn btn-primary"
+                  :class="{ 'loading': profileSaving }"
+                  :disabled="profileSaving"
+                >
+                  <span v-if="!profileSaving">Save Profile</span>
+                  <span v-else>Saving...</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -409,10 +559,12 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAppStore } from '../stores/app.js'
-import { ApplicationController } from '../controllers/index.js'
+import { useAuthStore } from '../stores/auth.js'
+import { ApplicationController, UserProfileController } from '../controllers/index.js'
 
 // Store imports
 const appStore = useAppStore()
+const authStore = useAuthStore()
 
 // Reactive data
 const activeCategory = ref('application')
@@ -434,12 +586,29 @@ const categories = ref([
   { id: 'security', name: 'Security', icon: 'shield' }
 ])
 
-// User profile data (should come from a store in real app)
+// User profile data
 const userProfile = reactive({
-  firstName: 'Sylvain',
-  lastName: 'Renard',
-  email: 's.renard94@gmail.com',
-  bio: 'Developper passionate about modern technologies and MVC architecture.'
+  id: '',
+  userID: '',
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  language: '',
+  enabled: true,
+  active: true,
+  mustChangePassword: false
+})
+
+// Profile management state
+const profileLoading = ref(false)
+const profileError = ref(null)
+const profileSaving = ref(false)
+const profileErrors = reactive({
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: ''
 })
 
 // Notification preferences
@@ -468,6 +637,8 @@ onMounted(() => {
   loadUserPreferences();
   // Load application properties
   loadApplicationProperties();
+  // Load user profile
+  loadUserProfile();
 })
 
 function loadUserPreferences() {
@@ -505,10 +676,76 @@ watch([reducedMotion, smoothTransitions], () => {
   saveUserPreferences();
 }, { deep: true })
 
-function saveProfile() {
-  // In a real app, this would save to an API
-  console.log('💾 Saving profile:', userProfile);
-  // You would call UserController.updateProfile(userProfile) here
+// Load user profile from API
+async function loadUserProfile() {
+  if (!authStore.user?.userid) {
+    profileError.value = 'No authenticated user found'
+    return
+  }
+
+  try {
+    profileLoading.value = true
+    profileError.value = null
+    
+    console.log('🔍 Loading profile for user:', authStore.user.userid)
+    const profile = await UserProfileController.getUserProfile(authStore.user.userid)
+    
+    // Update reactive profile data
+    Object.assign(userProfile, profile)
+    
+    console.log('✅ Profile loaded successfully:', profile)
+  } catch (error) {
+    console.error('❌ Error loading user profile:', error)
+    profileError.value = error.message
+  } finally {
+    profileLoading.value = false
+  }
+}
+
+// Save user profile to API
+async function saveProfile() {
+  if (!authStore.user?.userid) {
+    profileError.value = 'No authenticated user found'
+    return
+  }
+
+  try {
+    profileSaving.value = true
+    profileError.value = null
+    
+    // Clear previous errors
+    Object.keys(profileErrors).forEach(key => {
+      profileErrors[key] = ''
+    })
+    
+    // Validate profile data
+    const validation = UserProfileController.validateProfileData(userProfile)
+    if (!validation.isValid) {
+      validation.errors.forEach(error => {
+        if (error.includes('email')) {
+          profileErrors.email = error
+        } else if (error.includes('phone')) {
+          profileErrors.phone = error
+        }
+      })
+      return
+    }
+    
+    console.log('💾 Saving profile for user:', authStore.user.userid)
+    await UserProfileController.updateUserProfile(authStore.user.userid, userProfile)
+    
+    console.log('✅ Profile saved successfully')
+    
+    // Show success message (you could add a toast notification here)
+    // For now, just log it
+    console.log('🎉 Profile updated successfully!')
+    
+  } catch (error) {
+    console.error('❌ Error saving user profile:', error)
+    profileError.value = error.message
+  } finally {
+    profileSaving.value = false
+  }
 }
 
 function saveNotifications() {
