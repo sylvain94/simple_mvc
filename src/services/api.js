@@ -24,34 +24,18 @@ export async function apiPost(endpoint, body, useAuth = false) {
     if (sessionData) {
       const { token } = JSON.parse(sessionData)
       headers['Authorization'] = `Bearer ${token}`
-      console.log('🔐 Using auth token for POST request')
-    } else {
-      console.warn('⚠️ useAuth=true but no session found')
     }
   }
 
   const url = `${API_BASE}${endpoint}`
-  console.log('📤 POST Request:', {
-    url,
-    headers,
-    body: JSON.stringify(body, null, 2)
-  })
-  
   const res = await fetch(url, {
     method: 'POST',
     headers,
     body: JSON.stringify(body),
   })
   
-  console.log('📥 POST Response:', {
-    status: res.status,
-    statusText: res.statusText,
-    url: res.url
-  })
-  
   if (!res.ok) {
     const errorText = await res.text()
-    console.error('❌ POST Error details:', errorText)
     throw new Error(`POST ${endpoint} failed: ${res.status} - ${errorText}`)
   }
   return res.json()
@@ -112,31 +96,15 @@ export async function apiPutAnalyze(endpoint, useAuth = true) {
       headers['Authorization'] = `Bearer ${token}`
     }
   }
-
-  console.log('🔍 Analysis PUT Request:', {
-    url: `${API_BASE}${endpoint}`,
-    headers,
-    method: 'PUT'
-  })
-
+  
   const res = await fetch(`${API_BASE}${endpoint}`, {
     method: 'PUT',
     headers
   })
   
-  console.log('📥 Analysis PUT Response:', {
-    status: res.status,
-    statusText: res.statusText,
-    url: res.url
-  })
-  
   if (!res.ok) throw new Error(`PUT ${endpoint} failed: ${res.status}`)
   
-  // Handle text/plain response
   const responseText = await res.text()
-  console.log('📄 Analysis response text:', responseText)
-  
-  // Try to parse as JSON if possible, otherwise return as text
   try {
     return JSON.parse(responseText)
   } catch {
@@ -153,7 +121,6 @@ const userService = {
     try {
       return await apiGet('/utils/users/getAll', true)
     } catch (error) {
-      console.error('❌ Error getting all users:', error)
       throw error
     }
   },
@@ -163,18 +130,9 @@ const userService = {
    */
   async getUserByUserid(userid) {
     try {
-      console.log(`🔍 API: Getting user by userid: "${userid}"`)
       const result = await apiGet(`/utils/users/getByUserID/${userid}`, true)
-      console.log(`✅ API: Retrieved user:`, {
-        id: result.id,
-        userid: result.userid,
-        firstName: result.firstName,
-        lastName: result.lastName,
-        email: result.email
-      })
       return result
     } catch (error) {
-      console.error(`❌ Error getting user by userid ${userid}:`, error)
       throw error
     }
   },
@@ -186,7 +144,6 @@ const userService = {
     try {
       return await apiGet(`/utils/users/getByName/firstname/${firstName}/lastname/${lastName}`, true)
     } catch (error) {
-      console.error(`❌ Error getting user by name ${firstName} ${lastName}:`, error)
       throw error
     }
   },
@@ -196,12 +153,9 @@ const userService = {
    */
   async createUser(userData) {
     try {
-      console.log('📤 Sending user creation request with data:', JSON.stringify(userData, null, 2))
       const result = await apiPost('/utils/users/create', userData, true)
-      console.log('✅ User creation API response:', result)
       return result
     } catch (error) {
-      console.error('❌ Error creating user:', error)
       throw error
     }
   },
@@ -211,9 +165,7 @@ const userService = {
    */
   async deleteUserById(userId) {
     try {
-      console.log(`🗑️ API: Deleting user by ID: "${userId}"`)
       const result = await apiDelete(`/utils/users/deleteByID/${userId}`, true)
-      console.log(`✅ API: User deleted successfully: ${userId}`)
       return result
     } catch (error) {
       console.error(`❌ Error deleting user ${userId}:`, error)
@@ -328,12 +280,9 @@ const userRoleService = {
    */
   async getRolesForUserID(userId) {
     try {
-      console.log(`🎭 API: Getting roles for user ID: "${userId}"`)
       const result = await apiGet(`/rel/users/roles/getRolesForUserID/${userId}`, true)
-      console.log(`✅ API: Retrieved roles for user ${userId}:`, result)
       return result
     } catch (error) {
-      console.error(`❌ Error getting roles for user ${userId}:`, error)
       throw error
     }
   },
@@ -399,11 +348,7 @@ const analyzeService = {
    */
   async startAnalysis(inputFileId) {
     try {
-      console.log(`🔍 Starting analysis for input file: ${inputFileId}`)
-      
       const result = await apiPutAnalyze(`/functions/input_files/analyzeByID/${inputFileId}`, true)
-      
-      console.log('✅ Analysis started successfully:', result)
       return result
     } catch (error) {
       console.error(`❌ Error starting analysis for file ${inputFileId}:`, error)
@@ -419,11 +364,7 @@ const analyzeService = {
    */
   async cancelAnalysis(inputFileId) {
     try {
-      console.log(`🛑 Cancelling analysis for input file: ${inputFileId}`)
-      
       const result = await apiDelete(`/functions/input_files/analysis/${inputFileId}`, true)
-      
-      console.log('✅ Analysis cancelled successfully:', result)
       return result
     } catch (error) {
       console.error(`❌ Error cancelling analysis for file ${inputFileId}:`, error)
@@ -436,12 +377,8 @@ const analyzeService = {
    * @returns {Promise<Array>} List of analysis results
    */
   async getAllAnalysisHistory() {
-    try {
-      console.log('📋 Getting all analysis history')
-      
-      const result = await apiGet('/functions/input_files/analysis/history', true)
-      
-      console.log('✅ Analysis history retrieved:', result)
+    try {      
+      const result = await apiGet('/functions/input_files/analysis/history', true)      
       return result
     } catch (error) {
       console.error('❌ Error getting analysis history:', error)
@@ -461,9 +398,7 @@ const srtGatewayService = {
    */
   async getAllSRTGateways() {
     try {
-      console.log('🚪 Getting all SRT gateways')
       const result = await apiGet('/functions/gateways/srt/getAll', true)
-      console.log('✅ SRT gateways retrieved:', result)
       return result
     } catch (error) {
       console.error('❌ Error getting all SRT gateways:', error)
@@ -478,9 +413,7 @@ const srtGatewayService = {
    */
   async getSRTGatewayById(id) {
     try {
-      console.log(`🚪 Getting SRT gateway by ID: ${id}`)
       const result = await apiGet(`/functions/gateways/srt/getByID/${id}`, true)
-      console.log('✅ SRT gateway retrieved:', result)
       return result
     } catch (error) {
       console.error(`❌ Error getting SRT gateway ${id}:`, error)
@@ -495,9 +428,7 @@ const srtGatewayService = {
    */
   async createIncomingSRTGateway(gatewayData) {
     try {
-      console.log('🚪 Creating incoming SRT gateway:', gatewayData)
       const result = await apiPost('/functions/gateways/srt/createIncoming', gatewayData, true)
-      console.log('✅ Incoming SRT gateway created:', result)
       return result
     } catch (error) {
       console.error('❌ Error creating incoming SRT gateway:', error)
@@ -512,9 +443,7 @@ const srtGatewayService = {
    */
   async createOutgoingSRTGateway(gatewayData) {
     try {
-      console.log('🚪 Creating outgoing SRT gateway:', gatewayData)
       const result = await apiPost('/functions/gateways/srt/createOutgoing', gatewayData, true)
-      console.log('✅ Outgoing SRT gateway created:', result)
       return result
     } catch (error) {
       console.error('❌ Error creating outgoing SRT gateway:', error)
@@ -530,9 +459,7 @@ const srtGatewayService = {
    */
   async createIncomingSRTGatewayForInstance(instanceId, gatewayData) {
     try {
-      console.log(`🚪 Creating incoming SRT gateway for instance ${instanceId}:`, gatewayData)
       const result = await apiPost(`/functions/gateways/srt/createIncomingForInstanceID/instanceID/${instanceId}`, gatewayData, true)
-      console.log('✅ Incoming SRT gateway created for instance:', result)
       return result
     } catch (error) {
       console.error(`❌ Error creating incoming SRT gateway for instance ${instanceId}:`, error)
@@ -548,9 +475,7 @@ const srtGatewayService = {
    */
   async createOutgoingSRTGatewayForInstance(instanceId, gatewayData) {
     try {
-      console.log(`🚪 Creating outgoing SRT gateway for instance ${instanceId}:`, gatewayData)
       const result = await apiPost(`/functions/gateways/srt/createOutgoingForInstanceID/instanceID/${instanceId}`, gatewayData, true)
-      console.log('✅ Outgoing SRT gateway created for instance:', result)
       return result
     } catch (error) {
       console.error(`❌ Error creating outgoing SRT gateway for instance ${instanceId}:`, error)
@@ -566,9 +491,7 @@ const srtGatewayService = {
    */
   async updateSRTGateway(id, gatewayData) {
     try {
-      console.log(`🚪 Updating SRT gateway ${id}:`, gatewayData)
       const result = await apiPut(`/functions/gateways/srt/updateByID/${id}`, gatewayData, true)
-      console.log('✅ SRT gateway updated:', result)
       return result
     } catch (error) {
       console.error(`❌ Error updating SRT gateway ${id}:`, error)
@@ -583,9 +506,7 @@ const srtGatewayService = {
    */
   async startSRTGateway(id) {
     try {
-      console.log(`🚪 Starting SRT gateway: ${id}`)
       const result = await apiPut(`/functions/gateways/srt/startByID/${id}`, null, true)
-      console.log('✅ SRT gateway started:', result)
       return result
     } catch (error) {
       console.error(`❌ Error starting SRT gateway ${id}:`, error)
@@ -600,9 +521,7 @@ const srtGatewayService = {
    */
   async stopSRTGateway(id) {
     try {
-      console.log(`🚪 Stopping SRT gateway: ${id}`)
       const result = await apiPut(`/functions/gateways/srt/stopByID/${id}`, null, true)
-      console.log('✅ SRT gateway stopped:', result)
       return result
     } catch (error) {
       console.error(`❌ Error stopping SRT gateway ${id}:`, error)
@@ -617,9 +536,7 @@ const srtGatewayService = {
    */
   async deleteSRTGateway(id) {
     try {
-      console.log(`🚪 Deleting SRT gateway: ${id}`)
       const result = await apiDelete(`/functions/gateways/srt/deleteByID/${id}`, true)
-      console.log('✅ SRT gateway deleted:', result)
       return result
     } catch (error) {
       console.error(`❌ Error deleting SRT gateway ${id}:`, error)
@@ -634,9 +551,7 @@ const srtGatewayService = {
    */
   async getAllSRTGatewaysByListenIP(listenIp) {
     try {
-      console.log(`🚪 Getting SRT gateways by listen IP: ${listenIp}`)
       const result = await apiGet(`/functions/gateways/srt/getAllByListenIPAddress/${listenIp}`, true)
-      console.log('✅ SRT gateways by listen IP retrieved:', result)
       return result
     } catch (error) {
       console.error(`❌ Error getting SRT gateways by listen IP ${listenIp}:`, error)
@@ -651,9 +566,7 @@ const srtGatewayService = {
    */
   async getAllSRTGatewaysByInputMCAddress(inputMulticast) {
     try {
-      console.log(`🚪 Getting SRT gateways by input MC address: ${inputMulticast}`)
       const result = await apiGet(`/functions/gateways/srt/getAllByInputMCAddress/${inputMulticast}`, true)
-      console.log('✅ SRT gateways by input MC address retrieved:', result)
       return result
     } catch (error) {
       console.error(`❌ Error getting SRT gateways by input MC address ${inputMulticast}:`, error)
@@ -668,9 +581,7 @@ const srtGatewayService = {
    */
   async getAllSRTGatewaysByForeignIP(foreignIp) {
     try {
-      console.log(`🚪 Getting SRT gateways by foreign IP: ${foreignIp}`)
       const result = await apiGet(`/functions/gateways/srt/getAllByForeignIPAddress/${foreignIp}`, true)
-      console.log('✅ SRT gateways by foreign IP retrieved:', result)
       return result
     } catch (error) {
       console.error(`❌ Error getting SRT gateways by foreign IP ${foreignIp}:`, error)
@@ -682,9 +593,7 @@ const srtGatewayService = {
 // Application service
 const applicationService = {
   async getAllProperties() {
-    console.log('🏢 Getting application properties')
     const response = await apiGet('/utils/application/getAllProperties', true)
-    console.log('✅ Application properties retrieved:', response)
     return response
   }
 }
@@ -692,16 +601,12 @@ const applicationService = {
 // User profile service
 const userProfileService = {
   async getUserByID(userID) {
-    console.log(`👤 Getting user profile for ID: ${userID}`)
     const response = await apiGet(`/utils/users/getByUserID/${userID}`, true)
-    console.log('✅ User profile retrieved:', response)
     return response
   },
   
   async updateUserProfile(userID, userData) {
-    console.log(`👤 Updating user profile for ID: ${userID}`, userData)
     const response = await apiPut(`/utils/users/updateByUserID/${userID}`, userData, true)
-    console.log('✅ User profile updated:', response)
     return response
   }
 }
