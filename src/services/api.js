@@ -672,6 +672,19 @@ const instanceService = {
   }
 }
 
+// Network Interface service for managing network interfaces
+const networkInterfaceService = {
+  async getAllNetworkInterfaces() {
+    const response = await apiGet('/utils/ifs/getAll', true)
+    return response
+  },
+  
+  async refreshAllNetworkInterfaces() {
+    const response = await apiGet('/utils/ifs/refreshAll', true)
+    return response
+  }
+}
+
 // Export all services
 export {
   userService,
@@ -682,5 +695,6 @@ export {
   applicationService,
   userProfileService,
   selectionService,
-  instanceService
+  instanceService,
+  networkInterfaceService
 }

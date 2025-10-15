@@ -15,6 +15,7 @@ export { default as ApplicationController } from './ApplicationController.js'
 export { UserProfileController } from './UserProfileController.js'
 export { SelectionController } from './SelectionController.js'
 export { InstanceController } from './InstanceController.js'
+export { NetworkInterfaceController } from './NetworkInterfaceController.js'
 
 // Default reexport
 export { default as UserCtrll } from './UserController.js'
@@ -27,3 +28,4 @@ export { default as ApplicationCtrl } from './ApplicationController.js'
 export { default as UserProfileCtrl } from './UserProfileController.js'
 export { default as SelectionCtrl } from './SelectionController.js'
 export { default as InstanceCtrl } from './InstanceController.js'
+export { default as NetworkInterfaceCtrl } from './NetworkInterfaceController.js'
