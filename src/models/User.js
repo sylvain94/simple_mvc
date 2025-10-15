@@ -52,24 +52,18 @@ export class User {
   // Role management getters
   get primaryRole() {
     if (this.roles.length === 0) {
-      console.log(`🎭 User "${this.userid}" has no roles, returning 'guest'`)
       return 'guest'
     }
     
-    console.log(`🎭 User "${this.userid}" roles:`, this.roles)
-    
     // Priority order: admin > user > guest
     if (this.hasRole('admin')) {
-      console.log(`🎭 User "${this.userid}" has admin role`)
       return 'admin'
     }
     if (this.hasRole('user')) {
-      console.log(`🎭 User "${this.userid}" has user role`)
       return 'user'
     }
     
     const fallbackRole = this.roles[0]?.name || 'guest'
-    console.log(`🎭 User "${this.userid}" fallback to first role: "${fallbackRole}"`)
     return fallbackRole
   }
 

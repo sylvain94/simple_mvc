@@ -11,7 +11,6 @@ export class UserProfileController {
    */
   static async getUserProfile(userID) {
     try {
-      console.log(`🔍 UserProfileController: Getting profile for user ${userID}`)
       const response = await userProfileService.getUserByID(userID)
       
       // Transform API response to frontend format
@@ -28,10 +27,8 @@ export class UserProfileController {
         mustChangePassword: response.mustChangePassword || false
       }
       
-      console.log('✅ UserProfileController: Profile retrieved successfully')
       return userProfile
     } catch (error) {
-      console.error('❌ UserProfileController: Error getting user profile:', error)
       throw new Error(`Failed to get user profile: ${error.message}`)
     }
   }
@@ -44,7 +41,6 @@ export class UserProfileController {
    */
   static async updateUserProfile(userID, profileData) {
     try {
-      console.log(`🔄 UserProfileController: Updating profile for user ${userID}`, profileData)
       
       // Transform frontend data to API format
       const apiData = {
@@ -60,10 +56,8 @@ export class UserProfileController {
       
       const response = await userProfileService.updateUserProfile(userID, apiData)
       
-      console.log('✅ UserProfileController: Profile updated successfully')
       return response
     } catch (error) {
-      console.error('❌ UserProfileController: Error updating user profile:', error)
       throw new Error(`Failed to update user profile: ${error.message}`)
     }
   }

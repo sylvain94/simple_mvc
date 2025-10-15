@@ -459,7 +459,6 @@ async function refreshFiles() {
     
     
   } catch (err) {
-    console.error('❌ Error loading input files:', err)
     error.value = err.message || 'Failed to load input files'
   } finally {
     isLoading.value = false
@@ -498,7 +497,7 @@ async function toggleFile(file) {
     await updateStats()
        
   } catch (err) {
-    console.error(`❌ Error ${action}ing file ${file.name}:`, err)
+
     error.value = `Failed to ${action} file "${file.name}": ${err.message}`
     
     // Clear the error after 5 seconds
@@ -514,7 +513,6 @@ async function toggleFile(file) {
 
 
 function editFile(file) {
-  console.log('✏️ Editing file:', file.name)
   
   // Copy file data to editing form
   editingFile.value = {
@@ -536,7 +534,6 @@ function editFile(file) {
 }
 
 function openCreateModal() {
-  console.log('➕ Opening create file modal')
   
   // Reset form for new file
   editingFile.value = {
@@ -577,7 +574,6 @@ function closeEditModal() {
 
 // Analysis methods
 function analyzeFile(file) {
-  console.log('🔍 Analyzing file:', file.name)
   
   if (!AnalyzeController.validateInputFileForAnalysis(file)) {
     error.value = 'This file cannot be analyzed in its current state'
@@ -594,33 +590,19 @@ function closeAnalyzeModal() {
 }
 
 function onAnalysisComplete(result) {
-  console.log('✅ Analysis completed for file:', analyzingFile.value?.name, result)
   // Optionally refresh files to update status
   // refreshFiles()
 }
 
 async function saveFile() {
   try {
-    console.log('💾 Saving file:', editingFile.value.name)
-    console.log('📝 Form data being saved:', {
-      id: editingFile.value.id,
-      name: editingFile.value.name,
-      description: editingFile.value.description,
-      filePath: editingFile.value.filePath,
-      fileName: editingFile.value.fileName,
-      multicastAddress: editingFile.value.multicastAddress,
-      multicastPort: editingFile.value.multicastPort,
-      sourceAddress: editingFile.value.sourceAddress
-    })
     
     if (isCreatingFile.value) {
       // Create new file
       await InputFileController.createInputFile(editingFile.value)
-      console.log('✅ File created successfully')
     } else {
       // Update existing file
       await InputFileController.updateInputFile(editingFile.value.id, editingFile.value)
-      console.log('✅ File updated successfully')
     }
     
     // Refresh the files list
@@ -674,7 +656,6 @@ async function startSelectedFiles() {
     selectedFiles.value = []
     
   } catch (err) {
-    console.error('❌ Error starting selected files:', err)
     error.value = `Failed to start selected files: ${err.message}`
   }
 }
@@ -699,7 +680,6 @@ async function stopSelectedFiles() {
     selectedFiles.value = []
     
   } catch (err) {
-    console.error('❌ Error stopping selected files:', err)
     error.value = `Failed to stop selected files: ${err.message}`
   }
 }
@@ -725,7 +705,6 @@ async function deleteSelectedFiles() {
     selectedFiles.value = []
     
   } catch (err) {
-    console.error('❌ Error deleting selected files:', err)
     error.value = `Failed to delete selected files: ${err.message}`
   }
 }
@@ -743,7 +722,6 @@ async function updateStats() {
   try {
     stats.value = await InputFileController.getInputFileStats()
   } catch (err) {
-    console.warn('⚠️ Failed to update stats:', err)
   }
 }
 

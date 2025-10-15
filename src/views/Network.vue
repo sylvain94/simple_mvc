@@ -82,7 +82,6 @@
                 <th>Type</th>
                 <th>Status</th>
                 <th>Direction</th>
-                <th>Instance ID</th>
                 <th>IPv4 Address</th>
                 <th>MAC Address</th>
                 <th>MTU</th>
@@ -113,10 +112,6 @@
                   <div class="badge badge-outline">
                     {{ iface.ifStreamDirection }}
                   </div>
-                </td>
-                <td>
-                  <code v-if="iface.instanceId" class="text-sm text-info">{{ iface.instanceId }}</code>
-                  <span v-else class="text-base-content/50 text-sm">-</span>
                 </td>
                 <td>
                   <code class="text-sm">{{ iface.primaryIPv4 }}</code>
