@@ -61,11 +61,9 @@ export class ProjectController {
       // Sort by creation date (most recent first)
       validProjects.sort((a, b) => b.createdAt - a.createdAt)
 
-      console.log(`✅ ${validProjects.length} recent projects fetched`)
       return validProjects
       
     } catch (error) {
-      console.error('❌ Error fetching recent projects:', error)
       throw new Error(`Impossible de récupérer les projets: ${error.message}`)
     }
   }
@@ -76,7 +74,6 @@ export class ProjectController {
    */
   static async getProjectStats() {
     try {
-      console.log('📊 Generating project statistics')
       
       // Données d'exemple
       const stats = {
@@ -88,7 +85,6 @@ export class ProjectController {
         avgProgress: 67
       }
 
-      console.log('✅ Project statistics generated:', stats)
       return stats
       
     } catch (error) {
@@ -104,7 +100,6 @@ export class ProjectController {
    */
   static async createProject(projectData) {
     try {
-      console.log('➕ Creation of a new project')
       
       // Création du modèle pour validation
       const project = new Project(projectData)
@@ -120,7 +115,6 @@ export class ProjectController {
         project.status = Project.STATUS.IN_PROGRESS
       }
 
-      console.log(`✅ Project created: ${project.name}`)
       return project
       
     } catch (error) {

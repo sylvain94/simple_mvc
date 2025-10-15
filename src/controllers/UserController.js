@@ -40,7 +40,6 @@ export class UserController {
       return user
       
     } catch (error) {
-      console.error('❌ Error retrieving user:', error)
       throw new Error(`Impossible to retrieve the user: ${error.message}`)
     }
   }
@@ -61,9 +60,7 @@ export class UserController {
       const usersWithRoles = await Promise.all(
         users.map(async (user) => {
           try {
-            console.log(`🎭 Fetching roles for user: "${user.userid}" (ID: ${user.id})`)
             const userRoles = await userRoleService.getRolesForUserID(user.id) // Use UUID instead of userid
-            console.log(`✅ Retrieved ${Array.isArray(userRoles) ? userRoles.length : 0} roles for user "${user.userid}":`, userRoles)
             user.roles = Array.isArray(userRoles) ? userRoles : []
             return user
           } catch (error) {
@@ -127,7 +124,6 @@ export class UserController {
       return createdUser
       
     } catch (error) {
-      console.error('❌ Error creating user:', error)
       throw new Error(`Impossible to create the user: ${error.message}`)
     }
   }
@@ -159,7 +155,6 @@ export class UserController {
       return updatedUser
       
     } catch (error) {
-      console.error('❌ Error updating user:', error)
       throw new Error(`Impossible to update the user: ${error.message}`)
     }
   }
@@ -186,7 +181,6 @@ export class UserController {
       return true
       
     } catch (error) {
-      console.error('❌ Error deleting user:', error)
       throw new Error(`Impossible to delete the user: ${error.message}`)
     }
   }
@@ -212,7 +206,6 @@ export class UserController {
       return stats
       
     } catch (error) {
-      console.error('❌ Error generating user statistics:', error)
       throw new Error(`Impossible to generate the user statistics: ${error.message}`)
     }
   }
@@ -270,7 +263,6 @@ export class UserController {
       return filteredUsers
       
     } catch (error) {
-      console.error('❌ Error searching for users:', error)
       throw new Error(`Impossible to search for users: ${error.message}`)
     }
   }
@@ -292,7 +284,6 @@ export class UserController {
       return true
       
     } catch (error) {
-      console.error('❌ Error toggling user status:', error)
       throw new Error(`Impossible to ${enabled ? 'enable' : 'disable'} the user: ${error.message}`)
     }
   }
@@ -315,7 +306,6 @@ export class UserController {
       return true
       
     } catch (error) {
-      console.error('❌ Error resetting password:', error)
       throw new Error(`Impossible to reset the password: ${error.message}`)
     }
   }

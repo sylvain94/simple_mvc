@@ -11,10 +11,8 @@ export const InputFileController = {
    */
   async getAllInputFiles() {
     try {
-      console.log('📁 Fetching all input files...');
       
       const response = await apiGet('/functions/input_files/getAll', true);
-      console.log('📁 Raw API response:', response);
       
       if (!response || !Array.isArray(response)) {
         console.warn('⚠️ API response is not an array:', response);
@@ -54,11 +52,9 @@ export const InputFileController = {
         }
       }).filter(file => file !== null);
       
-      console.log(`✅ Successfully loaded ${inputFiles.length} input files`);
       return inputFiles;
       
     } catch (error) {
-      console.error('❌ Error fetching input files:', error);
       throw new Error(`Failed to fetch input files: ${error.message}`);
     }
   },
@@ -68,7 +64,6 @@ export const InputFileController = {
    */
   async getInputFileById(id) {
     try {
-      console.log(`📁 Fetching input file with ID: ${id}`);
       
       const response = await apiGet(`/functions/input_files/getById/${id}`, true);
       
@@ -77,12 +72,10 @@ export const InputFileController = {
       }
       
       const inputFile = InputFile.fromApiResponse(response);
-      console.log(`✅ Input file loaded:`, inputFile);
       
       return inputFile;
       
     } catch (error) {
-      console.error(`❌ Error fetching input file ${id}:`, error);
       throw new Error(`Failed to fetch input file: ${error.message}`);
     }
   },
@@ -92,12 +85,10 @@ export const InputFileController = {
    */
   async createInputFile(inputFileData) {
     try {
-      console.log('📁 Creating new input file:', inputFileData);
       
       const inputFile = new InputFile(inputFileData);
       const apiData = inputFile.toApiFormat();
       
-      console.log('📝 API data being sent:', JSON.stringify(apiData, null, 2));
       
       const validation = inputFile.validate();
       
@@ -108,12 +99,10 @@ export const InputFileController = {
       const response = await apiPost('/functions/input_files/create', apiData, true);
       
       const createdFile = InputFile.fromApiResponse(response);
-      console.log('✅ Input file created successfully:', createdFile);
       
       return createdFile;
       
     } catch (error) {
-      console.error('❌ Error creating input file:', error);
       throw new Error(`Failed to create input file: ${error.message}`);
     }
   },
@@ -123,14 +112,10 @@ export const InputFileController = {
    */
   async updateInputFile(id, inputFileData) {
     try {
-      console.log(`📁 Updating input file ${id}:`, inputFileData);
-      console.log(`📝 Description in inputFileData:`, inputFileData.description);
       
       const inputFile = new InputFile({ ...inputFileData, id });
-      console.log(`📝 Description in InputFile model:`, inputFile.description);
       
       const apiData = inputFile.toApiFormat();
-      console.log(`📝 Description in API format:`, apiData.description);
       
       const validation = inputFile.validate();
       
@@ -141,12 +126,10 @@ export const InputFileController = {
       const response = await apiPut(`/functions/input_files/updateByID/${id}`, inputFile.toApiFormat(), true);
       
       const updatedFile = InputFile.fromApiResponse(response);
-      console.log('✅ Input file updated successfully:', updatedFile);
       
       return updatedFile;
       
     } catch (error) {
-      console.error(`❌ Error updating input file ${id}:`, error);
       throw new Error(`Failed to update input file: ${error.message}`);
     }
   },
@@ -156,15 +139,12 @@ export const InputFileController = {
    */
   async deleteInputFile(id) {
     try {
-      console.log(`📁 Deleting input file ${id}`);
       
       await apiDelete(`/functions/input_files/deleteByID/${id}`, true);
       
-      console.log(`✅ Input file ${id} deleted successfully`);
       return true;
       
     } catch (error) {
-      console.error(`❌ Error deleting input file ${id}:`, error);
       throw new Error(`Failed to delete input file: ${error.message}`);
     }
   },
@@ -174,15 +154,12 @@ export const InputFileController = {
    */
   async startInputFile(id) {
     try {
-      console.log(`▶️ Starting input file ${id}`);
       
       const response = await apiPut(`/functions/input_files/startByID/${id}`, {}, true);
       
-      console.log(`✅ Input file ${id} started successfully:`, response);
       return response;
       
     } catch (error) {
-      console.error(`❌ Error starting input file ${id}:`, error);
       throw new Error(`Failed to start input file: ${error.message}`);
     }
   },
@@ -192,15 +169,12 @@ export const InputFileController = {
    */
   async stopInputFile(id) {
     try {
-      console.log(`⏹️ Stopping input file ${id}`);
       
       const response = await apiPut(`/functions/input_files/stopByID/${id}`, {}, true);
       
-      console.log(`✅ Input file ${id} stopped successfully:`, response);
       return response;
       
     } catch (error) {
-      console.error(`❌ Error stopping input file ${id}:`, error);
       throw new Error(`Failed to stop input file: ${error.message}`);
     }
   },
@@ -216,7 +190,6 @@ export const InputFileController = {
         return await this.startInputFile(id);
       }
     } catch (error) {
-      console.error(`❌ Error toggling input file ${id}:`, error);
       throw error;
     }
   },
@@ -225,7 +198,6 @@ export const InputFileController = {
    * Refresh the list of input files
    */
   async refreshInputFiles() {
-    console.log('🔄 Refreshing input files list...');
     return await this.getAllInputFiles();
   },
 
@@ -234,7 +206,6 @@ export const InputFileController = {
    */
   async searchInputFiles(query) {
     try {
-      console.log(`🔍 Searching input files with query: "${query}"`);
       
       const allFiles = await this.getAllInputFiles();
       
@@ -250,11 +221,9 @@ export const InputFileController = {
         file.multicast_ip.includes(searchTerm)
       );
       
-      console.log(`✅ Found ${filteredFiles.length} input files matching "${query}"`);
       return filteredFiles;
       
     } catch (error) {
-      console.error('❌ Error searching input files:', error);
       throw new Error(`Failed to search input files: ${error.message}`);
     }
   },
@@ -275,11 +244,9 @@ export const InputFileController = {
         persistent: allFiles.filter(f => f.persistent).length
       };
       
-      console.log('📊 Input files statistics:', stats);
       return stats;
       
     } catch (error) {
-      console.error('❌ Error getting input file stats:', error);
       throw new Error(`Failed to get input file statistics: ${error.message}`);
     }
   }

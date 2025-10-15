@@ -11,7 +11,6 @@ export class SelectionController {
    */
   static async getAllSelections() {
     try {
-      console.log('🔍 SelectionController: Getting all selections')
       const response = await selectionService.getAllSelections()
       
       // Transform API response to Selection instances
@@ -27,7 +26,6 @@ export class SelectionController {
         }
       }
       
-      console.log(`✅ SelectionController: Retrieved ${selections.length} selections`)
       return selections
     } catch (error) {
       console.error('❌ SelectionController: Error getting selections:', error)
@@ -42,11 +40,9 @@ export class SelectionController {
    */
   static async getSelectionById(id) {
     try {
-      console.log(`🔍 SelectionController: Getting selection by ID: ${id}`)
       const response = await selectionService.getSelectionById(id)
       
       const selection = Selection.fromApiResponse(response)
-      console.log('✅ SelectionController: Selection retrieved successfully')
       return selection
     } catch (error) {
       console.error('❌ SelectionController: Error getting selection:', error)
@@ -61,7 +57,6 @@ export class SelectionController {
    */
   static async createSelection(selectionData) {
     try {
-      console.log('🔄 SelectionController: Creating selection', selectionData)
       
       // Validate selection data
       const selection = new Selection(selectionData)
@@ -76,7 +71,6 @@ export class SelectionController {
       const response = await selectionService.createSelection(apiData)
       
       const createdSelection = Selection.fromApiResponse(response)
-      console.log('✅ SelectionController: Selection created successfully')
       return createdSelection
     } catch (error) {
       console.error('❌ SelectionController: Error creating selection:', error)
@@ -92,7 +86,6 @@ export class SelectionController {
    */
   static async updateSelection(id, selectionData) {
     try {
-      console.log(`🔄 SelectionController: Updating selection: ${id}`, selectionData)
       
       // Validate selection data
       const selection = new Selection(selectionData)
@@ -107,7 +100,6 @@ export class SelectionController {
       const response = await selectionService.updateSelection(id, apiData)
       
       const updatedSelection = Selection.fromApiResponse(response)
-      console.log('✅ SelectionController: Selection updated successfully')
       return updatedSelection
     } catch (error) {
       console.error('❌ SelectionController: Error updating selection:', error)
@@ -122,10 +114,8 @@ export class SelectionController {
    */
   static async startSelection(id) {
     try {
-      console.log(`▶️ SelectionController: Starting selection: ${id}`)
       await selectionService.startSelection(id)
       
-      console.log('✅ SelectionController: Selection started successfully')
       return true
     } catch (error) {
       console.error('❌ SelectionController: Error starting selection:', error)
@@ -140,10 +130,8 @@ export class SelectionController {
    */
   static async stopSelection(id) {
     try {
-      console.log(`⏹️ SelectionController: Stopping selection: ${id}`)
       await selectionService.stopSelection(id)
       
-      console.log('✅ SelectionController: Selection stopped successfully')
       return true
     } catch (error) {
       console.error('❌ SelectionController: Error stopping selection:', error)
@@ -158,10 +146,8 @@ export class SelectionController {
    */
   static async deleteSelection(id) {
     try {
-      console.log(`🗑️ SelectionController: Deleting selection: ${id}`)
       await selectionService.deleteSelection(id)
       
-      console.log('✅ SelectionController: Selection deleted successfully')
       return true
     } catch (error) {
       console.error('❌ SelectionController: Error deleting selection:', error)

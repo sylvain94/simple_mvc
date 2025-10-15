@@ -11,7 +11,6 @@ export class InstanceController {
    */
   static async getAllInstances() {
     try {
-      console.log('🔍 InstanceController: Getting all instances')
       const response = await instanceService.getAllInstances()
       
       // Transform API response to Instance instances
@@ -22,10 +21,8 @@ export class InstanceController {
         }
       }
       
-      console.log(`✅ InstanceController: Retrieved ${instances.length} instances`)
       return instances
     } catch (error) {
-      console.error('❌ InstanceController: Error getting instances:', error)
       throw new Error(`Failed to get instances: ${error.message}`)
     }
   }
@@ -37,14 +34,11 @@ export class InstanceController {
    */
   static async getInstanceById(id) {
     try {
-      console.log(`🔍 InstanceController: Getting instance by ID: ${id}`)
       const response = await instanceService.getInstanceById(id)
       
       const instance = Instance.fromApiResponse(response)
-      console.log('✅ InstanceController: Instance retrieved successfully')
       return instance
     } catch (error) {
-      console.error('❌ InstanceController: Error getting instance:', error)
       throw new Error(`Failed to get instance: ${error.message}`)
     }
   }
@@ -55,11 +49,9 @@ export class InstanceController {
    */
   static async getDefaultInstance() {
     try {
-      console.log('🔍 InstanceController: Getting default instance')
       const response = await instanceService.getDefaultInstance()
       
       const instance = Instance.fromApiResponse(response)
-      console.log('✅ InstanceController: Default instance retrieved successfully')
       return instance
     } catch (error) {
       console.error('❌ InstanceController: Error getting default instance:', error)
@@ -73,11 +65,9 @@ export class InstanceController {
    */
   static async getAdminInstance() {
     try {
-      console.log('🔍 InstanceController: Getting admin instance')
       const response = await instanceService.getAdminInstance()
       
       const instance = Instance.fromApiResponse(response)
-      console.log('✅ InstanceController: Admin instance retrieved successfully')
       return instance
     } catch (error) {
       console.error('❌ InstanceController: Error getting admin instance:', error)
