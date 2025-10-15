@@ -81,8 +81,9 @@
                 <th>Interface</th>
                 <th>Type</th>
                 <th>Status</th>
+                <th>Direction</th>
+                <th>Instance ID</th>
                 <th>IPv4 Address</th>
-                <th>IPv6 Address</th>
                 <th>MAC Address</th>
                 <th>MTU</th>
                 <th>Capabilities</th>
@@ -109,10 +110,16 @@
                   </div>
                 </td>
                 <td>
-                  <code class="text-sm">{{ iface.primaryIPv4 }}</code>
+                  <div class="badge badge-outline">
+                    {{ iface.ifStreamDirection }}
+                  </div>
                 </td>
                 <td>
-                  <code class="text-sm text-xs">{{ iface.primaryIPv6 }}</code>
+                  <code v-if="iface.instanceId" class="text-sm text-info">{{ iface.instanceId }}</code>
+                  <span v-else class="text-base-content/50 text-sm">-</span>
+                </td>
+                <td>
+                  <code class="text-sm">{{ iface.primaryIPv4 }}</code>
                 </td>
                 <td>
                   <code class="text-sm">{{ iface.formattedMac }}</code>
@@ -240,14 +247,16 @@ onMounted(() => {
 
 <style scoped>
 .stat {
-  @apply p-4;
+  padding: 1rem;
 }
 
 .table th {
-  @apply bg-base-200;
+  background-color: var(--fallback-b2, oklch(var(--b2)/1));
 }
 
 code {
-  @apply bg-base-200 px-2 py-1 rounded;
+  background-color: var(--fallback-b2, oklch(var(--b2)/1));
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
 }
 </style>
