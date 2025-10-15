@@ -103,9 +103,9 @@ router.beforeEach((to, from, next) => {
     // Update app store current page after navigation
     if (to.meta.page) {
       // Use setTimeout to avoid circular dependency issues
-      setTimeout(() => {
+      setTimeout(async () => {
         try {
-          const { useAppStore } = require('../stores/app.js')
+          const { useAppStore } = await import('../stores/app.js')
           const appStore = useAppStore()
           appStore.currentPage = to.meta.page
         } catch (error) {
