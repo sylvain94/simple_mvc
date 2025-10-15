@@ -13,7 +13,6 @@ export class NetworkInterfaceController {
    */
   static async getAllNetworkInterfaces() {
     try {
-      console.log('🌐 NetworkInterfaceController: Getting all network interfaces')
       const response = await networkInterfaceService.getAllNetworkInterfaces()
       
       const interfaces = []
@@ -29,7 +28,6 @@ export class NetworkInterfaceController {
         }
       }
       
-      console.log(`✅ NetworkInterfaceController: Retrieved ${interfaces.length} network interfaces`)
       return interfaces
     } catch (error) {
       console.error('❌ NetworkInterfaceController: Error getting network interfaces:', error)
@@ -43,16 +41,13 @@ export class NetworkInterfaceController {
    */
   static async refreshAllNetworkInterfaces() {
     try {
-      console.log('🔄 NetworkInterfaceController: Refreshing all network interfaces')
       const response = await networkInterfaceService.refreshAllNetworkInterfaces()
       
       // The API returns "true" or "false" as text
       const success = response === 'true' || response === true
       
       if (success) {
-        console.log('✅ NetworkInterfaceController: Network interfaces refreshed successfully')
       } else {
-        console.log('⚠️ NetworkInterfaceController: Network interfaces refresh returned false')
       }
       
       return success
