@@ -21,24 +21,8 @@ export const InputFileController = {
       
       const inputFiles = response.map(fileData => {
         try {
-          console.log(`🔍 Processing file data for "${fileData.name}":`, {
-            filePath: fileData.filePath,
-            fileName: fileData.fileName,
-            multicastAddress: fileData.multicastAddress,
-            multicastPort: fileData.multicastPort,
-            running: fileData.running,
-            enabled: fileData.enabled
-          });
-          
-          const inputFile = InputFile.fromApiResponse(fileData);
-          
-          console.log(`✅ Created InputFile model:`, {
-            name: inputFile.name,
-            fullPath: inputFile.fullPath,
-            multicastAddressFormatted: inputFile.multicastAddressFormatted,
-            status: inputFile.status
-          });
-          
+                    
+          const inputFile = InputFile.fromApiResponse(fileData);         
           const validation = inputFile.validate();
           
           if (!validation.isValid) {
