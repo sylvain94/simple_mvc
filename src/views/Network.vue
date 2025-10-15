@@ -78,6 +78,7 @@
           <table class="table w-full">
             <thead>
               <tr>
+                <th>Index</th>
                 <th>Interface</th>
                 <th>Type</th>
                 <th>Status</th>
@@ -90,6 +91,9 @@
             </thead>
             <tbody>
               <tr v-for="iface in filteredInterfaces" :key="iface.id" class="hover">
+                <td>
+                  <span class="font-mono text-sm">{{ iface.ifIndex }}</span>
+                </td>
                 <td>
                   <div class="flex items-center gap-3">
                     <div class="font-bold">{{ iface.ifName }}</div>
@@ -184,6 +188,9 @@ const filteredInterfaces = computed(() => {
 
   // Apply type filter
   result = NetworkInterfaceController.filterByType(result, typeFilter.value)
+
+  // Sort by ifIndex (ascending order)
+  result = result.sort((a, b) => a.ifIndex - b.ifIndex)
 
   return result
 })
