@@ -180,7 +180,6 @@ export const useAppStore = defineStore('app', {
     // Users management
     async loadUsers() {
       try {
-        console.log('👥 Loading users from API...')
         const users = await userService.getAllUsers()
         
         // L'API retourne un objet avec les données, on doit extraire la liste
@@ -200,7 +199,6 @@ export const useAppStore = defineStore('app', {
           this.users = []
         }
         
-        console.log(`✅ Loaded ${this.users.length} users:`, this.users)
       } catch (error) {
         console.error('❌ Error loading users:', error)
         this.users = []
@@ -211,13 +209,11 @@ export const useAppStore = defineStore('app', {
     // Delete user
     async deleteUser(userId) {
       try {
-        console.log(`🗑️ Deleting user: ${userId}`)
         await userService.deleteUserById(userId)
         
         // Recharger la liste des utilisateurs après suppression
         await this.loadUsers()
         
-        console.log('✅ User deleted successfully')
         return { success: true }
       } catch (error) {
         console.error('❌ Error deleting user:', error)
@@ -228,13 +224,11 @@ export const useAppStore = defineStore('app', {
     // Create user
     async createUser(userData) {
       try {
-        console.log('👥 Creating new user:', userData)
         const newUser = await userService.createUser(userData)
         
         // Recharger la liste des utilisateurs après création
         await this.loadUsers()
         
-        console.log('✅ User created successfully:', newUser)
         return { success: true, user: newUser }
       } catch (error) {
         console.error('❌ Error creating user:', error)
@@ -245,7 +239,6 @@ export const useAppStore = defineStore('app', {
     // Enable/disable user
     async toggleUserStatus(userId, enable = true) {
       try {
-        console.log(`${enable ? '✅' : '❌'} ${enable ? 'Enabling' : 'Disabling'} user: ${userId}`)
         
         if (enable) {
           await userService.enableUserByID(userId)
@@ -256,7 +249,6 @@ export const useAppStore = defineStore('app', {
         // Recharger la liste des utilisateurs après modification
         await this.loadUsers()
         
-        console.log(`✅ User ${enable ? 'enabled' : 'disabled'} successfully`)
         return { success: true }
       } catch (error) {
         console.error(`❌ Error ${enable ? 'enabling' : 'disabling'} user:`, error)
@@ -267,10 +259,8 @@ export const useAppStore = defineStore('app', {
     // Reset user password
     async resetUserPassword(userId, newPassword) {
       try {
-        console.log(`🔑 Resetting password for user: ${userId}`)
         await userService.resetPasswordByUserID(userId, newPassword)
         
-        console.log('✅ Password reset successfully')
         return { success: true }
       } catch (error) {
         console.error('❌ Error resetting password:', error)
@@ -304,11 +294,9 @@ export const useAppStore = defineStore('app', {
     // SRT Gateway actions
     async loadSRTGateways() {
       try {
-        console.log('🏪 Store: Loading SRT gateways')
         const { SRTGatewayController } = await import('../controllers/SRTGatewayController.js')
         const gateways = await SRTGatewayController.getAllSRTGateways()
         this.srtGateways = gateways
-        console.log(`✅ Store: Loaded ${gateways.length} SRT gateways`)
         return gateways
       } catch (error) {
         console.error('❌ Store: Error loading SRT gateways:', error)
@@ -318,7 +306,6 @@ export const useAppStore = defineStore('app', {
 
     async createSRTGateway(gatewayData, type = 'incoming') {
       try {
-        console.log(`🏪 Store: Creating ${type} SRT gateway:`, gatewayData)
         const { SRTGatewayController } = await import('../controllers/SRTGatewayController.js')
         
         let gateway
@@ -329,7 +316,6 @@ export const useAppStore = defineStore('app', {
         }
         
         this.srtGateways.push(gateway)
-        console.log(`✅ Store: Created ${type} SRT gateway:`, gateway.name)
         return gateway
       } catch (error) {
         console.error(`❌ Store: Error creating ${type} SRT gateway:`, error)
@@ -339,7 +325,6 @@ export const useAppStore = defineStore('app', {
 
     async updateSRTGateway(id, gatewayData) {
       try {
-        console.log(`🏪 Store: Updating SRT gateway ${id}:`, gatewayData)
         const { SRTGatewayController } = await import('../controllers/SRTGatewayController.js')
         
         const updatedGateway = await SRTGatewayController.updateSRTGateway(id, gatewayData)
@@ -349,7 +334,6 @@ export const useAppStore = defineStore('app', {
           this.srtGateways[index] = updatedGateway
         }
         
-        console.log(`✅ Store: Updated SRT gateway:`, updatedGateway.name)
         return updatedGateway
       } catch (error) {
         console.error(`❌ Store: Error updating SRT gateway ${id}:`, error)
@@ -359,14 +343,12 @@ export const useAppStore = defineStore('app', {
 
     async deleteSRTGateway(id) {
       try {
-        console.log(`🏪 Store: Deleting SRT gateway ${id}`)
         const { SRTGatewayController } = await import('../controllers/SRTGatewayController.js')
         
         await SRTGatewayController.deleteSRTGateway(id)
         
         this.srtGateways = this.srtGateways.filter(g => g.id !== id)
         
-        console.log(`✅ Store: Deleted SRT gateway ${id}`)
         return true
       } catch (error) {
         console.error(`❌ Store: Error deleting SRT gateway ${id}:`, error)
@@ -376,7 +358,6 @@ export const useAppStore = defineStore('app', {
 
     async startSRTGateway(id) {
       try {
-        console.log(`🏪 Store: Starting SRT gateway ${id}`)
         const { SRTGatewayController } = await import('../controllers/SRTGatewayController.js')
         
         const result = await SRTGatewayController.startSRTGateway(id)
@@ -387,7 +368,6 @@ export const useAppStore = defineStore('app', {
           gateway.running = true
         }
         
-        console.log(`✅ Store: Started SRT gateway ${id}`)
         return result
       } catch (error) {
         console.error(`❌ Store: Error starting SRT gateway ${id}:`, error)
@@ -397,7 +377,6 @@ export const useAppStore = defineStore('app', {
 
     async stopSRTGateway(id) {
       try {
-        console.log(`🏪 Store: Stopping SRT gateway ${id}`)
         const { SRTGatewayController } = await import('../controllers/SRTGatewayController.js')
         
         const result = await SRTGatewayController.stopSRTGateway(id)
@@ -408,7 +387,6 @@ export const useAppStore = defineStore('app', {
           gateway.running = false
         }
         
-        console.log(`✅ Store: Stopped SRT gateway ${id}`)
         return result
       } catch (error) {
         console.error(`❌ Store: Error stopping SRT gateway ${id}:`, error)
