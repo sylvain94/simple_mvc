@@ -613,7 +613,6 @@ function getRoleBadgeClass(role) {
 async function loadAvailableRoles() {
   isLoadingRoles.value = true
   try {
-    console.log('🎭 Loading available roles...')
     const roles = await roleService.getAllRoles()
     
     // Handle different response formats
@@ -625,8 +624,6 @@ async function loadAvailableRoles() {
     } else {
       availableRoles.value = []
     }
-    
-    console.log(`✅ Loaded ${availableRoles.value.length} roles:`, availableRoles.value)
     
     // Debug: Show role structure
     availableRoles.value.forEach((role, index) => {
@@ -644,7 +641,6 @@ async function loadAvailableRoles() {
       { id: 'user-role-id', name: 'USER' },
       { id: 'guest-role-id', name: 'GUEST' }
     ]
-    console.log('🔄 Using fallback roles:', availableRoles.value)
   } finally {
     isLoadingRoles.value = false
   }
@@ -656,11 +652,9 @@ async function loadUsers() {
   error.value = null
   
   try {
-    console.log('🔄 Loading users...')
     // ✅ MVC: Vue → Controller → Service
     const users = await UserController.getAllUsers()
     appStore.users = users // Store only for state management
-    console.log(`✅ Successfully loaded ${users.length} users`)
   } catch (err) {
     console.error('❌ Error loading users:', err)
     error.value = `Error loading users: ${err.message}`
@@ -675,12 +669,10 @@ async function refreshUsers() {
   successMessage.value = null
   
   try {
-    console.log('🔄 Refreshing users...')
     // ✅ MVC: Vue → Controller → Service
     const users = await UserController.getAllUsers()
     appStore.users = users // Store only for state management
     successMessage.value = `List of users refreshed (${users.length} users)`
-    console.log('✅ Users refreshed successfully')
   } catch (err) {
     console.error('❌ Error refreshing users:', err)
     error.value = `Error refreshing users: ${err.message}`
@@ -708,9 +700,6 @@ async function handleCreateUser() {
   error.value = null
 
   try {
-    console.log('👥 Creating new user with data:', newUser.value)
-    console.log('🎭 Selected role ID:', newUser.value.selectedRole)
-    console.log('🎭 Available roles for reference:', availableRoles.value)
     
     // Create the user with the exact structure required by the API
     const userData = {
@@ -730,9 +719,7 @@ async function handleCreateUser() {
     
     // Assign the selected role to the user
     try {
-      console.log(`🎭 Assigning role "${newUser.value.selectedRole}" to user "${createdUser.id}" (${createdUser.userid})`)
       await userRoleService.createUserRoleRelation(createdUser.id, newUser.value.selectedRole)
-      console.log('✅ Role assigned successfully')
     } catch (roleError) {
       console.error('❌ User created but role assignment failed:', roleError)
       // Don't fail the entire operation, but show error to user
@@ -742,7 +729,6 @@ async function handleCreateUser() {
     // Reload users list after creation
     await loadUsers()
     successMessage.value = `User "${userData.userid}" created successfully with role "${newUser.value.selectedRole}"`
-    console.log('✅ User created successfully')
     
     // Close the modal and reset the form
     closeCreateModal()
@@ -789,7 +775,6 @@ function deleteUser(user) {
     return
   }
   
-  console.log(`🗑️ Preparing to delete user: "${user.userid}" (ID: ${user.id})`)
   userToDelete.value = user
   showDeleteModal.value = true
 }
@@ -801,13 +786,11 @@ async function confirmDeleteUser() {
   error.value = null
   
   try {
-    console.log(`🗑️ Deleting user: ${userToDelete.value.userid}`)
     // ✅ MVC: Vue → Controller → Service
     await UserController.deleteUser(userToDelete.value.userid)
     // Reload users list after deletion
     await loadUsers()
     successMessage.value = `User "${userToDelete.value.userid}" deleted successfully`
-    console.log('✅ User deleted successfully')
     
     // Close modal
     showDeleteModal.value = false
@@ -841,7 +824,6 @@ async function confirmBulkDelete() {
   error.value = null
   
   try {
-    console.log(`🗑️ Bulk deleting ${selectedUsers.value.length} users`)
     
     // SECURITY: Check for current user and administrators in selection
     const currentSession = localStorage.getItem('session')
@@ -873,7 +855,6 @@ async function confirmBulkDelete() {
             continue
           }
           
-          console.log(`🗑️ Deleting user: "${user.userid}" (ID: ${user.id})`)
           await UserController.deleteUser(user.userid)
           successCount++
         }
@@ -906,7 +887,6 @@ async function confirmBulkDelete() {
     selectedUsers.value = []
     showBulkDeleteModal.value = false
     
-    console.log(`✅ Bulk delete completed: ${successCount} success, ${errorCount} errors, ${skippedCount} skipped`)
   } catch (err) {
     console.error('❌ Error during bulk delete:', err)
     error.value = `Error during bulk delete: ${err.message}`
@@ -930,13 +910,11 @@ async function toggleUserStatus(user) {
   error.value = null
   
   try {
-    console.log(`${user.enabled ? '❌' : '✅'} ${action} user: ${user.userid}`)
     // ✅ MVC: Vue → Controller → Service
     await UserController.toggleUserStatus(user.userid, !user.enabled)
     // Reload users list after status change
     await loadUsers()
     successMessage.value = `User "${user.userid}" ${user.enabled ? 'disabled' : 'enabled'} successfully`
-    console.log('✅ User status toggled successfully')
   } catch (err) {
     console.error('❌ Error toggling user status:', err)
     error.value = `Error toggling user status: ${err.message}`
@@ -961,7 +939,6 @@ async function resetPassword(user) {
   error.value = null
   
   try {
-    console.log(`🔑 Resetting password for user: ${user.userid}`)
     // ✅ MVC: Vue → Controller → Service
     await UserController.resetPassword(user.userid, newPassword)
     // Reload users list after password reset

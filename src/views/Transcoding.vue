@@ -6,7 +6,7 @@
       <p class="text-base-content/70">Manage transcoding functions, profiles and presets</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-6 gap-6">
       <!-- Navigation menu -->
       <div class="lg:col-span-1">
         <div class="card bg-base-100 shadow-lg h-full">
@@ -37,7 +37,7 @@
       </div>
 
       <!-- Content area -->
-      <div class="lg:col-span-3">
+      <div class="lg:col-span-5">
         <!-- Profiles -->
         <div v-if="activeCategory === 'profiles'" class="card bg-base-100 shadow-lg">
           <div class="card-body">

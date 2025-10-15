@@ -330,7 +330,6 @@ async function loadGateways() {
   try {
     isLoading.value = true
     error.value = null
-    console.log('🚪 Loading SRT gateways...')
     await appStore.loadSRTGateways()
     
     // Calculate stats
@@ -341,7 +340,6 @@ async function loadGateways() {
     stats.value = { total, active, enabled }
     lastUpdated.value = new Date()
     
-    console.log(`✅ Loaded ${gateways.value.length} SRT gateways`)
   } catch (err) {
     console.error('❌ Error loading SRT gateways:', err)
     error.value = err.message || 'Failed to load SRT gateways'
@@ -368,18 +366,13 @@ async function toggleGateway(gateway) {
   
   try {
     if (gateway.running) {
-      console.log('🚪 Stopping gateway:', gateway.name)
       await appStore.stopSRTGateway(gateway.id)
-      console.log('✅ Gateway stopped successfully')
     } else {
-      console.log('🚪 Starting gateway:', gateway.name)
       await appStore.startSRTGateway(gateway.id)
-      console.log('✅ Gateway started successfully')
     }
     
     await loadGateways() // Refresh to get updated status
   } catch (err) {
-    console.error(`❌ Error ${gateway.running ? 'stopping' : 'starting'} gateway:`, err)
     alert(`Failed to ${gateway.running ? 'stop' : 'start'} gateway: ${err.message}`)
   } finally {
     isProcessing.value = isProcessing.value.filter(id => id !== gateway.id)
@@ -403,21 +396,18 @@ async function stopGateway(id) {
 async function editGateway(id) {
   const gateway = gateways.value.find(g => g.id === id)
   if (gateway) {
-    console.log('🚪 Edit gateway:', gateway.name)
     editingGateway.value = gateway
     showCreateModal.value = true
   }
 }
 
 function analyzeGateway(gateway) {
-  console.log('🔍 Analyzing gateway:', gateway.name)
   
   // Show "Coming soon" popup
   alert('🚧 Gateway Analysis - Coming Soon!\n\nThis feature is currently under development and will be available in a future update.')
 }
 
 function createGateway() {
-  console.log('🚪 Create new SRT gateway')
   editingGateway.value = null
   showCreateModal.value = true
 }
@@ -493,14 +483,11 @@ function closeModal() {
 
 async function handleGatewaySubmit({ data, type, isEditing }) {
   try {
-    console.log(`🚪 ${isEditing ? 'Updating' : 'Creating'} ${type} SRT gateway:`, data)
     
     if (isEditing) {
       await appStore.updateSRTGateway(editingGateway.value.id, data)
-      console.log(`✅ Updated SRT gateway: ${data.name}`)
     } else {
       await appStore.createSRTGateway(data, type)
-      console.log(`✅ Created ${type} SRT gateway: ${data.name}`)
     }
     
     closeModal()
@@ -509,7 +496,6 @@ async function handleGatewaySubmit({ data, type, isEditing }) {
     await loadGateways()
     
   } catch (err) {
-    console.error(`❌ Error ${isEditing ? 'updating' : 'creating'} SRT gateway:`, err)
     alert(`Failed to ${isEditing ? 'update' : 'create'} gateway: ${err.message}`)
   }
 }
@@ -543,7 +529,6 @@ async function startSelectedGateways() {
   }
   
   try {
-    console.log(`🚪 Starting ${selected.length} selected gateways...`)
     
     await Promise.all(
       selected.map(gateway => appStore.startSRTGateway(gateway.id))
@@ -553,9 +538,7 @@ async function startSelectedGateways() {
     await loadGateways()
     selectedGateways.value = []
     
-    console.log(`✅ Started ${selected.length} gateways`)
   } catch (err) {
-    console.error('❌ Error starting selected gateways:', err)
     alert(`Failed to start selected gateways: ${err.message}`)
   }
 }
@@ -570,7 +553,6 @@ async function stopSelectedGateways() {
   }
   
   try {
-    console.log(`🚪 Stopping ${selected.length} selected gateways...`)
     
     await Promise.all(
       selected.map(gateway => appStore.stopSRTGateway(gateway.id))
@@ -580,9 +562,7 @@ async function stopSelectedGateways() {
     await loadGateways()
     selectedGateways.value = []
     
-    console.log(`✅ Stopped ${selected.length} gateways`)
   } catch (err) {
-    console.error('❌ Error stopping selected gateways:', err)
     alert(`Failed to stop selected gateways: ${err.message}`)
   }
 }
@@ -608,21 +588,18 @@ async function deleteSelectedGateways() {
   }
   
   try {
-    console.log(`🗑️ Deleting ${selectedGateways.value.length} selected gateways...`)
     
     // Delete all selected gateways in parallel
     await Promise.all(
       selectedGateways.value.map(gatewayId => appStore.deleteSRTGateway(gatewayId))
     )
     
-    console.log(`✅ Successfully deleted ${selectedGateways.value.length} gateways`)
     
     // Clear selection and refresh the list
     selectedGateways.value = []
     await loadGateways()
     
   } catch (err) {
-    console.error('❌ Error deleting selected gateways:', err)
     alert(`Failed to delete selected gateways: ${err.message}`)
   }
 }
@@ -633,7 +610,6 @@ function onSearchInput() {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
     // Search is reactive, no need to do anything here
-    console.log('🔍 Search query:', searchQuery.value)
   }, 300)
 }
 </script>

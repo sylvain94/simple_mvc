@@ -6,7 +6,7 @@
       <p class="text-base-content/70">Configure your application according to your preferences</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 settings-grid">
+    <div class="grid grid-cols-1 lg:grid-cols-6 gap-6 settings-grid">
       <!-- Navigation menu -->
       <div class="lg:col-span-1">
         <div class="card bg-base-100 shadow-lg h-full">
@@ -46,7 +46,7 @@
       </div>
 
       <!-- Parameter content -->
-      <div class="lg:col-span-3">
+      <div class="lg:col-span-5">
         <!-- Application Properties -->
         <div v-if="activeCategory === 'application'" class="card bg-base-100 shadow-lg">
           <div class="card-body">
@@ -788,8 +788,6 @@ function saveUserPreferences() {
   } else {
     document.documentElement.style.removeProperty('--transition-duration');
   }
-  
-  console.log('💾 User preferences saved');
 }
 
 // Watch for changes and save preferences
@@ -810,13 +808,11 @@ async function loadUserProfile() {
     profileLoading.value = true
     profileError.value = null
     
-    console.log('🔍 Loading profile for user:', authStore.user.userid)
     const profile = await UserProfileController.getUserProfile(authStore.user.userid)
     
     // Update reactive profile data
     Object.assign(userProfile, profile)
     
-    console.log('✅ Profile loaded successfully:', profile)
   } catch (error) {
     console.error('❌ Error loading user profile:', error)
     profileError.value = error.message
@@ -854,15 +850,8 @@ async function saveProfile() {
       return
     }
     
-    console.log('💾 Saving profile for user:', authStore.user.userid)
     await UserProfileController.updateUserProfile(authStore.user.userid, userProfile)
-    
-    console.log('✅ Profile saved successfully')
-    
-    // Show success message (you could add a toast notification here)
-    // For now, just log it
-    console.log('🎉 Profile updated successfully!')
-    
+       
   } catch (error) {
     console.error('❌ Error saving user profile:', error)
     profileError.value = error.message
@@ -872,7 +861,6 @@ async function saveProfile() {
 }
 
 function saveNotifications() {
-  console.log('🔔 Saving notifications:', notifications);
   // You would call a notifications API here
 }
 
@@ -880,12 +868,10 @@ async function loadApplicationProperties() {
   try {
     applicationLoading.value = true
     applicationError.value = null
-    console.log('🏢 Loading application properties...')
     
     const properties = await ApplicationController.getAllProperties()
     applicationProperties.value = properties
     
-    console.log('✅ Application properties loaded:', properties)
   } catch (error) {
     console.error('❌ Error loading application properties:', error)
     applicationError.value = error.message || 'Failed to load application properties'
@@ -898,13 +884,11 @@ async function loadInstances() {
   try {
     instanceLoading.value = true
     instanceError.value = null
-    console.log('🏗️ Loading instances...')
     
     const instancesData = await InstanceController.getAllInstances()
     instances.value = instancesData
     instanceStats.value = InstanceController.getInstanceStatistics(instancesData)
     
-    console.log('✅ Instances loaded:', instancesData)
   } catch (error) {
     console.error('❌ Error loading instances:', error)
     instanceError.value = error.message || 'Failed to load instances'
@@ -924,7 +908,6 @@ function changePassword() {
     return;
   }
   
-  console.log('🔐 Changing password...');
   // You would call AuthController.changePassword() here
   
   // Clear fields after successful change
