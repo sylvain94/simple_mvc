@@ -24,6 +24,4 @@ dist-ssr
 *.sw?
 
 # Doc files
-docs/architecture.md
-docs/technical_services.md
-docs/mediahub_database.md
+docs/*.md
