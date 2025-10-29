@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Application Vue.js Simple MVC
   simple-mvc:
@@ -10,38 +8,12 @@ services:
     environment:
       - NODE_ENV=production
     restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.simple-mvc.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.simple-mvc.tls=true"
-      - "traefik.http.routers.simple-mvc.tls.certresolver=letsencrypt"
     networks:
       - simple-mvc-network
-
-  # Reverse proxy Nginx (optional, for HTTPS and load balancing)
-  nginx-proxy:
-    image: nginx:alpine
-    container_name: simple-mvc-proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - simple-mvc
-    restart: unless-stopped
-    networks:
-      - simple-mvc-network
-    profiles:
-      - "with-proxy"
 
 networks:
   simple-mvc-network:
     driver: bridge
 
-# To start with HTTPS proxy:
-# docker-compose --profile with-proxy up -d
-
-# To start in simple mode:
+# Pour démarrer l'application :
 # docker-compose up -d

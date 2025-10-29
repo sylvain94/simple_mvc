@@ -349,7 +349,3 @@ VITE_APP_VERSION=1.0.0
 ## 📝 License
 
 This project is licensed under the MIT License - see file [LICENSE](LICENSE) for more details.
-
----
-
-**Developed with ❤️ by [Sylvain Renard](https://github.com/sylvain94)**

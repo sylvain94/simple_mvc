@@ -8,12 +8,14 @@ WORKDIR /app
 
 # Copier les fichiers de configuration
 COPY package*.json ./
+COPY package-lock.json ./
 COPY tailwind.config.js ./
 COPY postcss.config.js ./
 COPY vite.config.js ./
 
-# Installer les dépendances
-RUN npm ci --only=production
+# Installer toutes les dépendances (dev + prod pour le build)
+# Utiliser npm install au lieu de npm ci pour résoudre les conflits de versions
+RUN npm install
 
 # Copier le code source
 COPY src/ ./src/
