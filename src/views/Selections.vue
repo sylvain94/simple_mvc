@@ -94,9 +94,9 @@
                   </label>
                 </th>
                 <th>Name</th>
-                <th>Multicast</th>
+                <th>Inputs</th>
+                <th>Output</th>
                 <th>Status</th>
-                <th>Type</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -142,18 +142,46 @@
                   </div>
                 </td>
                 <td>
-                  <div class="text-sm">{{ selection.multicastAddressFormatted }}</div>
-                  <div class="text-xs opacity-50" v-if="selection.sourceAddress">Source: {{ selection.sourceAddress }}</div>
+                  <!-- Input Signals -->
+                  <div class="space-y-1">
+                    <div v-if="selection.inputSignals && selection.inputSignals.length > 0">
+                      <div v-for="input in selection.inputSignals" :key="input.id" class="text-xs">
+                        <div class="badge badge-sm badge-outline">
+                          {{ input.multicastAddress }}:{{ input.multicastPort }}
+                        </div>
+                      </div>
+                      <div class="text-xs opacity-50 mt-1">
+                        {{ selection.currentInputSignalNumber }}/{{ selection.maxInputSignals }} inputs
+                      </div>
+                    </div>
+                    <div v-else class="text-xs opacity-50">No inputs</div>
+                    <button 
+                      @click="openAddInputModal(selection)"
+                      class="btn btn-xs btn-ghost"
+                      :disabled="selection.running"
+                      title="Add input"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+                <td>
+                  <!-- Output Signal -->
+                  <div v-if="selection.outputSignal && selection.outputSignal.length > 0">
+                    <div v-for="output in selection.outputSignal" :key="output.id" class="text-sm">
+                      {{ output.multicastAddress }}:{{ output.multicastPort }}
+                    </div>
+                    <div class="text-xs opacity-50" v-if="selection.sourceAddress">Source: {{ selection.sourceAddress }}</div>
+                  </div>
+                  <div v-else class="text-sm opacity-50">No output</div>
                 </td>
                 <td>
                   <div class="badge" :class="selection.getStatusBadgeClass()">
                     {{ selection.status }}
                   </div>
                   <div class="text-xs opacity-50 mt-1" v-if="selection.auto_run">Auto-start</div>
-                </td>
-                <td>
-                  <div class="text-sm">{{ selection.inputType || 'UDP' }}</div>
-                  <div class="text-xs opacity-50" v-if="selection.packetSize">Packet: {{ selection.packetSize }}</div>
                 </td>
                 <td>
                   <div class="flex gap-1">
@@ -228,6 +256,74 @@
       </div>
     </div>
   </div>
+
+  <!-- Add Input Modal -->
+  <div v-if="showAddInputModal" class="modal modal-open">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg mb-4">Add Multicast Input</h3>
+      <p class="text-sm opacity-70 mb-4">Add a new multicast input to "{{ selectedSelection?.name }}"</p>
+      
+      <form @submit.prevent="addMulticastInput" class="space-y-4">
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Multicast Address</span>
+          </label>
+          <input 
+            type="text" 
+            v-model="newInput.multicastAddress"
+            placeholder="224.10.10.10"
+            class="input input-bordered"
+            pattern="^(22[4-9]|23[0-9])\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$"
+            required
+          />
+          <label class="label">
+            <span class="label-text-alt">Multicast address (224.0.0.0 - 239.255.255.255)</span>
+          </label>
+        </div>
+        
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Multicast Port</span>
+          </label>
+          <input 
+            type="number" 
+            v-model="newInput.multicastPort"
+            placeholder="2000"
+            class="input input-bordered"
+            min="1"
+            max="65535"
+            required
+          />
+        </div>
+        
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Source Address</span>
+          </label>
+          <input 
+            type="text" 
+            v-model="newInput.sourceAddress"
+            placeholder="192.168.100.141"
+            class="input input-bordered"
+            pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$"
+            required
+          />
+          <label class="label">
+            <span class="label-text-alt">Source IP address for the multicast stream</span>
+          </label>
+        </div>
+        
+        <div class="modal-action">
+          <button type="button" @click="closeAddInputModal" class="btn">Cancel</button>
+          <button type="submit" class="btn btn-primary" :disabled="addingInput">
+            <span v-if="addingInput" class="loading loading-spinner loading-sm mr-2"></span>
+            Add Input
+          </button>
+        </div>
+      </form>
+    </div>
+    <div class="modal-backdrop" @click="closeAddInputModal"></div>
+  </div>
 </template>
 
 <script setup>
@@ -243,6 +339,16 @@ const isProcessing = ref([])
 const error = ref(null)
 const lastUpdated = ref(null)
 const stats = ref(null)
+
+// Add Input Modal data
+const showAddInputModal = ref(false)
+const selectedSelection = ref(null)
+const addingInput = ref(false)
+const newInput = ref({
+  multicastAddress: '',
+  multicastPort: '',
+  sourceAddress: ''
+})
 
 // Computed properties
 const filteredSelections = computed(() => {
@@ -446,6 +552,55 @@ async function deleteSelectedSelections() {
   } catch (err) {
     console.error('❌ Error deleting selections:', err)
     alert(`Error deleting selections: ${err.message}`)
+  }
+}
+
+// Add Input Modal functions
+function openAddInputModal(selection) {
+  selectedSelection.value = selection
+  newInput.value = {
+    multicastAddress: '',
+    multicastPort: '',
+    sourceAddress: ''
+  }
+  showAddInputModal.value = true
+}
+
+function closeAddInputModal() {
+  showAddInputModal.value = false
+  selectedSelection.value = null
+  newInput.value = {
+    multicastAddress: '',
+    multicastPort: '',
+    sourceAddress: ''
+  }
+}
+
+async function addMulticastInput() {
+  if (!selectedSelection.value) return
+  
+  try {
+    addingInput.value = true
+    
+    console.log('➕ Adding multicast input to selection:', selectedSelection.value.name)
+    await SelectionController.addMulticastInput(
+      selectedSelection.value.id,
+      newInput.value.multicastAddress,
+      newInput.value.multicastPort,
+      newInput.value.sourceAddress
+    )
+    
+    // Refresh selections to get updated data
+    await refreshSelections()
+    
+    closeAddInputModal()
+    
+    console.log('✅ Multicast input added successfully')
+  } catch (err) {
+    console.error('❌ Error adding multicast input:', err)
+    alert(`Error adding multicast input: ${err.message}`)
+  } finally {
+    addingInput.value = false
   }
 }
 

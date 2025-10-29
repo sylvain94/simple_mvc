@@ -108,6 +108,41 @@ export class SelectionController {
   }
 
   /**
+   * Add multicast input to selection
+   * @param {string} selectionId - Selection ID
+   * @param {string} multicastAddress - Multicast address
+   * @param {number} multicastPort - Multicast port
+   * @param {string} sourceAddress - Source address
+   * @returns {Promise<Object>} API response
+   */
+  static async addMulticastInput(selectionId, multicastAddress, multicastPort, sourceAddress) {
+    try {
+      // Validate input parameters
+      if (!selectionId || !multicastAddress || !multicastPort || !sourceAddress) {
+        throw new Error('All parameters are required: selectionId, multicastAddress, multicastPort, sourceAddress')
+      }
+      
+      // Validate multicast address format
+      const multicastRegex = /^(22[4-9]|23[0-9])\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/
+      if (!multicastRegex.test(multicastAddress)) {
+        throw new Error('Invalid multicast address format')
+      }
+      
+      // Validate port range
+      const port = parseInt(multicastPort)
+      if (isNaN(port) || port < 1 || port > 65535) {
+        throw new Error('Port must be between 1 and 65535')
+      }
+      
+      const response = await selectionService.addMulticastInput(selectionId, multicastAddress, port, sourceAddress)
+      return response
+    } catch (error) {
+      console.error('❌ SelectionController: Error adding multicast input:', error)
+      throw new Error(`Failed to add multicast input: ${error.message}`)
+    }
+  }
+
+  /**
    * Start selection
    * @param {string} id - Selection ID
    * @returns {Promise<boolean>} Success status

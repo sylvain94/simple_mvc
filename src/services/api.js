@@ -646,6 +646,11 @@ const selectionService = {
   async deleteSelection(id) {
     const response = await apiDelete(`/functions/deleteByID/${id}`, true)
     return response
+  },
+  
+  async addMulticastInput(selectionId, multicastAddress, multicastPort, sourceAddress) {
+    const response = await apiPut(`/functions/selections/addMulticastInputForID/${selectionId}/multicast_address/${multicastAddress}/multicast_port/${multicastPort}/source_address/${sourceAddress}`, {}, true)
+    return response
   }
 }
 
