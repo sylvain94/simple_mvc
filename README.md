@@ -62,12 +62,31 @@ src/
 
 ### Prerequisites
 
-- Node.js 18.20+ (minimum) or 20.19+ (recommended)
-- npm 8.0+
+- **Option 1 (Docker):** Docker & Docker Compose
+- **Option 2 (Local):** Node.js 18.20+ (minimum) or 20.19+ (recommended) + npm 8.0+
 
 ### Installation
 
-#### Option 1: Standard Installation (Node.js 18.20+)
+#### Option 1: Docker Deployment (Recommended for Production) 🐳
+
+```bash
+# Clone the project
+git clone https://github.com/sylvain94/simple_mvc.git
+cd simple_mvc
+
+# Build and start with Docker Compose
+sudo docker compose up -d
+
+# Check logs
+sudo docker compose logs -f
+
+# Stop the application
+sudo docker compose down
+```
+
+**Access the application:** http://localhost:8080
+
+#### Option 2: Standard Installation (Node.js 18.20+)
 
 ```bash
 # Clone the project
@@ -81,7 +100,7 @@ npm install
 npm run dev
 ```
 
-#### Option 2: With Node.js Update (if you have Node.js < 18.20)
+#### Option 3: With Node.js Update (if you have Node.js < 18.20)
 
 ```bash
 # Update Node.js to version 20.x (LTS)
@@ -99,7 +118,7 @@ npm install
 npm run dev
 ```
 
-#### Option 3: Using NVM (Node Version Manager)
+#### Option 4: Using NVM (Node Version Manager)
 
 ```bash
 # Install NVM if not already done
@@ -131,12 +150,69 @@ npm install
 npm run dev
 ```
 
+## 🐳 Docker Deployment
+
+### Docker Compose Configuration
+
+The application includes a complete Docker setup with:
+
+- **Multi-stage build** for optimized image size
+- **Nginx** as web server for production
+- **API proxy** configuration for backend integration
+- **Security headers** and compression enabled
+
+### Docker Commands
+
+```bash
+# Build and start in detached mode
+sudo docker compose up -d
+
+# Build and start with logs
+sudo docker compose up --build
+
+# View logs
+sudo docker compose logs -f simple-mvc
+
+# Stop the application
+sudo docker compose down
+
+# Remove containers and images
+sudo docker compose down --rmi all
+
+# Rebuild from scratch
+sudo docker compose build --no-cache
+sudo docker compose up -d
+```
+
+### Docker Configuration
+
+The `docker-compose.yml` includes:
+- **Port mapping:** `8080:80` (host:container)
+- **Network:** Isolated `simple-mvc-network`
+- **Restart policy:** `unless-stopped`
+- **Environment:** `NODE_ENV=production`
+
+### Nginx Configuration
+
+The Dockerfile automatically configures Nginx with:
+- **SPA support** (Single Page Application routing)
+- **Asset caching** (1 year for `/assets/`)
+- **API proxy** to `https://192.168.1.141:8443/api/`
+- **Security headers** (XSS, CSRF protection)
+- **Gzip compression** for better performance
+
 ## 📖 Available Scripts
 
 ```bash
+# Development
 npm run dev          # Serveur de développement
 npm run build        # Build de production
 npm run preview      # Prévisualisation du build
+
+# Docker
+docker compose up -d           # Démarrer avec Docker
+docker compose logs -f         # Voir les logs
+docker compose down           # Arrêter l'application
 ```
 
 ## 🔧 Troubleshooting
@@ -184,24 +260,67 @@ sudo npm install
 sudo chown -R $USER:$USER node_modules
 ```
 
+#### ❌ Docker Issues
+
+```bash
+# Permission denied for Docker
+sudo usermod -aG docker $USER
+# Then logout and login again
+
+# Docker Compose not found
+sudo apt update
+sudo apt install docker-compose-plugin
+
+# Port already in use (8080)
+sudo docker compose down
+# Or change port in docker-compose.yml: "8081:80"
+
+# Build cache issues
+sudo docker compose build --no-cache
+sudo docker system prune -f
+
+# Check container status
+sudo docker compose ps
+sudo docker compose logs simple-mvc
+```
+
+#### ❌ Package Lock Issues (Docker Build)
+
+```bash
+# If you get npm ci errors during Docker build
+# The Dockerfile uses npm install instead of npm ci to handle version conflicts
+
+# To fix locally and rebuild:
+rm package-lock.json
+npm install
+sudo docker compose build --no-cache
+```
+
 #### ✅ Verify Installation
 
 ```bash
-# Check versions
+# Local Development
 node --version    # Should be >= 18.20
 npm --version     # Should be >= 8.0
 npx vite --version # Should show Vite version
+npm run dev       # Should show: "VITE ready in XXX ms"
 
-# Test the application
-npm run dev
-# Should show: "VITE ready in XXX ms" and network URLs
+# Docker Deployment
+sudo docker compose ps                    # Should show "Up" status
+curl http://localhost:8080               # Should return HTML
+sudo docker compose logs simple-mvc      # Check for errors
 ```
 
 ## 🎯 Available Pages
 
 - **`/`** - Main dashboard with statistics and actions
 - **`/login`** - Login page with validation
-- **`/settings`** - Settings (profile, theme, notifications, security)
+- **`/settings`** - Settings (profile, theme, notifications, security, instances)
+- **`/files`** - File management with upload/download capabilities
+- **`/srt-gateways`** - SRT Gateway management (incoming/outgoing streams)
+- **`/selections`** - Selection functions with multicast input management
+- **`/transcoding`** - Transcoding profiles and presets management
+- **`/network`** - Network interface monitoring and configuration
 
 ## 🔧 Configuration
 
