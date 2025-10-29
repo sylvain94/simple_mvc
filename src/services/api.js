@@ -506,7 +506,7 @@ const srtGatewayService = {
    */
   async startSRTGateway(id) {
     try {
-      const result = await apiPut(`/functions/gateways/srt/startByID/${id}`, null, true)
+      const result = await apiPut(`/functions/startByID/${id}`, {}, true)
       return result
     } catch (error) {
       console.error(`❌ Error starting SRT gateway ${id}:`, error)
@@ -521,7 +521,7 @@ const srtGatewayService = {
    */
   async stopSRTGateway(id) {
     try {
-      const result = await apiPut(`/functions/gateways/srt/stopByID/${id}`, null, true)
+      const result = await apiPut(`/functions/stopByID/${id}`, {}, true)
       return result
     } catch (error) {
       console.error(`❌ Error stopping SRT gateway ${id}:`, error)
@@ -536,7 +536,7 @@ const srtGatewayService = {
    */
   async deleteSRTGateway(id) {
     try {
-      const result = await apiDelete(`/functions/gateways/srt/deleteByID/${id}`, true)
+      const result = await apiDelete(`/functions/deleteByID/${id}`, true)
       return result
     } catch (error) {
       console.error(`❌ Error deleting SRT gateway ${id}:`, error)
@@ -634,17 +634,17 @@ const selectionService = {
   },
   
   async startSelection(id) {
-    const response = await apiPut(`/functions/selections/startByID/${id}`, {}, true)
+    const response = await apiPut(`/functions/startByID/${id}`, {}, true)
     return response
   },
   
   async stopSelection(id) {
-    const response = await apiPut(`/functions/selections/stopByID/${id}`, {}, true)
+    const response = await apiPut(`/functions/stopByID/${id}`, {}, true)
     return response
   },
   
   async deleteSelection(id) {
-    const response = await apiDelete(`/functions/selections/deleteByID/${id}`, true)
+    const response = await apiDelete(`/functions/deleteByID/${id}`, true)
     return response
   }
 }
@@ -685,6 +685,24 @@ const networkInterfaceService = {
   }
 }
 
+// Generic function service for managing all types of functions
+const functionService = {
+  async startFunction(functionId) {
+    const response = await apiPut(`/functions/startByID/${functionId}`, {}, true)
+    return response
+  },
+  
+  async stopFunction(functionId) {
+    const response = await apiPut(`/functions/stopByID/${functionId}`, {}, true)
+    return response
+  },
+  
+  async deleteFunction(functionId) {
+    const response = await apiDelete(`/functions/deleteByID/${functionId}`, true)
+    return response
+  }
+}
+
 // Export all services
 export {
   userService,
@@ -696,5 +714,6 @@ export {
   userProfileService,
   selectionService,
   instanceService,
-  networkInterfaceService
+  networkInterfaceService,
+  functionService
 }
