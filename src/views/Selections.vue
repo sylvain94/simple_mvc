@@ -169,8 +169,8 @@
                 </td>
                 <td>
                   <!-- Output Signal -->
-                  <div v-if="selection.outputSignal && selection.outputSignal.length > 0">
-                    <div v-for="output in selection.outputSignal" :key="output.id" class="text-sm">
+                  <div v-if="selection.outputSignals && selection.outputSignals.length > 0">
+                    <div v-for="output in selection.outputSignals" :key="output.id" class="text-sm">
                       {{ output.multicastAddress }}:{{ output.multicastPort }}
                     </div>
                     <div class="text-xs opacity-50" v-if="selection.sourceAddress">Source: {{ selection.sourceAddress }}</div>

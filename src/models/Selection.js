@@ -62,7 +62,7 @@ class Selection {
     this.statuses = data.statuses || ''
     this.autoRun = data.autoRun || false
     this.inputSignals = data.inputSignals || {}
-    this.outputSignal = data.outputSignal || {}
+    this.outputSignals = data.outputSignals || {}
     
     // Timestamps
     this.createdAt = data.createdAt || new Date().toISOString()
@@ -132,7 +132,7 @@ class Selection {
       statuses: apiData.statuses,
       autoRun: apiData.autoRun,
       inputSignals: apiData.inputSignals,
-      outputSignal: apiData.outputSignal,
+      outputSignals: apiData.outputSignals,
       createdAt: apiData.createdAt,
       updatedAt: apiData.updatedAt
     })
@@ -200,7 +200,7 @@ class Selection {
       statuses: this.statuses,
       autoRun: this.autoRun,
       inputSignals: this.inputSignals,
-      outputSignal: this.outputSignal
+      outputSignals: this.outputSignals
     }
   }
 
