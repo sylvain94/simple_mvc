@@ -75,6 +75,10 @@ src/
 git clone https://github.com/sylvain94/simple_mvc.git
 cd simple_mvc
 
+# (Optional) Configure API backend URL
+cp env.example .env
+# Edit .env to set your API_BACKEND_URL
+
 # Build and start with Docker Compose
 sudo docker compose up -d
 
@@ -85,7 +89,22 @@ sudo docker compose logs -f
 sudo docker compose down
 ```
 
-**Access the application:** [localhost:8000](http://localhost:8080)
+**Access the application:** http://localhost:8080
+
+**🔧 Configuration API Backend:**
+```bash
+# Option 1: Use environment file
+cp env.example .env
+# Edit .env with your API server URL
+sudo docker compose --env-file .env up -d
+
+# Option 2: Set environment variables directly
+export API_BACKEND_URL=https://your-api-server.com:8443
+sudo docker compose up -d
+
+# Option 3: Override in docker-compose.yml
+# Edit docker-compose.yml and change API_BACKEND_URL value
+```
 
 #### Option 2: Standard Installation (Node.js 18.20+)
 
@@ -192,7 +211,11 @@ The `docker-compose.yml` includes:
 - **Port mapping:** `8080:80` (host:container)
 - **Network:** Isolated `simple-mvc-network`
 - **Restart policy:** `unless-stopped`
-- **Environment:** `NODE_ENV=production`
+- **Environment variables:**
+  - `NODE_ENV=production`
+  - `API_BACKEND_URL=https://192.168.1.141:8443` (configurable)
+  - `API_SSL_VERIFY=off` (for self-signed certificates)
+  - Timeout settings (30s by default)
 
 ### Nginx Configuration
 
@@ -375,12 +398,50 @@ sudo docker compose logs simple-mvc      # Check for errors
 
 ### Environment Variables
 
-Create a file `.env` based on `.env.example`:
+#### Frontend Development (.env)
+
+Create a file `.env` for frontend development:
 
 ```env
 VITE_API_BASE=http://localhost:8080/api/v1
 VITE_APP_NAME=Simple MVC
 VITE_APP_VERSION=1.0.0
+```
+
+#### Docker Deployment (env.example)
+
+Copy and configure `env.example` for Docker deployment:
+
+```bash
+cp env.example .env
+```
+
+**Available variables:**
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `API_BACKEND_URL` | `https://192.168.1.141:8443` | Backend API server URL |
+| `API_SSL_VERIFY` | `off` | SSL verification (on/off) |
+| `API_CONNECT_TIMEOUT` | `30s` | Connection timeout |
+| `API_SEND_TIMEOUT` | `30s` | Send timeout |
+| `API_READ_TIMEOUT` | `30s` | Read timeout |
+| `NODE_ENV` | `production` | Node.js environment |
+
+**Examples for different environments:**
+
+```bash
+# Development
+API_BACKEND_URL=http://localhost:3000
+API_SSL_VERIFY=on
+
+# Staging
+API_BACKEND_URL=https://staging-api.example.com:8443
+API_SSL_VERIFY=on
+
+# Production
+API_BACKEND_URL=https://api.production.com:443
+API_SSL_VERIFY=on
+API_CONNECT_TIMEOUT=60s
 ```
 
 ## 🤝 Contribution

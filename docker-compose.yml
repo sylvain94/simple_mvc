@@ -6,7 +6,14 @@ services:
     ports:
       - "8080:80"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=${NODE_ENV:-production}
+      # API Backend Configuration (override with .env file or environment variables)
+      - API_BACKEND_URL=${API_BACKEND_URL:-https://192.168.1.141:8443}
+      - API_SSL_VERIFY=${API_SSL_VERIFY:-off}
+      # API Timeout Settings (optional)
+      - API_CONNECT_TIMEOUT=${API_CONNECT_TIMEOUT:-30s}
+      - API_SEND_TIMEOUT=${API_SEND_TIMEOUT:-30s}
+      - API_READ_TIMEOUT=${API_READ_TIMEOUT:-30s}
     restart: unless-stopped
     networks:
       - simple-mvc-network
