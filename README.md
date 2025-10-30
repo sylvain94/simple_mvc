@@ -274,7 +274,7 @@ graph TB
 
 ```bash
 # Development
-npm run dev          # Serveur de développement
+npm run dev          # dev server
 npm run build        # Build de production
 npm run preview      # Prévisualisation du build
 
