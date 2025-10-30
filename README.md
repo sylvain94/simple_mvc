@@ -94,17 +94,24 @@ sudo docker compose down
 **🔧 Configuration API Backend:**
 
 ```bash
-# Option 1: Use environment file
+# Option 1: Auto-detection (Recommended - Default)
+# The application automatically detects the Docker host IP
+sudo docker compose up -d
+
+# Option 2: Use environment file for custom configuration
 cp env.example .env
-# Edit .env with your API server URL
+# Edit .env: set API_BACKEND_URL=auto or specify full URL
 sudo docker compose --env-file .env up -d
 
-# Option 2: Set environment variables directly
+# Option 3: Set environment variables directly
 export API_BACKEND_URL=https://your-api-server.com:8443
 sudo docker compose up -d
 
-# Option 3: Override in docker-compose.yml
-# Edit docker-compose.yml and change API_BACKEND_URL value
+# Option 4: Auto-detection with custom protocol/port
+export API_BACKEND_URL=auto
+export API_BACKEND_PROTOCOL=http
+export API_BACKEND_PORT=3000
+sudo docker compose up -d
 ```
 
 #### Option 2: Standard Installation (Node.js 18.20+)
@@ -210,11 +217,13 @@ sudo docker compose up -d
 The `docker-compose.yml` includes:
 
 - **Port mapping:** `8080:80` (host:container)
-- **Network:** Isolated `simple-mvc-network`
+- **Network:** Isolated `mediahub-admin-network`
 - **Restart policy:** `unless-stopped`
 - **Environment variables:**
   - `NODE_ENV=production`
-  - `API_BACKEND_URL=https://192.168.1.141:8443` (configurable)
+  - `API_BACKEND_URL=auto` (auto-detects Docker host IP)
+  - `API_BACKEND_PROTOCOL=https` (for auto-detection)
+  - `API_BACKEND_PORT=8443` (for auto-detection)
   - `API_SSL_VERIFY=off` (for self-signed certificates)
   - Timeout settings (30s by default)
 
@@ -236,7 +245,7 @@ graph TB
         User[👤 Utilisateur<br/>http://localhost:8080]
     end
     
-    subgraph "🐳 Docker Container (simple-mvc-app)"
+    subgraph "🐳 Docker Container (mediahub-admin)"
         subgraph "🌐 Nginx Reverse Proxy (Port 80)"
             Nginx[🔧 Nginx Server<br/>- Serve Vue.js SPA<br/>- Proxy API calls<br/>- Security headers<br/>- Gzip compression]
         end
@@ -421,7 +430,9 @@ cp env.example .env
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `API_BACKEND_URL` | `https://192.168.1.141:8443` | Backend API server URL |
+| `API_BACKEND_URL` | `auto` | Backend API server URL or "auto" for auto-detection |
+| `API_BACKEND_PROTOCOL` | `https` | Protocol for auto-detected URL |
+| `API_BACKEND_PORT` | `8443` | Port for auto-detected URL |
 | `API_SSL_VERIFY` | `off` | SSL verification (on/off) |
 | `API_CONNECT_TIMEOUT` | `30s` | Connection timeout |
 | `API_SEND_TIMEOUT` | `30s` | Send timeout |
@@ -431,15 +442,21 @@ cp env.example .env
 **Examples for different environments:**
 
 ```bash
-# Development
-API_BACKEND_URL=http://localhost:3000
-API_SSL_VERIFY=on
+# Auto-detection (Recommended - Default)
+API_BACKEND_URL=auto
+API_BACKEND_PROTOCOL=https
+API_BACKEND_PORT=8443
 
-# Staging
+# Development with auto-detection
+API_BACKEND_URL=auto
+API_BACKEND_PROTOCOL=http
+API_BACKEND_PORT=3000
+
+# Staging with explicit URL
 API_BACKEND_URL=https://staging-api.example.com:8443
 API_SSL_VERIFY=on
 
-# Production
+# Production with explicit URL
 API_BACKEND_URL=https://api.production.com:443
 API_SSL_VERIFY=on
 API_CONNECT_TIMEOUT=60s

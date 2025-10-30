@@ -83,8 +83,58 @@ COPY <<EOF /docker-entrypoint.sh
 #!/bin/sh
 set -e
 
-# Default values for environment variables
-export API_BACKEND_URL=\${API_BACKEND_URL:-https://192.168.1.141:8443}
+# Function to detect host IP address
+get_host_ip() {
+    # Try multiple methods to get the host IP
+    
+    # Method 1: Check if we can resolve the Docker host
+    if command -v getent >/dev/null 2>&1; then
+        HOST_IP=\$(getent hosts host.docker.internal 2>/dev/null | awk '{print \$1}' | head -1)
+        if [ -n "\$HOST_IP" ] && [ "\$HOST_IP" != "127.0.0.1" ]; then
+            echo "\$HOST_IP"
+            return 0
+        fi
+    fi
+    
+    # Method 2: Get default gateway (usually the Docker host)
+    HOST_IP=\$(ip route show default 2>/dev/null | awk '/default/ { print \$3 }' | head -1)
+    if [ -n "\$HOST_IP" ] && [ "\$HOST_IP" != "127.0.0.1" ]; then
+        echo "\$HOST_IP"
+        return 0
+    fi
+    
+    # Method 3: Try to get from /etc/hosts
+    HOST_IP=\$(awk '/host.docker.internal/ { print \$1 }' /etc/hosts 2>/dev/null | head -1)
+    if [ -n "\$HOST_IP" ] && [ "\$HOST_IP" != "127.0.0.1" ]; then
+        echo "\$HOST_IP"
+        return 0
+    fi
+    
+    # Method 4: Fallback to container's default gateway
+    HOST_IP=\$(awk '/^0.0.0.0/ { print \$2 }' /proc/net/route 2>/dev/null | head -1)
+    if [ -n "\$HOST_IP" ]; then
+        # Convert hex to decimal IP
+        printf "%d.%d.%d.%d\\n" \$(echo \$HOST_IP | sed 's/../0x& /g')
+        return 0
+    fi
+    
+    # Fallback to configured default
+    echo "192.168.1.141"
+}
+
+# Auto-detect host IP if not explicitly configured
+if [ -z "\${API_BACKEND_URL}" ] || [ "\${API_BACKEND_URL}" = "auto" ]; then
+    DETECTED_HOST_IP=\$(get_host_ip)
+    API_BACKEND_PORT=\${API_BACKEND_PORT:-8443}
+    API_BACKEND_PROTOCOL=\${API_BACKEND_PROTOCOL:-https}
+    export API_BACKEND_URL="\${API_BACKEND_PROTOCOL}://\${DETECTED_HOST_IP}:\${API_BACKEND_PORT}"
+    echo "🔍 Auto-detected host IP: \$DETECTED_HOST_IP"
+    echo "🔗 Generated API backend URL: \$API_BACKEND_URL"
+else
+    export API_BACKEND_URL=\${API_BACKEND_URL}
+fi
+
+# Default values for other environment variables
 export API_SSL_VERIFY=\${API_SSL_VERIFY:-off}
 export API_CONNECT_TIMEOUT=\${API_CONNECT_TIMEOUT:-30s}
 export API_SEND_TIMEOUT=\${API_SEND_TIMEOUT:-30s}
