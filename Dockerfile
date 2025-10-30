@@ -1,37 +1,37 @@
-# 🐳 Dockerfile pour Simple MVC
-# Multi-stage build pour optimiser la taille de l'image finale
+# 🐳 Dockerfile for mediahub-admin
+# Multi-stage build to optimize the final image size
 
-# Stage 1: Build de l'application
+# Stage 1: Build the application
 FROM node:18-alpine as builder
 
 WORKDIR /app
 
-# Copier les fichiers de configuration
+# Copy the configuration files
 COPY package*.json ./
 COPY package-lock.json ./
 COPY tailwind.config.js ./
 COPY postcss.config.js ./
 COPY vite.config.js ./
 
-# Installer toutes les dépendances (dev + prod pour le build)
-# Utiliser npm install au lieu de npm ci pour résoudre les conflits de versions
+# Install all the dependencies (dev + prod for the build)
+# Use npm install instead of npm ci to resolve version conflicts
 RUN npm install
 
-# Copier le code source
+# Copy the source code
 COPY src/ ./src/
 COPY public/ ./public/
 COPY index.html ./
 
-# Créer le build de production
+# Create the production build
 RUN npm run build
 
 # Stage 2: Serveur web Nginx
 FROM nginx:alpine
 
-# Copier les fichiers buildés depuis le stage précédent
+# Copy the built files from the previous stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copier la configuration Nginx personnalisée
+# Copy the custom Nginx configuration
 COPY <<EOF /etc/nginx/conf.d/default.conf
 server {
     listen 80;
@@ -39,18 +39,18 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
-    # Support pour SPA (Single Page Application)
+    # Support for SPA (Single Page Application)
     location / {
         try_files \$uri \$uri/ /index.html;
     }
 
-    # Cache pour les assets
+    # Cache for the assets
     location /assets/ {
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
 
-    # Proxy vers l'API (ajustez l'URL selon vos besoins)
+    # Proxy to the API (adjust the URL according to your needs)
     location /api/ {
         proxy_pass https://192.168.1.141:8443/api/;
         proxy_ssl_verify off;
@@ -60,26 +60,26 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
 
-    # Headers de sécurité
+    # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-XSS-Protection "1; mode=block" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
-    # Compression
+    # Compressiongzip on;
     gzip on;
     gzip_types text/css application/javascript application/json image/svg+xml;
     gzip_comp_level 9;
 }
 EOF
 
-# Exposer le port 80
+# Expose the port 80
 EXPOSE 80
 
-# Commande par défaut
+# Default command
 CMD ["nginx", "-g", "daemon off;"]
 
-# Labels pour la documentation
-LABEL maintainer="Simple MVC Team"
-LABEL description="Application Vue.js Simple MVC avec architecture MVC"
+# Labels for the documentation
+LABEL maintainer="MediaHub Team"
+LABEL description="Application Vue.js MediaHub Admin with MVC architecture"
 LABEL version="1.0.0"

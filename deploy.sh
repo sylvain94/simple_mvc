@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# 🚀 depoloyment script for Simple MVC
+# 🚀 depoloyment script for mediahub-admin
 # Usage: ./deploy.sh [production|staging]
 
 set -e
 
 ENVIRONMENT=${1:-production}
-PROJECT_NAME="simple_mvc"
+PROJECT_NAME="mediahub-admin"
 BUILD_DIR="dist"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 

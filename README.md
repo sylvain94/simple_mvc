@@ -204,6 +204,48 @@ The Dockerfile automatically configures Nginx with:
 - **Security headers** (XSS, CSRF protection)
 - **Gzip compression** for better performance
 
+### Architecture avec Reverse Proxy
+
+```mermaid
+graph TB
+    subgraph "🌐 Client (Navigateur)"
+        User[👤 Utilisateur<br/>http://localhost:8080]
+    end
+    
+    subgraph "🐳 Docker Container (simple-mvc-app)"
+        subgraph "🌐 Nginx Reverse Proxy (Port 80)"
+            Nginx[🔧 Nginx Server<br/>- Serve Vue.js SPA<br/>- Proxy API calls<br/>- Security headers<br/>- Gzip compression]
+        end
+        
+        subgraph "📁 Static Files"
+            VueApp[⚡ Vue.js Application<br/>- index.html<br/>- CSS/JS assets<br/>- SPA routing]
+        end
+    end
+    
+    subgraph "🖥️ Backend Server"
+        API[🔌 API Server<br/>https://192.168.1.141:8443<br/>- REST endpoints<br/>- Authentication<br/>- Business logic]
+    end
+    
+    %% Flux de données
+    User -->|"GET /"| Nginx
+    Nginx -->|"Serve SPA"| VueApp
+    VueApp -->|"Static files"| User
+    
+    User -->|"GET /api/*"| Nginx
+    Nginx -->|"Proxy HTTPS"| API
+    API -->|"JSON response"| Nginx
+    Nginx -->|"JSON + Headers"| User
+    
+    %% Styling
+    classDef clientClass fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef containerClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef apiClass fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    
+    class User clientClass
+    class Nginx,VueApp containerClass
+    class API apiClass
+```
+
 ## 📖 Available Scripts
 
 ```bash
