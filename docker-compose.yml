@@ -2,7 +2,7 @@ services:
   # Application Vue.js Simple MVC
   simple-mvc:
     build: .
-    container_name: simple-mvc-app
+    container_name: mediahub-admin
     ports:
       - "8080:80"
     environment:

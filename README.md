@@ -89,9 +89,10 @@ sudo docker compose logs -f
 sudo docker compose down
 ```
 
-**Access the application:** http://localhost:8080
+**Access the application:** [localhost:8080](http://localhost:8080)
 
 **🔧 Configuration API Backend:**
+
 ```bash
 # Option 1: Use environment file
 cp env.example .env
