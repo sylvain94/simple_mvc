@@ -1,6 +1,6 @@
 services:
   # Application Vue.js Simple MVC
-  simple-mvc:
+  mediahub-admin:
     build: .
     container_name: mediahub-admin
     ports:
@@ -16,11 +16,11 @@ services:
       - API_READ_TIMEOUT=${API_READ_TIMEOUT:-30s}
     restart: unless-stopped
     networks:
-      - simple-mvc-network
+      - mediahub-admin-network
 
 networks:
-  simple-mvc-network:
+  mediahub-admin-network:
     driver: bridge
 
-# Pour démarrer l'application :
+# To start the application :
 # docker-compose up -d
