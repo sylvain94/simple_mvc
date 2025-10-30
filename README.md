@@ -13,7 +13,8 @@ A modern application based on MVC architecture with Vue 3, built with best pract
 
 ## 📁 Project Structure
 
-```
+```code
+
 src/
 ├── components/          # Composants réutilisables
 │   ├── ui/             # Composants d'interface
@@ -84,7 +85,7 @@ sudo docker compose logs -f
 sudo docker compose down
 ```
 
-**Access the application:** http://localhost:8080
+**Access the application:** [localhost:8000](http://localhost:8080)
 
 #### Option 2: Standard Installation (Node.js 18.20+)
 
@@ -187,6 +188,7 @@ sudo docker compose up -d
 ### Docker Configuration
 
 The `docker-compose.yml` includes:
+
 - **Port mapping:** `8080:80` (host:container)
 - **Network:** Isolated `simple-mvc-network`
 - **Restart policy:** `unless-stopped`
@@ -195,6 +197,7 @@ The `docker-compose.yml` includes:
 ### Nginx Configuration
 
 The Dockerfile automatically configures Nginx with:
+
 - **SPA support** (Single Page Application routing)
 - **Asset caching** (1 year for `/assets/`)
 - **API proxy** to `https://192.168.1.141:8443/api/`
@@ -210,9 +213,9 @@ npm run build        # Build de production
 npm run preview      # Prévisualisation du build
 
 # Docker
-docker compose up -d           # Démarrer avec Docker
-docker compose logs -f         # Voir les logs
-docker compose down           # Arrêter l'application
+docker compose up -d           # Start with Docker
+docker compose logs -f         # See the logs
+docker compose down           # Stop the application
 ```
 
 ## 🔧 Troubleshooting
