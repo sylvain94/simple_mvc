@@ -8,7 +8,7 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-production}
       # API Backend Configuration (set to "auto" for auto-detection or specify full URL)
-      - API_BACKEND_URL=${API_BACKEND_URL:-auto}
+      - API_BACKEND_URL=${API_BACKEND_URL:-https://192.168.1.141:8443}
       - API_BACKEND_PROTOCOL=${API_BACKEND_PROTOCOL:-https}
       - API_BACKEND_PORT=${API_BACKEND_PORT:-8443}
       - API_SSL_VERIFY=${API_SSL_VERIFY:-off}
@@ -17,6 +17,8 @@ services:
       - API_SEND_TIMEOUT=${API_SEND_TIMEOUT:-30s}
       - API_READ_TIMEOUT=${API_READ_TIMEOUT:-30s}
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - mediahub-admin-network
 

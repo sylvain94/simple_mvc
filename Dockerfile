@@ -83,52 +83,68 @@ COPY <<EOF /docker-entrypoint.sh
 #!/bin/sh
 set -e
 
-# Function to detect host IP address
-get_host_ip() {
-    # Try multiple methods to get the host IP
+# Function to detect VM IP address (where both frontend and backend are hosted)
+get_vm_ip() {
+    # Since we're in a Docker container, we need to get the host VM's IP
+    # Try multiple methods to get the VM's IP address
     
-    # Method 1: Check if we can resolve the Docker host
-    if command -v getent >/dev/null 2>&1; then
-        HOST_IP=\$(getent hosts host.docker.internal 2>/dev/null | awk '{print \$1}' | head -1)
-        if [ -n "\$HOST_IP" ] && [ "\$HOST_IP" != "127.0.0.1" ]; then
-            echo "\$HOST_IP"
-            return 0
-        fi
-    fi
-    
-    # Method 2: Get default gateway (usually the Docker host)
+    # Method 1: Get Docker host IP (the VM where Docker is running)
     HOST_IP=\$(ip route show default 2>/dev/null | awk '/default/ { print \$3 }' | head -1)
     if [ -n "\$HOST_IP" ] && [ "\$HOST_IP" != "127.0.0.1" ]; then
         echo "\$HOST_IP"
         return 0
     fi
     
+    # Method 2: Try to resolve host.docker.internal
+    if command -v getent >/dev/null 2>&1; then
+        VM_IP=\$(getent hosts host.docker.internal 2>/dev/null | awk '{print \$1}' | head -1)
+        if [ -n "\$VM_IP" ] && [ "\$VM_IP" != "127.0.0.1" ]; then
+            echo "\$VM_IP"
+            return 0
+        fi
+    fi
+    
     # Method 3: Try to get from /etc/hosts
-    HOST_IP=\$(awk '/host.docker.internal/ { print \$1 }' /etc/hosts 2>/dev/null | head -1)
-    if [ -n "\$HOST_IP" ] && [ "\$HOST_IP" != "127.0.0.1" ]; then
-        echo "\$HOST_IP"
+    VM_IP=\$(awk '/host.docker.internal/ { print \$1 }' /etc/hosts 2>/dev/null | head -1)
+    if [ -n "\$VM_IP" ] && [ "\$VM_IP" != "127.0.0.1" ]; then
+        echo "\$VM_IP"
         return 0
     fi
     
-    # Method 4: Fallback to container's default gateway
-    HOST_IP=\$(awk '/^0.0.0.0/ { print \$2 }' /proc/net/route 2>/dev/null | head -1)
-    if [ -n "\$HOST_IP" ]; then
+    # Method 4: Convert hex gateway from /proc/net/route
+    HEX_IP=\$(awk '/^0.0.0.0/ { print \$2 }' /proc/net/route 2>/dev/null | head -1)
+    if [ -n "\$HEX_IP" ]; then
         # Convert hex to decimal IP
-        printf "%d.%d.%d.%d\\n" \$(echo \$HOST_IP | sed 's/../0x& /g')
-        return 0
+        VM_IP=\$(printf "%d.%d.%d.%d\\n" \$(echo \$HEX_IP | sed 's/../0x& /g'))
+        if [ -n "\$VM_IP" ] && [ "\$VM_IP" != "127.0.0.1" ] && [ "\$VM_IP" != "0.0.0.0" ]; then
+            echo "\$VM_IP"
+            return 0
+        fi
     fi
     
-    # Fallback to configured default
+    # Method 5: Try hostname resolution as fallback
+    if command -v hostname >/dev/null 2>&1; then
+        HOSTNAME=\$(hostname 2>/dev/null)
+        if [ -n "\$HOSTNAME" ] && command -v getent >/dev/null 2>&1; then
+            VM_IP=\$(getent hosts "\$HOSTNAME" 2>/dev/null | awk '{print \$1}' | head -1)
+            if [ -n "\$VM_IP" ] && [ "\$VM_IP" != "127.0.0.1" ]; then
+                echo "\$VM_IP"
+                return 0
+            fi
+        fi
+    fi
+    
+    # Final fallback to configured default (your development IP)
     echo "192.168.1.141"
 }
 
-# Auto-detect host IP if not explicitly configured
+# Auto-detect VM IP if not explicitly configured
 if [ -z "\${API_BACKEND_URL}" ] || [ "\${API_BACKEND_URL}" = "auto" ]; then
-    DETECTED_HOST_IP=\$(get_host_ip)
+    DETECTED_VM_IP=\$(get_vm_ip)
     API_BACKEND_PORT=\${API_BACKEND_PORT:-8443}
     API_BACKEND_PROTOCOL=\${API_BACKEND_PROTOCOL:-https}
-    export API_BACKEND_URL="\${API_BACKEND_PROTOCOL}://\${DETECTED_HOST_IP}:\${API_BACKEND_PORT}"
-    echo "🔍 Auto-detected host IP: \$DETECTED_HOST_IP"
+    export API_BACKEND_URL="\${API_BACKEND_PROTOCOL}://\${DETECTED_VM_IP}:\${API_BACKEND_PORT}"
+    echo "🔍 Auto-detected VM IP: \$DETECTED_VM_IP"
     echo "🔗 Generated API backend URL: \$API_BACKEND_URL"
 else
     export API_BACKEND_URL=\${API_BACKEND_URL}
@@ -168,3 +184,4 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 LABEL maintainer="MediaHub Team"
 LABEL description="Application Vue.js MediaHub Admin with MVC architecture"
 LABEL version="1.0.0"
+

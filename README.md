@@ -95,7 +95,8 @@ sudo docker compose down
 
 ```bash
 # Option 1: Auto-detection (Recommended - Default)
-# The application automatically detects the Docker host IP
+# The application automatically detects the VM's IP address
+# (where both frontend and backend applications are hosted)
 sudo docker compose up -d
 
 # Option 2: Use environment file for custom configuration
@@ -221,7 +222,7 @@ The `docker-compose.yml` includes:
 - **Restart policy:** `unless-stopped`
 - **Environment variables:**
   - `NODE_ENV=production`
-  - `API_BACKEND_URL=auto` (auto-detects Docker host IP)
+  - `API_BACKEND_URL=auto` (auto-detects VM's IP address)
   - `API_BACKEND_PROTOCOL=https` (for auto-detection)
   - `API_BACKEND_PORT=8443` (for auto-detection)
   - `API_SSL_VERIFY=off` (for self-signed certificates)
@@ -430,7 +431,7 @@ cp env.example .env
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `API_BACKEND_URL` | `auto` | Backend API server URL or "auto" for auto-detection |
+| `API_BACKEND_URL` | `auto` | Backend API server URL or "auto" to detect VM's IP |
 | `API_BACKEND_PROTOCOL` | `https` | Protocol for auto-detected URL |
 | `API_BACKEND_PORT` | `8443` | Port for auto-detected URL |
 | `API_SSL_VERIFY` | `off` | SSL verification (on/off) |
