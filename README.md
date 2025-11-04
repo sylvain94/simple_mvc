@@ -89,7 +89,8 @@ sudo docker compose logs -f
 sudo docker compose down
 ```
 
-**Access the application:** 
+**Access the application:**
+
 - **Production (Docker):** [https://localhost](https://localhost) (HTTPS avec certificat auto-signé)
 - **Development (npm):** [http://localhost:5173](http://localhost:5173)
 
