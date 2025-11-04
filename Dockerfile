@@ -48,16 +48,16 @@ COPY <<EOF /etc/nginx/conf.d/default.conf.template
 # HTTP server - redirect to HTTPS
 server {
     listen 80;
-    server_name localhost;
+    server_name _;
     
     # Redirect all HTTP requests to HTTPS
-    return 301 https://\$server_name:\$request_uri;
+    return 301 https://\$host\$request_uri;
 }
 
 # HTTPS server
 server {
     listen 443 ssl http2;
-    server_name localhost;
+    server_name _;
     root /usr/share/nginx/html;
     index index.html;
 
@@ -216,6 +216,6 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 
 # Labels for the documentation
 LABEL maintainer="MediaHub Team"
-LABEL description="Application Vue.js MediaHub Admin with MVC architecture"
+LABEL description="MediaHub-admin with Vue.js architecture"
 LABEL version="1.0.0"
 
