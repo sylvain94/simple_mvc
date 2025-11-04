@@ -28,16 +28,49 @@ RUN npm run build
 # Stage 2: Serveur web Nginx
 FROM nginx:alpine
 
+# Install OpenSSL for certificate generation
+RUN apk add --no-cache openssl
+
 # Copy the built files from the previous stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Create Nginx configuration template
+# Create SSL certificate directory
+RUN mkdir -p /etc/nginx/ssl
+
+# Generate self-signed SSL certificate
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/nginx/ssl/nginx.key \
+    -out /etc/nginx/ssl/nginx.crt \
+    -subj "/C=FR/ST=France/L=Paris/O=MediaHub/OU=IT/CN=localhost"
+
+# Create Nginx configuration template with HTTPS
 COPY <<EOF /etc/nginx/conf.d/default.conf.template
+# HTTP server - redirect to HTTPS
 server {
     listen 80;
     server_name localhost;
+    
+    # Redirect all HTTP requests to HTTPS
+    return 301 https://\$server_name:\$request_uri;
+}
+
+# HTTPS server
+server {
+    listen 443 ssl http2;
+    server_name localhost;
     root /usr/share/nginx/html;
     index index.html;
+
+    # SSL configuration
+    ssl_certificate /etc/nginx/ssl/nginx.crt;
+    ssl_certificate_key /etc/nginx/ssl/nginx.key;
+    
+    # SSL settings
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
 
     # Support for SPA (Single Page Application)
     location / {
@@ -57,7 +90,7 @@ server {
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header X-Forwarded-Proto https;
         
         # Timeout settings
         proxy_connect_timeout \${API_CONNECT_TIMEOUT};
@@ -70,6 +103,7 @@ server {
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-XSS-Protection "1; mode=block" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
     # Compression
     gzip on;
@@ -174,8 +208,8 @@ EOF
 # Make the script executable
 RUN chmod +x /docker-entrypoint.sh
 
-# Expose the port 80
-EXPOSE 80
+# Expose ports 80 (HTTP) and 443 (HTTPS)
+EXPOSE 80 443
 
 # Use custom entrypoint script
 ENTRYPOINT ["/docker-entrypoint.sh"]

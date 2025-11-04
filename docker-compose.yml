@@ -4,7 +4,8 @@ services:
     build: .
     container_name: mediahub-admin
     ports:
-      - "8080:80"
+      - "80:80"
+      - "443:443"
     environment:
       - NODE_ENV=${NODE_ENV:-production}
       # API Backend Configuration (set to "auto" for auto-detection or specify full URL)

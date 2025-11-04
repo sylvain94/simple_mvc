@@ -89,7 +89,9 @@ sudo docker compose logs -f
 sudo docker compose down
 ```
 
-**Access the application:** [localhost:8080](http://localhost:8080)
+**Access the application:** 
+- **Production (Docker):** [https://localhost](https://localhost) (HTTPS avec certificat auto-signé)
+- **Development (npm):** [http://localhost:5173](http://localhost:5173)
 
 **🔧 Configuration API Backend:**
 
@@ -217,7 +219,7 @@ sudo docker compose up -d
 
 The `docker-compose.yml` includes:
 
-- **Port mapping:** `8080:80` (host:container)
+- **Port mapping:** `80:80` et `443:443` (HTTP et HTTPS)
 - **Network:** Isolated `mediahub-admin-network`
 - **Restart policy:** `unless-stopped`
 - **Environment variables:**
@@ -232,10 +234,11 @@ The `docker-compose.yml` includes:
 
 The Dockerfile automatically configures Nginx with:
 
+- **HTTPS/SSL** (certificat auto-signé, redirection HTTP→HTTPS)
 - **SPA support** (Single Page Application routing)
 - **Asset caching** (1 year for `/assets/`)
-- **API proxy** to `https://192.168.1.141:8443/api/`
-- **Security headers** (XSS, CSRF protection)
+- **API proxy** to backend API
+- **Security headers** (XSS, CSRF, HSTS protection)
 - **Gzip compression** for better performance
 
 ### Architecture avec Reverse Proxy
@@ -283,15 +286,19 @@ graph TB
 ## 📖 Available Scripts
 
 ```bash
-# Development
-npm run dev          # dev server
+# Development (HTTP sur port 5173)
+npm run dev          # Serveur de développement Vite
 npm run build        # Build de production
 npm run preview      # Prévisualisation du build
 
-# Docker
-docker compose up -d           # Start with Docker
+# Production (HTTPS sur ports 80/443)
+docker compose up -d           # Start with Docker (HTTPS)
 docker compose logs -f         # See the logs
 docker compose down           # Stop the application
+
+# Development avec HTTPS (optionnel)
+sudo npm run dev     # Nécessite sudo pour port 443
+# Ou modifiez vite.config.js: https: true, port: 8443
 ```
 
 ## 🔧 Troubleshooting
@@ -375,6 +382,23 @@ npm install
 sudo docker compose build --no-cache
 ```
 
+#### ❌ HTTPS/SSL Issues
+
+```bash
+# Port 443 permission denied (Development)
+# Solution: Use non-privileged port
+# Edit vite.config.js: port: 5173 instead of 443
+
+# Certificate warnings in browser
+# Solution: Accept self-signed certificate or add exception
+# The certificate is auto-generated and safe for development
+
+# HTTPS redirect not working
+# Check Nginx configuration in container:
+sudo docker exec mediahub-admin nginx -t
+sudo docker compose logs mediahub-admin
+```
+
 #### ✅ Verify Installation
 
 ```bash
@@ -384,10 +408,11 @@ npm --version     # Should be >= 8.0
 npx vite --version # Should show Vite version
 npm run dev       # Should show: "VITE ready in XXX ms"
 
-# Docker Deployment
+# Docker Deployment (HTTPS)
 sudo docker compose ps                    # Should show "Up" status
-curl http://localhost:8080               # Should return HTML
-sudo docker compose logs simple-mvc      # Check for errors
+curl -k https://localhost                 # Should return HTML (-k ignores SSL)
+curl http://localhost                     # Should redirect to HTTPS
+sudo docker compose logs mediahub-admin  # Check for errors
 ```
 
 ## 🎯 Available Pages
