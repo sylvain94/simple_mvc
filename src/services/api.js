@@ -1,4 +1,9 @@
+// Configuration de l'URL de base de l'API
+// SOLUTION CORS: Utilise toujours le proxy local pour éviter les problèmes CORS
+// Le proxy Vite redirigera vers le backend approprié
 const API_BASE = import.meta.env.VITE_API_BASE || '/api/v1'
+
+console.log(`🔗 API Base URL configured: ${API_BASE} (current port: ${window.location.port})`)
 
 export async function apiGet(endpoint, useAuth = false) {
   const headers = { 'Content-Type': 'application/json' }

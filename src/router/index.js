@@ -109,15 +109,21 @@ router.beforeEach(async (to, from, next) => {
   if (to.path === '/login' && isAuthenticated) {
     // Check configuration status after successful authentication
     try {
+      console.log('🔍 Router: Checking configuration status after login...')
       const isConfigured = await ApplicationController.isConfigured()
+      console.log(`📋 Router: Configuration status: ${isConfigured}`)
+      
       if (!isConfigured) {
+        console.log('🧙‍♂️ Router: Redirecting to wizard (not configured)')
         next('/wizard')
       } else {
+        console.log('✅ Router: Redirecting to dashboard (configured)')
         next('/')
       }
     } catch (error) {
-      console.error('Error checking configuration status:', error)
+      console.error('❌ Router: Error checking configuration status:', error)
       // En cas d'erreur, rediriger vers le wizard par sécurité
+      console.log('🧙‍♂️ Router: Redirecting to wizard (error fallback)')
       next('/wizard')
     }
     return
@@ -126,14 +132,19 @@ router.beforeEach(async (to, from, next) => {
   // Si l'utilisateur est authentifié et essaie d'accéder à une page qui nécessite une configuration
   if (isAuthenticated && requiresConfiguration && to.path !== '/wizard') {
     try {
+      console.log(`🔍 Router: Checking configuration for page access: ${to.path}`)
       const isConfigured = await ApplicationController.isConfigured()
+      console.log(`📋 Router: Configuration status for ${to.path}: ${isConfigured}`)
+      
       if (!isConfigured) {
+        console.log(`🧙‍♂️ Router: Redirecting to wizard from ${to.path} (not configured)`)
         next('/wizard')
         return
       }
     } catch (error) {
-      console.error('Error checking configuration status:', error)
+      console.error('❌ Router: Error checking configuration status for page access:', error)
       // En cas d'erreur, rediriger vers le wizard par sécurité
+      console.log(`🧙‍♂️ Router: Redirecting to wizard from ${to.path} (error fallback)`)
       next('/wizard')
       return
     }

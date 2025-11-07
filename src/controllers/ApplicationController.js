@@ -14,7 +14,7 @@ export class ApplicationController {
     try {
       console.log('🔍 ApplicationController: Getting all application properties...')
       
-      const response = await apiGet('/utils/application/getAllProperties')
+      const response = await apiGet('/utils/application/getAllProperties', true) // useAuth = true
       
       console.log('✅ ApplicationController: Application properties retrieved:', response)
       
@@ -31,11 +31,25 @@ export class ApplicationController {
    */
   static async isConfigured() {
     try {
+      console.log('🔍 ApplicationController: Checking if application is configured...')
       const properties = await this.getAllProperties()
-      return properties.configured === true
+      console.log('📋 ApplicationController: Properties received:', properties)
+      
+      const isConfigured = properties && properties.configured === true
+      console.log(`✅ ApplicationController: Application configured status: ${isConfigured}`)
+      
+      return isConfigured
     } catch (error) {
       console.error('❌ ApplicationController: Error checking configuration status:', error)
-      // In case of error, we consider that the application is not configured
+      console.error('❌ ApplicationController: Full error details:', error.message, error.stack)
+      
+      // En cas d'erreur, on considère que l'application n'est pas configurée
+      // TEMPORAIRE: Pour déboguer, retournons true si l'erreur est liée à l'API
+      if (error.message && error.message.includes('404')) {
+        console.warn('⚠️ ApplicationController: API endpoint not found, assuming configured for now')
+        return true // TEMPORAIRE - à supprimer une fois l'API implémentée
+      }
+      
       return false
     }
   }
@@ -57,6 +71,37 @@ export class ApplicationController {
       return response
     } catch (error) {
       console.error('❌ ApplicationController: Error marking application as configured:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Test method to simulate a configured application (for debugging)
+   * @returns {Promise<Object>} Simulated configured application properties
+   */
+  static async getSimulatedConfiguredProperties() {
+    return {
+      id: "204d0d4b-4231-44ee-95be-961c08aa5a37",
+      serialNumber: "30e8e73d-ab0e-41b1-95d7-26f2d29aa92a",
+      name: "dev-01",
+      description: "Mediahub-ws from dev-01",
+      version: "V1.0.0.1a",
+      configured: true
+    }
+  }
+
+  /**
+   * Test method to check the real API endpoint
+   * @returns {Promise<void>}
+   */
+  static async testApiEndpoint() {
+    try {
+      console.log('🧪 ApplicationController: Testing API endpoint...')
+      const response = await this.getAllProperties()
+      console.log('✅ ApplicationController: API test successful:', response)
+      return response
+    } catch (error) {
+      console.error('❌ ApplicationController: API test failed:', error)
       throw error
     }
   }
