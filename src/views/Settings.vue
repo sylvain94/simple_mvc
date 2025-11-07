@@ -273,6 +273,7 @@
           </div>
         </div>
 
+
         <!-- User Profile -->
         <div v-if="activeCategory === 'profile'" class="card bg-base-100 shadow-lg">
           <div class="card-body">

@@ -1,0 +1,57 @@
+{
+    "application": {
+        "name": "MediaHub",
+        "description": "MediaHub is a media server that allows you to stream media to your clients",
+        "licence": null
+    },
+    "instances": [
+        {
+            "name": "admin-instance",
+            "licence": null,
+            "description": "Dedicated to the admin team",
+            "type": "ADMIN",
+            "status": "ACTIVE",
+            "position": "ANY",
+            "startIP": "239.0.0.0",
+            "endIP": "239.0.0.255",
+            "startMCPort": 4000,
+            "endMCPort": 6535,
+            "interfaces": [
+              {
+                "ifName": "eth0",
+                "ifStreamDirection": "BOTH",
+                "ifAddresses": ["192.168.1.1/24"]
+              },
+			  {
+                "ifName": "eth1",
+                "ifStreamDirection": "BOTH",
+                "ifAddresses": ["192.168.1.2/24"]
+              }
+			]
+		},
+        {
+            "name": "default-instance",
+            "licence": null,
+            "description": "Default instance",
+            "type": "DEFAULT",
+            "status": "ACTIVE",
+            "position": "EDGE_IN",
+            "startIP": "239.0.0.0",
+            "endIP": "239.0.0.255",
+            "startMCPort": 4000,
+            "endMCPort": 6535,
+            "interfaces": [
+              {
+                "ifName": "eth0",
+                "ifStreamDirection": "IN",
+                "ifAddresses": ["192.168.1.1/24"]
+              },
+			  {
+                "ifName": "ens18",
+                "ifStreamDirection": "OUT",
+                "ifAddresses": ["192.168.1.2/24"]
+              }
+			]
+		}	
+    ]
+}  

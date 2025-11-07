@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { authService } from '../services/authService.js'
+import { ApplicationController } from '../controllers/ApplicationController.js'
 
 const routes = [
   { 
@@ -7,6 +8,12 @@ const routes = [
     name: 'Login', 
     component: () => import('../views/Login.vue'),
     meta: { requiresAuth: false }
+  },
+  { 
+    path: '/wizard', 
+    name: 'Wizard', 
+    component: () => import('../views/Wizard.vue'),
+    meta: { requiresAuth: true, requiresConfiguration: false }
   },
   { 
     path: '/', 
@@ -87,32 +94,65 @@ const router = createRouter({
   routes,
 })
 
-// Navigation guard to check authentication
-router.beforeEach((to, from, next) => {
+// Navigation guard to check authentication and configuration
+router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  const requiresConfiguration = to.matched.some(record => record.meta.requiresConfiguration !== false)
   const isAuthenticated = authService.isAuthenticated()
 
   if (requiresAuth && !isAuthenticated) {
     // Redirect to login page if authentication is required
     next('/login')
-  } else if (to.path === '/login' && isAuthenticated) {
-    // Redirect to dashboard if already authenticated and trying to access login
-    next('/')
-  } else {
-    next()
-    // Update app store current page after navigation
-    if (to.meta.page) {
-      // Use setTimeout to avoid circular dependency issues
-      setTimeout(async () => {
-        try {
-          const { useAppStore } = await import('../stores/app.js')
-          const appStore = useAppStore()
-          appStore.currentPage = to.meta.page
-        } catch (error) {
-          console.warn('Could not update current page in app store:', error)
-        }
-      }, 0)
+    return
+  }
+
+  if (to.path === '/login' && isAuthenticated) {
+    // Check configuration status after successful authentication
+    try {
+      const isConfigured = await ApplicationController.isConfigured()
+      if (!isConfigured) {
+        next('/wizard')
+      } else {
+        next('/')
+      }
+    } catch (error) {
+      console.error('Error checking configuration status:', error)
+      // En cas d'erreur, rediriger vers le wizard par sécurité
+      next('/wizard')
     }
+    return
+  }
+
+  // Si l'utilisateur est authentifié et essaie d'accéder à une page qui nécessite une configuration
+  if (isAuthenticated && requiresConfiguration && to.path !== '/wizard') {
+    try {
+      const isConfigured = await ApplicationController.isConfigured()
+      if (!isConfigured) {
+        next('/wizard')
+        return
+      }
+    } catch (error) {
+      console.error('Error checking configuration status:', error)
+      // En cas d'erreur, rediriger vers le wizard par sécurité
+      next('/wizard')
+      return
+    }
+  }
+
+  next()
+  
+  // Update app store current page after navigation
+  if (to.meta.page) {
+    // Use setTimeout to avoid circular dependency issues
+    setTimeout(async () => {
+      try {
+        const { useAppStore } = await import('../stores/app.js')
+        const appStore = useAppStore()
+        appStore.currentPage = to.meta.page
+      } catch (error) {
+        console.warn('Could not update current page in app store:', error)
+      }
+    }, 0)
   }
 })
 
