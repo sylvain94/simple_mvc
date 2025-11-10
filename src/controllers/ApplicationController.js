@@ -32,24 +32,36 @@ export class ApplicationController {
   static async isConfigured() {
     try {
       console.log('🔍 ApplicationController: Checking if application is configured...')
+      
+      // Call the API to check the configuration
       const properties = await this.getAllProperties()
-      console.log('📋 ApplicationController: Properties received:', properties)
+      console.log('📋 ApplicationController: Properties received (Status 200):', properties)
       
-      const isConfigured = properties && properties.configured === true
-      console.log(`✅ ApplicationController: Application configured status: ${isConfigured}`)
+      // If we arrive here, it means that the API has returned a status 200
+      // This means that the application is configured
+      console.log('✅ ApplicationController: Application is configured (Status 200)')
+      return true
       
-      return isConfigured
     } catch (error) {
-      console.error('❌ ApplicationController: Error checking configuration status:', error)
-      console.error('❌ ApplicationController: Full error details:', error.message, error.stack)
+      console.log('🔍 ApplicationController: Error caught, analyzing status code...')
       
-      // En cas d'erreur, on considère que l'application n'est pas configurée
-      // TEMPORAIRE: Pour déboguer, retournons true si l'erreur est liée à l'API
-      if (error.message && error.message.includes('404')) {
-        console.warn('⚠️ ApplicationController: API endpoint not found, assuming configured for now')
-        return true // TEMPORAIRE - à supprimer une fois l'API implémentée
+      // Check if it's a 404 error (application not configured)
+      if (error.status === 404 || (error.message && error.message.includes('404'))) {
+        console.log('📋 ApplicationController: Application not configured (Status 404)')
+        return false
       }
       
+      // For any other error (network, authentication, etc.)
+      console.error('❌ ApplicationController: Unexpected error checking configuration:', error)
+      console.error('❌ ApplicationController: Error details:', {
+        status: error.status,
+        message: error.message,
+        stack: error.stack
+      })
+      
+      // In case of unexpected error, we consider the application as not configured
+      // to force the user to go to the wizard
+      console.warn('⚠️ ApplicationController: Assuming not configured due to unexpected error')
       return false
     }
   }
@@ -62,7 +74,7 @@ export class ApplicationController {
     try {
       console.log('🔧 ApplicationController: Marking application as configured...')
       
-      // Note: This method will be adapted according to the available API
+      // Note: This method will be adapted according to the available API endpoints
       // For now, we simulate the request
       const response = await apiPut('/utils/application/setConfigured', { configured: true })
       
@@ -124,6 +136,30 @@ export class ApplicationController {
       }
     } catch (error) {
       console.error('❌ ApplicationController: Error getting application info:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Test method to verify the configuration check logic
+   * @returns {Promise<void>}
+   */
+  static async testConfigurationCheck() {
+    console.log('🧪 ApplicationController: Testing configuration check logic...')
+    
+    try {
+      const isConfigured = await this.isConfigured()
+      console.log(`🎯 ApplicationController: Configuration test result: ${isConfigured}`)
+      
+      if (isConfigured) {
+        console.log('✅ Application is configured (Status 200 received)')
+      } else {
+        console.log('⚠️ Application is not configured (Status 404 received)')
+      }
+      
+      return isConfigured
+    } catch (error) {
+      console.error('❌ ApplicationController: Configuration test failed:', error)
       throw error
     }
   }

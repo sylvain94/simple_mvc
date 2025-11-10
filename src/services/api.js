@@ -1,6 +1,6 @@
-// Configuration de l'URL de base de l'API
-// SOLUTION CORS: Utilise toujours le proxy local pour éviter les problèmes CORS
-// Le proxy Vite redirigera vers le backend approprié
+// Configuration of the base URL of the API
+// SOLUTION CORS: Always use the local proxy to avoid CORS problems
+// The Vite proxy will redirect to the appropriate backend
 const API_BASE = import.meta.env.VITE_API_BASE || '/api/v1'
 
 console.log(`🔗 API Base URL configured: ${API_BASE} (current port: ${window.location.port})`)
@@ -17,8 +17,16 @@ export async function apiGet(endpoint, useAuth = false) {
   }
 
   const res = await fetch(`${API_BASE}${endpoint}`, { headers })
-  if (!res.ok) throw new Error(`GET ${endpoint} failed: ${res.status}`)
-  return res.json()
+  
+  if (!res.ok) {
+    // create a new error with the status and status text
+    const error = new Error(`GET ${endpoint} failed: ${res.status} - ${res.statusText}`)
+    error.status = res.status
+    error.statusText = res.statusText
+    throw error // re-throw the error to let the caller handle it
+  }
+  
+  return res.json() // return the response as JSON
 }
 
 export async function apiPost(endpoint, body, useAuth = false) {
@@ -595,14 +603,6 @@ const srtGatewayService = {
   }
 }
 
-// Application service
-const applicationService = {
-  async getAllProperties() {
-    const response = await apiGet('/utils/application/getAllProperties', true)
-    return response
-  }
-}
-
 // User profile service
 const userProfileService = {
   async getUserByID(userID) {
@@ -679,6 +679,17 @@ const instanceService = {
   async getAdminInstance() {
     const response = await apiGet('/utils/instances/getAdmin', true)
     return response
+  },
+  
+  // Wizard-specific methods
+  async initiateAdminConfiguration() {
+    const response = await apiPost('/utils/instances/initiateAdminConfiguration', {}, true)
+    return response
+  },
+  
+  async updateAdminConfiguration(config) {
+    const response = await apiPut('/utils/instances/updateAdminConfiguration', config, true)
+    return response
   }
 }
 
@@ -709,6 +720,24 @@ const functionService = {
   
   async deleteFunction(functionId) {
     const response = await apiDelete(`/functions/deleteByID/${functionId}`, true)
+    return response
+  }
+}
+
+// Application service for managing application configuration
+const applicationService = {
+  async validateInstallation() {
+    const response = await apiGet('/utils/application/validateInstallation', true)
+    return response
+  },
+  
+  async getAllProperties() {
+    const response = await apiGet('/utils/application/getAllProperties', true)
+    return response
+  },
+  
+  async markAsConfigured() {
+    const response = await apiPut('/utils/application/setConfigured', { configured: true }, true)
     return response
   }
 }
