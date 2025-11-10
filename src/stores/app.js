@@ -182,9 +182,9 @@ export const useAppStore = defineStore('app', {
       try {
         const users = await userService.getAllUsers()
         
-        // L'API retourne un objet avec les données, on doit extraire la liste
+        // The API returns an object with the data, we need to extract the list
         if (users && typeof users === 'object') {
-          // Si c'est un objet avec une propriété contenant la liste
+          // If it's an object with a property containing the list
           if (Array.isArray(users.data)) {
             this.users = users.data
           } else if (Array.isArray(users.users)) {
@@ -192,7 +192,7 @@ export const useAppStore = defineStore('app', {
           } else if (Array.isArray(users)) {
             this.users = users
           } else {
-            // Si c'est un objet avec des clés numériques, convertir en array
+            // If it's an object with numeric keys, convert to array
             this.users = Object.values(users)
           }
         } else {
@@ -202,7 +202,7 @@ export const useAppStore = defineStore('app', {
       } catch (error) {
         console.error('❌ Error loading users:', error)
         this.users = []
-        throw error // Re-throw pour que la vue puisse gérer l'erreur
+        throw error // Re-throw to let the view handle the error
       }
     },
 
@@ -211,7 +211,7 @@ export const useAppStore = defineStore('app', {
       try {
         await userService.deleteUserById(userId)
         
-        // Recharger la liste des utilisateurs après suppression
+        // Reload the users list after deletion
         await this.loadUsers()
         
         return { success: true }
@@ -226,7 +226,7 @@ export const useAppStore = defineStore('app', {
       try {
         const newUser = await userService.createUser(userData)
         
-        // Recharger la liste des utilisateurs après création
+        // Reload the users list after creation
         await this.loadUsers()
         
         return { success: true, user: newUser }
@@ -246,7 +246,7 @@ export const useAppStore = defineStore('app', {
           await userService.disableUserByID(userId)
         }
         
-        // Recharger la liste des utilisateurs après modification
+        // Reload the users list after modification
         await this.loadUsers()
         
         return { success: true }
