@@ -4,27 +4,6 @@
     
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       
-      <!-- Quick Actions Section -->
-      <div class="card bg-base-100 shadow-xl">
-        <div class="card-body">
-          <h3 class="card-title">Quick Actions</h3>
-          <p>Common actions you can perform in the application.</p>
-          <div class="space-y-2 mt-4">
-            <div class="flex items-center gap-2 text-sm">
-              <div class="badge badge-primary badge-sm">F</div>
-              <span>Go to Files to manage input streams</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm">
-              <div class="badge badge-secondary badge-sm">D</div>
-              <span>Check Dashboard for system overview</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm">
-              <div class="badge badge-accent badge-sm">S</div>
-              <span>Access Settings for theme and preferences</span>
-            </div>
-          </div>
-        </div>
-      </div>
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
           <h3 class="card-title">Getting Started</h3>
