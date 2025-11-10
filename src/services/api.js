@@ -713,6 +713,17 @@ const networkInterfaceService = {
   async refreshAllNetworkInterfaces() {
     const response = await apiGet('/utils/ifs/refreshAll', true)
     return response
+  },
+  
+  // Wizard-specific methods for network configuration
+  async configureInterfaceToIN(ifName) {
+    const response = await apiPut(`/utils/ifs/configureToINStreams/${ifName}`, {}, true)
+    return response
+  },
+  
+  async configureInterfaceToOUT(ifName) {
+    const response = await apiPut(`/utils/ifs/configureToOUTStreams/${ifName}`, {}, true)
+    return response
   }
 }
 

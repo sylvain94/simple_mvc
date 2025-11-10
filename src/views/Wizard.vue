@@ -13,7 +13,8 @@
           <li class="step" :class="currentStep >= 1 ? 'step-primary' : ''">Application</li>
           <li class="step" :class="currentStep >= 2 ? 'step-primary' : ''">Admin Instance</li>
           <li class="step" :class="currentStep >= 3 ? 'step-primary' : ''">Default Instance</li>
-          <li class="step" :class="currentStep >= 4 ? 'step-primary' : ''">Finalization</li>
+          <li class="step" :class="currentStep >= 4 ? 'step-primary' : ''">Network</li>
+          <li class="step" :class="currentStep >= 5 ? 'step-primary' : ''">Finalization</li>
         </ul>
       </div>
 
@@ -416,6 +417,136 @@
                 @click="nextStep" 
                 :disabled="!defaultInstance || !defaultConfigured"
               >
+                Next: Network
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 4: Network Configuration -->
+          <div v-else-if="currentStep === 4" class="space-y-6">
+            <!-- Header Section (Fixed) -->
+            <div class="space-y-4">
+              <h2 class="card-title text-2xl mb-4 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47.881-6.08 2.33l-.147.083A7.994 7.994 0 0112 21.001z" />
+                </svg>
+                Network Configuration
+              </h2>
+
+              <div class="alert alert-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                  <h3 class="font-bold">Network Interface Configuration</h3>
+                  <div class="text-xs">Configure the stream direction for each network interface.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Content Section (Scrollable) -->
+            <div class="space-y-4">
+              <!-- Refresh Network Interfaces Button -->
+              <div v-if="!networkInterfaces.length" class="text-center">
+                <button 
+                  class="btn btn-primary btn-lg" 
+                  @click="refreshNetworkInterfaces" 
+                  :disabled="refreshingNetwork"
+                >
+                  <span v-if="refreshingNetwork" class="loading loading-spinner loading-sm mr-2"></span>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  {{ refreshingNetwork ? 'Loading...' : 'Load Network Interfaces' }}
+                </button>
+              </div>
+
+              <!-- Network Interfaces List -->
+              <div v-if="networkInterfaces.length" class="space-y-4">
+                <h3 class="font-semibold mb-3">Network Interfaces ({{ networkInterfaces.length }})</h3>
+                
+                <div class="overflow-x-auto max-h-64 overflow-y-auto border border-base-300 rounded-lg">
+                  <table class="table w-full">
+                    <thead class="sticky top-0 bg-base-200 z-10">
+                      <tr>
+                        <th>Interface</th>
+                        <th>Status</th>
+                        <th>IPv4 Address</th>
+                        <th>Stream Direction</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="iface in networkInterfaces" :key="iface.id" class="hover">
+                        <td>
+                          <div class="font-bold">{{ iface.ifName }}</div>
+                          <div class="text-sm opacity-70">{{ iface.ifMac }}</div>
+                        </td>
+                        <td>
+                          <div class="badge" :class="iface.ifStatus === 'UP' ? 'badge-success' : 'badge-error'">
+                            {{ iface.ifStatus }}
+                          </div>
+                        </td>
+                        <td>
+                          <code class="text-sm">{{ getIPv4Address(iface) }}</code>
+                        </td>
+                        <td>
+                          <select 
+                            class="select select-bordered select-sm" 
+                            :value="iface.ifStreamDirection"
+                            @change="updateInterfaceDirection(iface, $event.target.value)"
+                            :disabled="updatingInterface === iface.ifName"
+                          >
+                            <option value="IN">IN</option>
+                            <option value="OUT">OUT</option>
+                            <option value="BOTH">BOTH</option>
+                          </select>
+                        </td>
+                        <td>
+                          <span v-if="updatingInterface === iface.ifName" class="loading loading-spinner loading-sm"></span>
+                          <svg v-else-if="interfaceUpdateStatus[iface.ifName] === 'success'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <svg v-else-if="interfaceUpdateStatus[iface.ifName] === 'error'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                
+                <!-- Interface Summary -->
+                <div class="text-sm text-base-content/70 text-center">
+                  Scroll to view all interfaces • Configure stream direction for each interface
+                </div>
+              </div>
+
+              <!-- Error Display -->
+              <div v-if="networkError" class="alert alert-error">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{{ networkError }}</span>
+              </div>
+            </div>
+
+            <!-- Navigation Buttons (Always Visible) -->
+            <div class="card-actions justify-between pt-4 border-t border-base-300">
+              <button class="btn btn-outline" @click="previousStep">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8m-13 0a9 9 0 1118 0 9 9 0 01-18 0z" />
+                </svg>
+                Previous
+              </button>
+              <button 
+                class="btn btn-primary" 
+                @click="nextStep" 
+                :disabled="!networkInterfaces.length"
+              >
                 Next: Finalization
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -424,8 +555,8 @@
             </div>
           </div>
 
-          <!-- Step 4: Finalization -->
-          <div v-else-if="currentStep === 4" class="space-y-6">
+          <!-- Step 5: Finalization -->
+          <div v-else-if="currentStep === 5" class="space-y-6">
             <h2 class="card-title text-2xl mb-4 flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -527,7 +658,14 @@ const defaultForm = ref({
   endMCPort: 2000
 })
 
-// Step 4: Finalization
+// Step 4: Network Configuration
+const refreshingNetwork = ref(false)
+const networkInterfaces = ref([])
+const networkError = ref(null)
+const updatingInterface = ref(null)
+const interfaceUpdateStatus = ref({})
+
+// Step 5: Finalization
 const finishing = ref(false)
 
 // Methods for Step 1: Application Validation
@@ -650,9 +788,93 @@ const updateDefaultConfiguration = async () => {
   }
 }
 
+// Methods for Step 4: Network Configuration
+const refreshNetworkInterfaces = async () => {
+  try {
+    refreshingNetwork.value = true
+    networkError.value = null
+    
+    console.log('🔍 Wizard: Refreshing network interfaces...')
+    
+    // First, refresh the interfaces list
+    await apiGet('/utils/ifs/refreshAll', true)
+    console.log('✅ Wizard: Network interfaces refreshed')
+    
+    // Then, get the updated list
+    const interfaces = await apiGet('/utils/ifs/getAll', true)
+    console.log('📋 Wizard: Network interfaces loaded:', interfaces)
+    
+    networkInterfaces.value = interfaces
+    
+  } catch (error) {
+    console.error('❌ Wizard: Network interfaces loading failed:', error)
+    networkError.value = `Failed to load network interfaces: ${error.message}`
+  } finally {
+    refreshingNetwork.value = false
+  }
+}
+
+const updateInterfaceDirection = async (iface, newDirection) => {
+  try {
+    updatingInterface.value = iface.ifName
+    interfaceUpdateStatus.value[iface.ifName] = null
+    
+    console.log(`🔍 Wizard: Updating ${iface.ifName} direction to ${newDirection}...`)
+    
+    let endpoint = ''
+    if (newDirection === 'IN') {
+      endpoint = `/utils/ifs/configureToINStreams/${iface.ifName}`
+    } else if (newDirection === 'OUT') {
+      endpoint = `/utils/ifs/configureToOUTStreams/${iface.ifName}`
+    } else if (newDirection === 'BOTH') {
+      endpoint = `/utils/ifs/configureToOUTStreams/${iface.ifName}` // Note: BOTH uses OUT endpoint as specified
+    }
+    
+    const response = await apiPut(endpoint, {}, true)
+    console.log(`✅ Wizard: ${iface.ifName} direction updated:`, response)
+    
+    // Update the interface in the local array
+    const interfaceIndex = networkInterfaces.value.findIndex(i => i.id === iface.id)
+    if (interfaceIndex !== -1) {
+      networkInterfaces.value[interfaceIndex].ifStreamDirection = newDirection
+    }
+    
+    interfaceUpdateStatus.value[iface.ifName] = 'success'
+    
+    // Clear success status after 3 seconds
+    setTimeout(() => {
+      interfaceUpdateStatus.value[iface.ifName] = null
+    }, 3000)
+    
+  } catch (error) {
+    console.error(`❌ Wizard: ${iface.ifName} direction update failed:`, error)
+    interfaceUpdateStatus.value[iface.ifName] = 'error'
+    
+    // Clear error status after 5 seconds
+    setTimeout(() => {
+      interfaceUpdateStatus.value[iface.ifName] = null
+    }, 5000)
+  } finally {
+    updatingInterface.value = null
+  }
+}
+
+const getIPv4Address = (iface) => {
+  if (!iface.ifAddresses || !Array.isArray(iface.ifAddresses)) {
+    return 'N/A'
+  }
+  
+  // Find the first IPv4 address (not IPv6)
+  const ipv4 = iface.ifAddresses.find(addr => 
+    addr && !addr.includes(':') && !addr.includes('%')
+  )
+  
+  return ipv4 || 'N/A'
+}
+
 // Navigation methods
 const nextStep = () => {
-  if (currentStep.value < 4) {
+  if (currentStep.value < 5) {
     currentStep.value++
   }
 }
