@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-base-200 flex items-center justify-center p-4">
+  <div class="min-h-screen bg-base-200 flex justify-center p-4 pt-8">
     <div class="max-w-4xl w-full">
       <!-- Header -->
-      <div class="text-center mb-8">
+      <div class="text-center mb-6">
         <h1 class="text-4xl font-bold text-base-content mb-2">Configuration Wizard</h1>
         <p class="text-base-content/70">Welcome! Let's configure your MediaHub application</p>
       </div>
@@ -100,10 +100,7 @@
               <span>{{ validationError }}</span>
             </div>
 
-            <div class="card-actions justify-between">
-              <button class="btn btn-warning btn-outline btn-sm" @click="skipToDebugDashboard">
-                🐛 Debug: Aller au Dashboard
-              </button>
+            <div class="card-actions justify-end">
               <button 
                 class="btn btn-primary" 
                 @click="nextStep" 
@@ -681,11 +678,6 @@ const finishConfiguration = async () => {
   } finally {
     finishing.value = false
   }
-}
-
-const skipToDebugDashboard = () => {
-  console.log('🐛 Debug: Forcing navigation to dashboard')
-  router.push('/')
 }
 
 // Lifecycle
