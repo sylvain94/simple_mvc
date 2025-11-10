@@ -169,13 +169,13 @@
                 <label class="label">
                   <span class="label-text font-medium">Position</span>
                 </label>
-                <select class="select select-bordered" v-model="adminForm.position">
-                  <option value="EDGE_IN">EDGE_IN</option>
-                  <option value="EDGE_OUT">EDGE_OUT</option>
-                  <option value="INTERNAL">INTERNAL</option>
-                  <option value="REMOTE">REMOTE</option>
-                  <option value="ANY">ANY</option>
-                </select>
+                <input 
+                  type="text" 
+                  class="input input-bordered bg-base-200 cursor-not-allowed" 
+                  value="ANY"
+                  readonly
+                  disabled
+                />
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -506,7 +506,7 @@ const adminInstance = ref(null)
 const adminConfigured = ref(false)
 const adminError = ref(null)
 const adminForm = ref({
-  position: 'EDGE_OUT',
+  position: 'ANY', // Admin instance position is always ANY
   startIP: '224.10.10.10',
   endIP: '224.10.10.100',
   startMCPort: 2000,
