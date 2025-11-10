@@ -281,14 +281,130 @@
               Default Instance Configuration
             </h2>
 
-            <div class="alert alert-warning">
+            <div class="alert alert-info">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
               <div>
                 <h3 class="font-bold">Default Instance Setup</h3>
-                <div class="text-xs">Configuration for the default instance will be described later.</div>
+                <div class="text-xs">Configure the default instance for your MediaHub application.</div>
               </div>
+            </div>
+
+            <!-- Initialize Default Instance Button -->
+            <div v-if="!defaultInstance" class="text-center">
+              <button 
+                class="btn btn-primary btn-lg" 
+                @click="initiateDefaultConfiguration" 
+                :disabled="initiatingDefault"
+              >
+                <span v-if="initiatingDefault" class="loading loading-spinner loading-sm mr-2"></span>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                {{ initiatingDefault ? 'Initializing...' : 'Initialize Default Instance' }}
+              </button>
+            </div>
+
+            <!-- Default Instance Form -->
+            <div v-if="defaultInstance" class="space-y-4">
+              <div class="bg-success/10 p-4 rounded-lg border border-success/20">
+                <h3 class="font-semibold mb-3 flex items-center gap-2 text-success">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Default Instance Created
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div><strong>Name:</strong> {{ defaultInstance.name }}</div>
+                  <div><strong>Type:</strong> {{ defaultInstance.type }}</div>
+                  <div><strong>Status:</strong> {{ defaultInstance.status }}</div>
+                  <div><strong>Position:</strong> {{ defaultInstance.position }}</div>
+                </div>
+              </div>
+
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text font-medium">Position</span>
+                </label>
+                <select class="select select-bordered" v-model="defaultForm.position">
+                  <option value="EDGE_IN">EDGE_IN</option>
+                  <option value="EDGE_OUT">EDGE_OUT</option>
+                  <option value="INTERNAL">INTERNAL</option>
+                  <option value="REMOTE">REMOTE</option>
+                  <option value="ANY">ANY</option>
+                </select>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-medium">Start IP</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    class="input input-bordered" 
+                    v-model="defaultForm.startIP"
+                    placeholder="224.10.10.10"
+                  />
+                </div>
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-medium">End IP</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    class="input input-bordered" 
+                    v-model="defaultForm.endIP"
+                    placeholder="224.10.10.100"
+                  />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-medium">Start MC Port</span>
+                  </label>
+                  <input 
+                    type="number" 
+                    class="input input-bordered" 
+                    v-model.number="defaultForm.startMCPort"
+                    placeholder="2000"
+                  />
+                </div>
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text font-medium">End MC Port</span>
+                  </label>
+                  <input 
+                    type="number" 
+                    class="input input-bordered" 
+                    v-model.number="defaultForm.endMCPort"
+                    placeholder="2000"
+                  />
+                </div>
+              </div>
+
+              <button 
+                class="btn btn-primary w-full" 
+                @click="updateDefaultConfiguration" 
+                :disabled="updatingDefault"
+              >
+                <span v-if="updatingDefault" class="loading loading-spinner loading-sm mr-2"></span>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                {{ updatingDefault ? 'Updating...' : 'Update Default Configuration' }}
+              </button>
+            </div>
+
+            <!-- Error Display -->
+            <div v-if="defaultError" class="alert alert-error">
+              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{{ defaultError }}</span>
             </div>
 
             <div class="card-actions justify-between">
@@ -298,7 +414,11 @@
                 </svg>
                 Previous
               </button>
-              <button class="btn btn-primary" @click="nextStep">
+              <button 
+                class="btn btn-primary" 
+                @click="nextStep" 
+                :disabled="!defaultInstance || !defaultConfigured"
+              >
                 Next: Finalization
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -396,6 +516,20 @@ const adminForm = ref({
   endMCPort: 2000
 })
 
+// Step 3: Default Instance
+const initiatingDefault = ref(false)
+const updatingDefault = ref(false)
+const defaultInstance = ref(null)
+const defaultConfigured = ref(false)
+const defaultError = ref(null)
+const defaultForm = ref({
+  position: 'EDGE_OUT',
+  startIP: '224.10.10.10',
+  endIP: '224.10.10.100',
+  startMCPort: 2000,
+  endMCPort: 2000
+})
+
 // Step 4: Finalization
 const finishing = ref(false)
 
@@ -468,6 +602,54 @@ const updateAdminConfiguration = async () => {
     adminError.value = `Failed to update admin configuration: ${error.message}`
   } finally {
     updating.value = false
+  }
+}
+
+// Methods for Step 3: Default Instance Configuration
+const initiateDefaultConfiguration = async () => {
+  try {
+    initiatingDefault.value = true
+    defaultError.value = null
+    
+    console.log('🔍 Wizard: Initiating default configuration...')
+    
+    // Call the initiate default configuration API with empty body
+    const response = await apiPost('/utils/instances/initiateDefaultConfiguration', {}, true)
+    console.log('✅ Wizard: Default instance created:', response)
+    
+    defaultInstance.value = response
+    
+  } catch (error) {
+    console.error('❌ Wizard: Default configuration initiation failed:', error)
+    defaultError.value = `Failed to create default instance: ${error.message}`
+  } finally {
+    initiatingDefault.value = false
+  }
+}
+
+const updateDefaultConfiguration = async () => {
+  try {
+    updatingDefault.value = true
+    defaultError.value = null
+    
+    console.log('🔍 Wizard: Updating default configuration...', defaultForm.value)
+    
+    // Call the update default configuration API
+    const response = await apiPut('/utils/instances/updateDefaultConfiguration', defaultForm.value, true)
+    console.log('✅ Wizard: Default configuration updated:', response)
+    
+    defaultConfigured.value = true
+    
+    // Show success message
+    setTimeout(() => {
+      defaultError.value = null
+    }, 3000)
+    
+  } catch (error) {
+    console.error('❌ Wizard: Default configuration update failed:', error)
+    defaultError.value = `Failed to update default configuration: ${error.message}`
+  } finally {
+    updatingDefault.value = false
   }
 }
 

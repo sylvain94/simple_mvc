@@ -690,6 +690,16 @@ const instanceService = {
   async updateAdminConfiguration(config) {
     const response = await apiPut('/utils/instances/updateAdminConfiguration', config, true)
     return response
+  },
+  
+  async initiateDefaultConfiguration() {
+    const response = await apiPost('/utils/instances/initiateDefaultConfiguration', {}, true)
+    return response
+  },
+  
+  async updateDefaultConfiguration(config) {
+    const response = await apiPut('/utils/instances/updateDefaultConfiguration', config, true)
+    return response
   }
 }
 
