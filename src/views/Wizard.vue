@@ -669,16 +669,11 @@ const previousStep = () => {
 const finishConfiguration = async () => {
   try {
     finishing.value = true
-    
-    console.log('🔧 Wizard: Finishing configuration...')
-    
-    // Mark the application as configured
-    await ApplicationController.markAsConfigured()
-    
+     
     console.log('✅ Wizard: Configuration completed, redirecting to dashboard...')
     
-    // Redirect to the dashboard
-    router.push('/dashboard')
+    // Redirect to the dashboard (main route)
+    router.push('/')
     
   } catch (error) {
     console.error('❌ Wizard: Error finishing configuration:', error)
@@ -690,7 +685,7 @@ const finishConfiguration = async () => {
 
 const skipToDebugDashboard = () => {
   console.log('🐛 Debug: Forcing navigation to dashboard')
-  router.push('/dashboard')
+  router.push('/')
 }
 
 // Lifecycle
