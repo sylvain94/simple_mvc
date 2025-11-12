@@ -64,6 +64,12 @@ const routes = [
     meta: { requiresAuth: true, page: 'selections' }
   },
   { 
+    path: '/selections/create', 
+    name: 'CreateSelection', 
+    component: () => import('../views/CreateSelection.vue'),
+    meta: { requiresAuth: true, page: 'selections' }
+  },
+  { 
     path: '/settings', 
     name: 'Settings', 
     component: () => import('../views/Settings.vue'),

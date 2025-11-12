@@ -10,7 +10,7 @@
       </div>
       <div class="flex gap-2">
         <button 
-          @click="openCreateModal"
+          @click="$router.push('/selections/create')"
           class="btn btn-secondary gap-2"
           :disabled="isLoading"
         >
