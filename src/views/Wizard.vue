@@ -804,7 +804,11 @@ const refreshNetworkInterfaces = async () => {
     const interfaces = await apiGet('/utils/ifs/getAll', true)
     console.log('📋 Wizard: Network interfaces loaded:', interfaces)
     
-    networkInterfaces.value = interfaces
+    // Filter only interfaces with status "UP"
+    const upInterfaces = interfaces.filter(iface => iface.ifStatus === 'UP')
+    console.log(`📋 Wizard: Filtered ${upInterfaces.length} UP interfaces from ${interfaces.length} total interfaces`)
+    
+    networkInterfaces.value = upInterfaces
     
   } catch (error) {
     console.error('❌ Wizard: Network interfaces loading failed:', error)
