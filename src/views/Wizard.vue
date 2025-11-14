@@ -569,101 +569,7 @@
 
 
               <!-- Global Configuration Dropdown -->
-              <div class="card bg-base-100 border border-primary/20">
-                <div class="card-body p-4">
-                  <h4 class="font-semibold mb-3 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-                    </svg>
-                    Interface Configuration Menu
-                  </h4>
-                  
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Instance Selection -->
-                    <div class="form-control">
-                      <label class="label">
-                        <span class="label-text font-medium">Select Instance</span>
-                      </label>
-                      <select 
-                        class="select select-bordered select-primary" 
-                        v-model="selectedInstanceId"
-                        @change="onInstanceSelectionChange"
-                      >
-                        <option value="">Choose an instance</option>
-                        <option 
-                          v-for="instance in instances" 
-                          :key="instance.id" 
-                          :value="instance.id"
-                        >
-                          {{ instance.name }} ({{ instance.type }})
-                        </option>
-                      </select>
-                    </div>
 
-                    <!-- Interface Type Selection -->
-                    <div class="form-control">
-                      <label class="label">
-                        <span class="label-text font-medium">Interface Type</span>
-                      </label>
-                      <select 
-                        class="select select-bordered" 
-                        v-model="selectedInterfaceType"
-                        :disabled="!selectedInstanceId"
-                      >
-                        <option value="">Choose type</option>
-                        <option value="inputInterface">Input Interface (IN)</option>
-                        <option value="outputInterface">Output Interface (OUT)</option>
-                      </select>
-                    </div>
-
-                    <!-- Interface Selection -->
-                    <div class="form-control">
-                      <label class="label">
-                        <span class="label-text font-medium">Network Interface</span>
-                      </label>
-                      <select 
-                        class="select select-bordered" 
-                        v-model="selectedInterface"
-                        :disabled="!selectedInstanceId || !selectedInterfaceType"
-                        @change="applyInterfaceConfiguration"
-                      >
-                        <option value="">Choose interface</option>
-                        <option 
-                          v-for="iface in getAvailableInterfacesForType(selectedInterfaceType)" 
-                          :key="iface.ifName" 
-                          :value="iface.ifName"
-                        >
-                          {{ iface.ifName }} ({{ getIPv4Address(iface) }})
-                        </option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <!-- Quick Actions -->
-                  <div class="flex gap-2 mt-4">
-                    <button 
-                      class="btn btn-sm btn-outline btn-primary" 
-                      @click="autoConfigureInterfaces"
-                      :disabled="!instances.length || loadingInstanceInterfaces"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                      Auto Configure
-                    </button>
-                    <button 
-                      class="btn btn-sm btn-outline btn-error" 
-                      @click="clearAllConfigurations"
-                      :disabled="loadingInstanceInterfaces"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      Clear All
-                    </button>
-                  </div>
-                </div>
-              </div>
             </div>
 
             <!-- Content Section -->
@@ -705,32 +611,42 @@
                         <div class="flex items-center justify-between p-2 bg-base-300/50 rounded">
                           <span class="text-sm font-medium">Input Interface (IN):</span>
                           <div class="flex items-center gap-2">
-                            <span class="badge badge-sm" 
-                                  :class="getInstanceInputInterface(instance.id) ? 'badge-success' : 'badge-error'">
-                              {{ getInstanceInputInterface(instance.id) || 'Not set' }}
-                            </span>
-                            <button 
-                              class="btn btn-xs btn-outline" 
-                              @click="selectInstanceForConfiguration(instance.id, 'inputInterface')"
+                            <select 
+                              :value="getInstanceInputInterface(instance.id)"
+                              @change="(event) => updateInstanceInterface(instance.id, 'inputInterface', event.target.value)"
+                              class="select select-bordered select-sm min-w-[140px]"
+                              :class="{ 'select-error': !getInstanceInputInterface(instance.id) }"
                             >
-                              {{ getInstanceInputInterface(instance.id) ? 'Change' : 'Set' }}
-                            </button>
+                              <option value="">Not set</option>
+                              <option 
+                                v-for="iface in availableInputInterfaces" 
+                                :key="iface.ifName" 
+                                :value="iface.ifName"
+                              >
+                                {{ iface.ifName }} ({{ getIPv4Address(iface) }})
+                              </option>
+                            </select>
                           </div>
                         </div>
                         
                         <div class="flex items-center justify-between p-2 bg-base-300/50 rounded">
                           <span class="text-sm font-medium">Output Interface (OUT):</span>
                           <div class="flex items-center gap-2">
-                            <span class="badge badge-sm" 
-                                  :class="getInstanceOutputInterface(instance.id) ? 'badge-success' : 'badge-error'">
-                              {{ getInstanceOutputInterface(instance.id) || 'Not set' }}
-                            </span>
-                            <button 
-                              class="btn btn-xs btn-outline" 
-                              @click="selectInstanceForConfiguration(instance.id, 'outputInterface')"
+                            <select 
+                              :value="getInstanceOutputInterface(instance.id)"
+                              @change="(event) => updateInstanceInterface(instance.id, 'outputInterface', event.target.value)"
+                              class="select select-bordered select-sm min-w-[140px]"
+                              :class="{ 'select-error': !getInstanceOutputInterface(instance.id) }"
                             >
-                              {{ getInstanceOutputInterface(instance.id) ? 'Change' : 'Set' }}
-                            </button>
+                              <option value="">Not set</option>
+                              <option 
+                                v-for="iface in availableOutputInterfaces" 
+                                :key="iface.ifName" 
+                                :value="iface.ifName"
+                              >
+                                {{ iface.ifName }} ({{ getIPv4Address(iface) }})
+                              </option>
+                            </select>
                           </div>
                         </div>
                       </div>
@@ -746,32 +662,6 @@
                 </div>
 
                 <!-- Global Configuration Summary -->
-                <div class="card bg-base-100 border border-base-300 mt-6">
-                  <div class="card-body p-4">
-                    <h4 class="font-semibold mb-3 flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                      Configuration Progress
-                    </h4>
-                    <div class="flex items-center gap-4">
-                      <div class="flex-1">
-                        <div class="flex justify-between text-sm mb-1">
-                          <span>Configured Instances</span>
-                          <span>{{ getConfiguredInstancesCount() }} / {{ instances.length }}</span>
-                        </div>
-                        <progress 
-                          class="progress progress-primary w-full" 
-                          :value="getConfiguredInstancesCount()" 
-                          :max="instances.length"
-                        ></progress>
-                      </div>
-                      <div class="badge" :class="allInstanceInterfacesConfigured ? 'badge-success' : 'badge-warning'">
-                        {{ allInstanceInterfacesConfigured ? 'Ready' : 'Incomplete' }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -1274,13 +1164,6 @@ const applyInterfaceConfiguration = () => {
   }
 }
 
-const selectInstanceForConfiguration = (instanceId, interfaceType) => {
-  selectedInstanceId.value = instanceId
-  selectedInterfaceType.value = interfaceType
-  selectedInterface.value = ''
-  
-  console.log(`🎯 Wizard: Selected instance ${instanceId} for ${interfaceType} configuration`)
-}
 
 const isInstanceFullyConfigured = (instanceId) => {
   const config = instanceInterfaceConfig.value[instanceId]
@@ -1301,27 +1184,6 @@ const getConfiguredInstancesCount = () => {
   return instances.value.filter(instance => isInstanceFullyConfigured(instance.id)).length
 }
 
-const autoConfigureInterfaces = () => {
-  console.log('🤖 Wizard: Auto-configuring interfaces...')
-  
-  // Simple auto-configuration logic
-  instances.value.forEach((instance, index) => {
-    if (availableInputInterfaces.value.length > index && availableOutputInterfaces.value.length > index) {
-      updateInstanceInterface(instance.id, 'inputInterface', availableInputInterfaces.value[index].ifName)
-      updateInstanceInterface(instance.id, 'outputInterface', availableOutputInterfaces.value[index].ifName)
-    } else {
-      // Fallback: use first available interfaces
-      if (availableInputInterfaces.value.length > 0) {
-        updateInstanceInterface(instance.id, 'inputInterface', availableInputInterfaces.value[0].ifName)
-      }
-      if (availableOutputInterfaces.value.length > 0) {
-        updateInstanceInterface(instance.id, 'outputInterface', availableOutputInterfaces.value[0].ifName)
-      }
-    }
-  })
-  
-  console.log('✅ Wizard: Auto-configuration completed')
-}
 
 const clearAllConfigurations = () => {
   console.log('🧹 Wizard: Clearing all interface configurations...')
@@ -1351,12 +1213,7 @@ watch(currentStep, async (newStep) => {
 const finishConfiguration = async () => {
   try {
     finishing.value = true
-     
-    console.log('✅ Wizard: Marking application as configured...')
-    
-    // Mark the application as configured
-    await ApplicationController.markAsConfigured()
-    
+        
     console.log('✅ Wizard: Configuration completed, redirecting to dashboard...')
     
     // Redirect to the dashboard (main route)
