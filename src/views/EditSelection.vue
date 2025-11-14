@@ -702,10 +702,31 @@ const saveSignalChanges = async () => {
   }
 }
 
-const deleteSignal = (index) => {
-  if (confirm('Are you sure you want to delete this signal?')) {
-    const deletedSignal = inputSignals.value.splice(index, 1)[0]
-    console.log('✅ Deleted signal:', deletedSignal)
+const deleteSignal = async (index) => {
+  const signal = inputSignals.value[index]
+  if (!signal) return
+  
+  if (!confirm(`Are you sure you want to delete signal "${signal.signalName || `Signal ${index + 1}`}"?`)) {
+    return
+  }
+  
+  try {
+    console.log('🗑️ Deleting signal:', signal.signalName || `Signal ${index + 1}`)
+    
+    const selectionId = route.params.id
+    const signalId = signal.id
+    
+    // Call the API to remove the multicast input
+    await apiPut(`/functions/selections/removeMulticastInputForID/${selectionId}/signal_id/${signalId}`, {}, true)
+    
+    // Remove from local array only after successful API call
+    inputSignals.value.splice(index, 1)
+    
+    console.log('✅ Signal deleted successfully:', signal)
+    
+  } catch (err) {
+    console.error('❌ Error deleting signal:', err)
+    alert(`Error deleting signal: ${err.message}`)
   }
 }
 
