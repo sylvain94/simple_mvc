@@ -57,7 +57,6 @@
     <div class="card bg-base-100 shadow-xl">
       <div class="card-body">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="card-title">Transcoding Selections</h3>
           <div class="text-sm text-base-content/70">
             Last updated: {{ lastUpdated ? lastUpdated.toLocaleTimeString() : 'Never' }}
           </div>

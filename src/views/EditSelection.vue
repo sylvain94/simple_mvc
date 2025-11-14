@@ -31,26 +31,28 @@
     </div>
 
     <!-- Edit Form -->
-    <div v-else-if="selection" class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="card-title">Selection Configuration</h2>
-          
-          <!-- Section Navigation -->
-          <div class="form-control w-64">
-            <select v-model="currentSection" class="select select-bordered select-primary">
-              <option value="general">General Information</option>
-              <option value="protocol">Protocol Configuration</option>
-              <option value="control">Control Configuration</option>
-              <option value="signal">Signal Configuration</option>
-              <option value="service">Service Configuration</option>
-              <option value="resource">Resource Configuration</option>
-              <option value="options">Options</option>
-            </select>
-          </div>
+    <div v-else-if="selection" class="card bg-base-100 shadow-xl max-h-[80vh] flex flex-col">
+      <div class="card-body flex-1 overflow-hidden">
+        <!-- Tabs Navigation -->
+        <div class="tabs tabs-bordered mb-6">
+          <button 
+            @click="activeTab = 'configuration'"
+            :class="['tab tab-lg', { 'tab-active': activeTab === 'configuration' }]"
+          >
+            Configuration
+          </button>
+          <button 
+            @click="activeTab = 'inputs'"
+            :class="['tab tab-lg', { 'tab-active': activeTab === 'inputs' }]"
+          >
+            Input Signals
+          </button>
         </div>
-        
-        <form @submit.prevent="updateSelection" class="space-y-6">
+          
+        <!-- Configuration Tab -->
+        <form v-if="activeTab === 'configuration'" @submit.prevent="updateSelection" class="flex flex-col h-full">
+          <!-- Scrollable Content Area -->
+          <div class="flex-1 overflow-y-auto pr-2 space-y-6 max-h-[500px] scrollbar-thin scrollbar-thumb-primary scrollbar-track-base-200">
           <!-- General Information -->
           <div class="space-y-4">
             <h3 class="text-lg font-semibold text-base-content border-b border-base-300 pb-2">General Information</h3>
@@ -281,9 +283,10 @@
               </div>
             </div>
           </div>
+          </div>
 
-          <!-- Form Actions -->
-          <div class="card-actions justify-end pt-1">
+          <!-- Fixed Form Actions -->
+          <div class="flex justify-end gap-4 pt-4 border-t border-base-300 bg-base-100 shadow-lg">
             <button 
               type="button" 
               @click="$router.go(-1)"
@@ -305,6 +308,95 @@
             </button>
           </div>
         </form>
+
+        <!-- Input Signals Tab -->
+        <div v-else-if="activeTab === 'inputs'" class="flex flex-col h-full">
+          <!-- Input Signals Header -->
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Input Signals Management</h3>
+            <button 
+              @click="openAddSignalModal"
+              class="btn btn-primary btn-sm"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Add Signal
+            </button>
+          </div>
+
+          <!-- Input Signals Table -->
+          <div class="flex-1 overflow-y-auto">
+            <div v-if="inputSignals.length === 0" class="text-center py-8">
+              <div class="text-base-content/60">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                </svg>
+                <p class="text-lg font-medium mb-2">No input signals configured</p>
+                <p class="text-sm">Click "Add Signal" to create your first input signal</p>
+              </div>
+            </div>
+
+            <div v-else class="overflow-x-auto">
+              <table class="table w-full">
+                <thead>
+                  <tr>
+                    <th>Signal Name</th>
+                    <th>Protocol</th>
+                    <th>Multicast Address</th>
+                    <th>Port</th>
+                    <th>Source Address</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(signal, index) in inputSignals" :key="signal.id" class="hover">
+                    <td>
+                      <div class="font-medium">
+                        {{ signal.signalName || `Signal ${index + 1}` }}
+                      </div>
+                      <div class="text-sm opacity-50">{{ signal.signalType }}</div>
+                    </td>
+                    <td>
+                      <div class="badge badge-outline">{{ signal.protocol }}</div>
+                    </td>
+                    <td>
+                      <code class="text-sm">{{ signal.multicastAddress }}</code>
+                    </td>
+                    <td>
+                      <span class="font-mono">{{ signal.multicastPort }}</span>
+                    </td>
+                    <td>
+                      <code class="text-sm">{{ signal.sourceAddress || 'Auto' }}</code>
+                    </td>
+                    <td>
+                      <div class="flex gap-2">
+                        <button 
+                          @click="editSignal(signal, index)"
+                          class="btn btn-ghost btn-xs"
+                          title="Edit signal"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button 
+                          @click="deleteSignal(index)"
+                          class="btn btn-ghost btn-xs text-error hover:bg-error hover:text-error-content"
+                          title="Delete signal"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -323,6 +415,8 @@ const loading = ref(true)
 const saving = ref(false)
 const error = ref(null)
 const selection = ref(null)
+const activeTab = ref('configuration')
+const inputSignals = ref([])
 
 // Form data
 const form = ref({
@@ -384,6 +478,10 @@ const loadSelection = async () => {
       controlIPAddress: selectedFunction.controlIPAddress || '192.168.1.141',
       controlPort: selectedFunction.controlPort || 445
     }
+
+    // Load input signals
+    inputSignals.value = selectedFunction.inputSignals || []
+    console.log('📡 Loaded input signals:', inputSignals.value)
     
     console.log('✅ Selection loaded successfully')
     
@@ -416,6 +514,39 @@ const updateSelection = async () => {
     error.value = err.message
   } finally {
     saving.value = false
+  }
+}
+
+// Input Signals Management
+const openAddSignalModal = () => {
+  // TODO: Implement modal for adding new signal
+  const newSignal = {
+    id: `signal_${Date.now()}`,
+    signalType: 'MulticastSignalEntity',
+    signalName: `Signal ${inputSignals.value.length + 1}`,
+    protocol: 'UDP',
+    multicastAddress: '224.10.10.' + (10 + inputSignals.value.length),
+    sourceAddress: '192.168.1.141',
+    multicastPort: 2000 + inputSignals.value.length
+  }
+  
+  inputSignals.value.push(newSignal)
+  console.log('✅ Added new signal:', newSignal)
+}
+
+const editSignal = (signal, index) => {
+  // TODO: Implement modal for editing signal
+  const newAddress = prompt('Enter new multicast address:', signal.multicastAddress)
+  if (newAddress && newAddress !== signal.multicastAddress) {
+    inputSignals.value[index].multicastAddress = newAddress
+    console.log('✅ Updated signal:', inputSignals.value[index])
+  }
+}
+
+const deleteSignal = (index) => {
+  if (confirm('Are you sure you want to delete this signal?')) {
+    const deletedSignal = inputSignals.value.splice(index, 1)[0]
+    console.log('✅ Deleted signal:', deletedSignal)
   }
 }
 
