@@ -355,7 +355,7 @@
                       <div class="font-medium">
                         {{ signal.signalName || `Signal ${index + 1}` }}
                       </div>
-                      <div class="text-sm opacity-50">{{ signal.signalType }}</div>
+                      <div class="text-sm opacity-50">{{ signal.id }}</div>
                     </td>
                     <td>
                       <div class="badge badge-outline">{{ signal.protocol }}</div>
