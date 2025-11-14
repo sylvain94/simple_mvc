@@ -316,7 +316,7 @@
             <h3 class="font-bold text-lg">Input Signals Management</h3>
             <button 
               @click="openAddSignalModal"
-              class="btn btn-primary btn-sm"
+              class="btn btn-secondary gap-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -401,6 +401,106 @@
       </div>
     </div>
   </div>
+
+  <!-- Edit Signal Modal -->
+  <div v-if="showEditSignalModal" class="modal modal-open">
+    <div class="modal-box max-w-2xl">
+      <h3 class="font-bold text-lg mb-4">Edit Signal</h3>
+      
+      <form @submit.prevent="saveSignalChanges" class="space-y-6">
+        <!-- Signal Name (full width) -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium w-40">Signal Name</span>
+          </label>
+          <input 
+            type="text" 
+            v-model="editingSignal.signalName"
+            placeholder="Signal name"
+            class="input input-bordered w-full"
+          />
+        </div>
+
+        <!-- Two columns layout -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium w-40">Multicast Address *</span>
+            </label>
+            <input 
+              type="text" 
+              v-model="editingSignal.multicastAddress"
+              placeholder="224.10.10.10"
+              class="input input-bordered w-full"
+              pattern="^(22[4-9]|23[0-9])\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$"
+              required
+            />
+            <label class="label">
+              <span class="label-text-alt">Multicast range: 224.0.0.0 - 239.255.255.255</span>
+            </label>
+          </div>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium w-40">Multicast Port *</span>
+            </label>
+            <input 
+              type="number" 
+              v-model.number="editingSignal.multicastPort"
+              placeholder="2000"
+              class="input input-bordered w-full"
+              min="1"
+              max="65535"
+              required
+            />
+            <label class="label">
+              <span class="label-text-alt">Port range: 1 - 65535</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium w-40">Source Address</span>
+            </label>
+            <input 
+              type="text" 
+              v-model="editingSignal.sourceAddress"
+              placeholder="192.168.1.141"
+              class="input input-bordered w-full"
+              pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$"
+            />
+            <label class="label">
+              <span class="label-text-alt">Source IP (optional)</span>
+            </label>
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium w-40">Protocol</span>
+            </label>
+            <select v-model="editingSignal.protocol" class="select select-bordered w-full">
+              <option value="UDP">UDP</option>
+              <option value="TCP">TCP</option>
+            </select>
+            <label class="label">
+              <span class="label-text-alt">Transport protocol</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="modal-action pt-4">
+          <button type="button" @click="closeEditSignalModal" class="btn">Cancel</button>
+          <button type="submit" class="btn btn-primary" :disabled="savingSignal">
+            <span v-if="savingSignal" class="loading loading-spinner loading-sm mr-2"></span>
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+    <div class="modal-backdrop" @click="closeEditSignalModal"></div>
+  </div>
 </template>
 
 <script setup>
@@ -418,6 +518,12 @@ const error = ref(null)
 const selection = ref(null)
 const activeTab = ref('configuration')
 const inputSignals = ref([])
+
+// Edit Signal Modal data
+const showEditSignalModal = ref(false)
+const editingSignal = ref({})
+const editingSignalIndex = ref(-1)
+const savingSignal = ref(false)
 
 // Form data
 const form = ref({
@@ -536,11 +642,63 @@ const openAddSignalModal = () => {
 }
 
 const editSignal = (signal, index) => {
-  // TODO: Implement modal for editing signal
-  const newAddress = prompt('Enter new multicast address:', signal.multicastAddress)
-  if (newAddress && newAddress !== signal.multicastAddress) {
-    inputSignals.value[index].multicastAddress = newAddress
-    console.log('✅ Updated signal:', inputSignals.value[index])
+  console.log('✏️ Opening edit modal for signal:', signal.signalName || `Signal ${index + 1}`)
+  
+  // Copy signal data to editing form
+  editingSignal.value = {
+    signalName: signal.signalName || `Signal ${index + 1}`,
+    multicastAddress: signal.multicastAddress || '',
+    multicastPort: signal.multicastPort || 2000,
+    sourceAddress: signal.sourceAddress || '',
+    protocol: signal.protocol || 'UDP',
+    signalType: signal.signalType || 'MulticastSignalEntity'
+  }
+  
+  editingSignalIndex.value = index
+  showEditSignalModal.value = true
+}
+
+const closeEditSignalModal = () => {
+  showEditSignalModal.value = false
+  editingSignal.value = {}
+  editingSignalIndex.value = -1
+  savingSignal.value = false
+}
+
+const saveSignalChanges = async () => {
+  try {
+    savingSignal.value = true
+    
+    console.log('💾 Saving signal changes:', editingSignal.value)
+    
+    // Validate required fields
+    if (!editingSignal.value.multicastAddress || !editingSignal.value.multicastPort) {
+      alert('Multicast address and port are required')
+      return
+    }
+    
+    // Update the signal in the array
+    if (editingSignalIndex.value >= 0 && editingSignalIndex.value < inputSignals.value.length) {
+      const updatedSignal = {
+        ...inputSignals.value[editingSignalIndex.value],
+        signalName: editingSignal.value.signalName,
+        multicastAddress: editingSignal.value.multicastAddress,
+        multicastPort: editingSignal.value.multicastPort,
+        sourceAddress: editingSignal.value.sourceAddress,
+        protocol: editingSignal.value.protocol
+      }
+      
+      inputSignals.value[editingSignalIndex.value] = updatedSignal
+      console.log('✅ Signal updated successfully:', updatedSignal)
+    }
+    
+    closeEditSignalModal()
+    
+  } catch (err) {
+    console.error('❌ Error saving signal changes:', err)
+    alert(`Error saving signal: ${err.message}`)
+  } finally {
+    savingSignal.value = false
   }
 }
 
