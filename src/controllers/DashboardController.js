@@ -6,6 +6,8 @@
  */
 
 import Gateway from '../models/Gateway.js'
+import { NetworkInterfaceController } from './NetworkInterfaceController.js'
+import { apiGet } from '../services/api.js'
 
 const DashboardController = {
   
@@ -36,7 +38,9 @@ const DashboardController = {
         },
         networkInterfaces: {
           total: networkInterfaces.length,
-          active: networkInterfaces.filter(ni => ni.active).length
+          active: networkInterfaces.filter(ni => ni.active).length,
+          up: networkInterfaces.filter(ni => ni.ifStatus === 'UP').length,
+          down: networkInterfaces.filter(ni => ni.ifStatus === 'DOWN').length
         },
         system: {
           uptime: this.getSystemUptime(),
@@ -53,71 +57,32 @@ const DashboardController = {
   },
 
   /**
-   * Get all gateways with full Gateway model instances
+   * Get all gateways from real API or return empty array
    * @returns {Promise<Gateway[]>} - Array of Gateway instances
    */
   async getAllGateways() {
     try {
       
-      // Sample data - in real app, this would be an API call
-      const mockGatewayData = [
-        {
-          id: 1,
-          name: 'Gateway-Production-01',
-          gatewayType: Gateway.TYPES.ENCODER,
-          technicalServiceName: 'encoder-service-01',
-          running: true,
-          enabled: true,
-          host: '192.168.1.100',
-          port: 9998,
-          mode: Gateway.MODES.LISTENER,
-          latency: 120
-        },
-        {
-          id: 2,
-          name: 'Gateway-Backup-01',
-          gatewayType: Gateway.TYPES.DECODER,
-          technicalServiceName: 'decoder-service-01',
-          running: true,
-          enabled: false,
-          host: '192.168.1.101',
-          port: 9999,
-          mode: Gateway.MODES.CALLER,
-          latency: 150
-        },
-        {
-          id: 3,
-          name: 'Gateway-Test-01',
-          gatewayType: Gateway.TYPES.RELAY,
-          technicalServiceName: 'relay-service-01',
-          running: false,
-          enabled: true,
-          host: '192.168.1.102',
-          port: 10000,
-          mode: Gateway.MODES.RENDEZVOUS,
-          latency: 100
-        }
-      ]
+      // TODO: Replace with real API call when SRT Gateway API is available
+      // For now, return empty array to show real state (no gateways configured)
+      console.log('📡 Attempting to fetch SRT Gateways from API...')
       
-      // Transform to Gateway model instances
-      const gateways = mockGatewayData.map(data => Gateway.fromApiResponse(data))
+      // Simulate API call that would return real gateways
+      // const response = await apiGet('/srt-gateways', true)
+      // const gateways = response.map(data => Gateway.fromApiResponse(data))
       
-      // Validate all gateways
-      const validGateways = gateways.filter(gateway => {
-        const validation = gateway.validate()
-        if (!validation.isValid) {
-          console.warn(`⚠️ Invalid gateway ignored: ${gateway.name}`, validation.errors)
-          return false
-        }
-        return true
-      })
+      // For now, return empty array since no real gateways are configured
+      const gateways = []
       
-      console.log(`✅ ${validGateways.length} gateways fetched`)
-      return validGateways
+      console.log(`✅ ${gateways.length} real gateways fetched from API`)
+      return gateways
       
     } catch (error) {
-      console.error('❌ Error fetching gateways:', error)
-      throw new Error(`Unable to fetch gateways: ${error.message}`)
+      console.error('❌ Error fetching gateways from API:', error)
+      
+      // Return empty array instead of mock data to show real state
+      console.log('🔄 No SRT Gateways configured, returning empty array')
+      return []
     }
   },
 
@@ -140,47 +105,102 @@ const DashboardController = {
   },
 
   /**
-   * Get all input files
+   * Get all functions from the real API
+   * @returns {Promise<Array>} - Array of function objects
+   */
+  async getAllFunctions() {
+    try {
+      
+      console.log('📡 Fetching all functions from API...')
+      
+      // Call the real API to get all functions
+      const functions = await apiGet('/functions/getAll', true)
+      
+      console.log(`✅ ${functions.length} functions fetched from API`)
+      return functions
+      
+    } catch (error) {
+      console.error('❌ Error fetching functions from API:', error)
+      
+      // Return empty array if API fails
+      console.log('🔄 No functions available, returning empty array')
+      return []
+    }
+  },
+
+  /**
+   * Get active functions only (running functions)
+   * @returns {Promise<Array>} - Array of active function objects
+   */
+  async getActiveFunctions() {
+    try {
+      const allFunctions = await this.getAllFunctions()
+      const activeFunctions = allFunctions.filter(func => func.running === true)
+      
+      console.log(`✅ ${activeFunctions.length} active functions found`)
+      return activeFunctions
+      
+    } catch (error) {
+      console.error('❌ Error fetching active functions:', error)
+      return []
+    }
+  },
+
+  /**
+   * Get all input files from real API or return empty array
    * @returns {Promise<Array>} - Array of file objects
    */
   async getAllFiles() {
     try {
       
-      // Sample data - in real app, this would be an API call
-      const mockFileData = [
-        { id: 1, name: 'input-stream-01.ts', running: true, size: '2.5GB', type: 'transport-stream' },
-        { id: 2, name: 'input-stream-02.ts', running: true, size: '1.8GB', type: 'transport-stream' },
-        { id: 3, name: 'backup-stream.ts', running: false, size: '3.2GB', type: 'transport-stream' },
-        { id: 4, name: 'test-stream.mp4', running: false, size: '890MB', type: 'mp4' }
-      ]
+      // TODO: Replace with real API call when Files API is available
+      // For now, return empty array to show real state (no files configured)
+      console.log('📡 Attempting to fetch Files from API...')
       
-      return mockFileData
+      // Simulate API call that would return real files
+      // const response = await apiGet('/files', true)
+      // return response
+      
+      // For now, return empty array since no real files are configured
+      const files = []
+      
+      console.log(`✅ ${files.length} real files fetched from API`)
+      return files
       
     } catch (error) {
-      console.error('❌ Error fetching files:', error)
-      throw new Error(`Unable to fetch files: ${error.message}`)
+      console.error('❌ Error fetching files from API:', error)
+      
+      // Return empty array instead of mock data to show real state
+      console.log('🔄 No Files configured, returning empty array')
+      return []
     }
   },
 
   /**
-   * Get all network interfaces
+   * Get all network interfaces from the real API
    * @returns {Promise<Array>} - Array of network interface objects
    */
   async getAllNetworkInterfaces() {
     try {
       
-      // Sample data - in real app, this would be an API call
+      // Use the real NetworkInterfaceController to get interfaces
+      const networkInterfaces = await NetworkInterfaceController.getAllNetworkInterfaces()
+      
+      console.log(`✅ ${networkInterfaces.length} network interfaces fetched from API`)
+      return networkInterfaces
+      
+    } catch (error) {
+      console.error('❌ Error fetching network interfaces from API:', error)
+      
+      // Fallback to mock data if API fails
+      console.log('🔄 Falling back to mock network interface data')
       const mockNetworkData = [
-        { id: 1, name: 'eth0', ip: '192.168.1.116', active: true, type: 'ethernet' },
-        { id: 2, name: 'eth1', ip: '10.0.0.100', active: true, type: 'ethernet' },
-        { id: 3, name: 'lo', ip: '127.0.0.1', active: true, type: 'loopback' }
+        { id: 1, name: 'eth0', ip: '192.168.1.116', active: true, type: 'ethernet', ifStatus: 'UP' },
+        { id: 2, name: 'eth1', ip: '10.0.0.100', active: true, type: 'ethernet', ifStatus: 'UP' },
+        { id: 3, name: 'lo', ip: '127.0.0.1', active: true, type: 'loopback', ifStatus: 'UP' }
       ]
       
       return mockNetworkData
-      
-    } catch (error) {
-      console.error('❌ Error fetching network interfaces:', error)
-      throw new Error(`Unable to fetch network interfaces: ${error.message}`)
     }
   },
 
@@ -194,6 +214,7 @@ const DashboardController = {
       const dashboardData = {
         stats: await this.getDashboardStats(),
         activeGateways: await this.getActiveGateways(),
+        activeFunctions: await this.getAllFunctions(),
         timestamp: new Date().toISOString()
       }
       

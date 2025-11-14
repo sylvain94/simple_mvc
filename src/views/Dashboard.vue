@@ -26,8 +26,12 @@
               <div class="stat-value">{{ dashboardStats.srtGateways.total }}</div>
             </div>
             <div class="stat">
-              <div class="stat-title">Actives</div>
-              <div class="stat-value text-success">{{ dashboardStats.srtGateways.active }}</div>
+              <div class="stat-title">Running</div>
+              <div class="stat-value text-success">{{ dashboardStats.srtGateways.running }}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-title">Enabled</div>
+              <div class="stat-value text-info">{{ dashboardStats.srtGateways.enabled }}</div>
             </div>
           </div>
         </div>
@@ -43,8 +47,12 @@
               <div class="stat-value">{{ dashboardStats.files.total }}</div>
             </div>
             <div class="stat">
-              <div class="stat-title">Actifs</div>
+              <div class="stat-title">Active</div>
               <div class="stat-value text-success">{{ dashboardStats.files.active }}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-title">Inactive</div>
+              <div class="stat-value text-warning">{{ dashboardStats.files.inactive }}</div>
             </div>
           </div>
         </div>
@@ -59,15 +67,19 @@
               <div class="stat-title">Total</div>
               <div class="stat-value">{{ dashboardStats.networkInterfaces.total }}</div>
             </div>
+            <div class="stat">
+              <div class="stat-title">UP</div>
+              <div class="stat-value text-success">{{ dashboardStats.networkInterfaces.up }}</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Latest active gateways -->
+    <!-- Latest functions -->
     <div class="card bg-base-200 shadow-xl mb-6">
       <div class="card-body">
-        <h3 class="card-title">Active SRT Gateways</h3>
+        <h3 class="card-title">Functions</h3>
         <div class="overflow-x-auto">
           <table class="table w-full">
             <thead>
@@ -75,27 +87,43 @@
                 <th>Name</th>
                 <th>Type</th>
                 <th>Service</th>
-                <th>State</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-if="activeGateways.length === 0">
+              <tr v-if="activeFunctions.length === 0">
                 <td colspan="4" class="text-center py-4">
-                  No active SRT gateway
+                  No functions available
                 </td>
               </tr>
-              <tr v-for="gateway in activeGateways" :key="gateway.id" class="hover">
-                <td>{{ gateway.name || '-' }}</td>
-                <td>{{ gateway.gatewayType || '-' }}</td>
-                <td>{{ gateway.technicalServiceName || '-' }}</td>
+              <tr v-for="func in activeFunctions" :key="func.id" class="hover">
+                <td>
+                  <div class="font-bold">{{ func.name || '-' }}</div>
+                  <div class="text-sm opacity-70">{{ func.description || 'No description' }}</div>
+                </td>
+                <td>
+                  <div class="badge badge-outline">{{ func.functionType || '-' }}</div>
+                </td>
+                <td>{{ func.technicalServiceName || '-' }}</td>
                 <td>
                   <div class="flex items-center gap-2">
-                    <span class="badge badge-success">In progress</span>
                     <span 
                       class="badge" 
-                      :class="gateway.enabled ? 'badge-success' : 'badge-warning'"
+                      :class="func.running ? 'badge-success' : 'badge-error'"
                     >
-                      {{ gateway.enabled ? 'Activated' : 'Deactivated' }}
+                      {{ func.running ? 'Running' : 'Stopped' }}
+                    </span>
+                    <span 
+                      class="badge badge-sm" 
+                      :class="func.enabled ? 'badge-info' : 'badge-warning'"
+                    >
+                      {{ func.enabled ? 'Enabled' : 'Disabled' }}
+                    </span>
+                    <span 
+                      class="badge badge-sm" 
+                      :class="func.active ? 'badge-primary' : 'badge-ghost'"
+                    >
+                      {{ func.active ? 'Active' : 'Inactive' }}
                     </span>
                   </div>
                 </td>
@@ -119,19 +147,26 @@ const lastUpdated = ref(null)
 const dashboardStats = reactive({
   srtGateways: {
     total: 0,
-    active: 0
+    active: 0,
+    running: 0,
+    enabled: 0
   },
   files: {
     total: 0,
-    active: 0
+    active: 0,
+    inactive: 0
   },
   networkInterfaces: {
-    total: 0
+    total: 0,
+    active: 0,
+    up: 0,
+    down: 0
   }
 })
 
-// Active gateways list
+// Active gateways and functions lists
 const activeGateways = ref([])
+const activeFunctions = ref([])
 
 // Initialize dashboard on mount
 onMounted(() => {
@@ -147,9 +182,12 @@ async function loadDashboardData() {
     // Update reactive data
     Object.assign(dashboardStats, stats)
     
-    // Get active gateways
+    // Get active gateways and functions
     const gateways = await DashboardController.getActiveGateways()
     activeGateways.value = gateways
+    
+    const functions = await DashboardController.getAllFunctions()
+    activeFunctions.value = functions
     
     lastUpdated.value = new Date().toLocaleTimeString()
     
@@ -171,6 +209,7 @@ async function refreshDashboard() {
     // Update reactive data with refreshed information
     Object.assign(dashboardStats, refreshedData.stats)
     activeGateways.value = refreshedData.activeGateways
+    activeFunctions.value = refreshedData.activeFunctions
     
     lastUpdated.value = new Date().toLocaleTimeString()
     
