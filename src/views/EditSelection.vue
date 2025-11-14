@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto p-6 max-w-4xl">
+  <div class="container mx-auto p-6">
     <!-- Header -->
     <div class="flex items-center gap-4 mb-6">
       <button 
@@ -11,8 +11,8 @@
         </svg>
       </button>
       <div>
-        <h1 class="text-3xl font-bold">Edit Selection</h1>
-        <p class="text-base-content/70">Modify selection function configuration</p>
+        <h2 class="text-2xl font-bold">Edit Selection</h2>
+        <p class="text-base-content/70 mt-1">Modify selection function configuration</p>
       </div>
     </div>
 
@@ -55,7 +55,7 @@
           <div class="flex-1 overflow-y-auto pr-2 space-y-6 max-h-[500px] scrollbar-thin scrollbar-thumb-primary scrollbar-track-base-200">
           <!-- General Information -->
           <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-base-content border-b border-base-300 pb-2">General Information</h3>
+            <h3 class="font-bold text-lg text-base-content border-b border-base-300 pb-2">General Information</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="form-control">
                 <label class="label">
@@ -87,7 +87,7 @@
 
           <!-- Protocol Configuration -->
           <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-base-content border-b border-base-300 pb-2">Protocol Configuration</h3>
+            <h3 class="font-bold text-lg text-base-content border-b border-base-300 pb-2">Protocol Configuration</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="form-control">
                 <label class="label">
@@ -116,7 +116,7 @@
 
           <!-- Control Configuration -->
           <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-base-content border-b border-base-300 pb-2">Control Configuration</h3>
+            <h3 class="font-bold text-lg text-base-content border-b border-base-300 pb-2">Control Configuration</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="form-control">
                 <label class="label">
@@ -149,7 +149,7 @@
 
           <!-- Signal Configuration -->
           <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-base-content border-b border-base-300 pb-2">Signal Configuration</h3>
+            <h3 class="font-bold text-lg text-base-content border-b border-base-300 pb-2">Signal Configuration</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="form-control">
                 <label class="label">
@@ -170,7 +170,7 @@
 
           <!-- Service Configuration -->
           <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-base-content border-b border-base-300 pb-2">Service Configuration</h3>
+            <h3 class="font-bold text-lg text-base-content border-b border-base-300 pb-2">Service Configuration</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="form-control">
                 <label class="label">
@@ -200,7 +200,7 @@
 
           <!-- Resource Configuration -->
           <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-base-content border-b border-base-300 pb-2">Resource Configuration</h3>
+            <h3 class="font-bold text-lg text-base-content border-b border-base-300 pb-2">Resource Configuration</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="form-control">
                 <label class="label">
@@ -245,7 +245,7 @@
 
           <!-- Options -->
           <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-base-content border-b border-base-300 pb-2">Options</h3>
+            <h3 class="font-bold text-lg text-base-content border-b border-base-300 pb-2">Options</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
               <div class="form-control">
                 <label class="label cursor-pointer justify-start gap-1.5">
@@ -313,7 +313,7 @@
         <div v-else-if="activeTab === 'inputs'" class="flex flex-col h-full">
           <!-- Input Signals Header -->
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold">Input Signals Management</h3>
+            <h3 class="font-bold text-lg">Input Signals Management</h3>
             <button 
               @click="openAddSignalModal"
               class="btn btn-primary btn-sm"
@@ -328,11 +328,11 @@
           <!-- Input Signals Table -->
           <div class="flex-1 overflow-y-auto">
             <div v-if="inputSignals.length === 0" class="text-center py-8">
-              <div class="text-base-content/60">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div class="text-base-content/50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                 </svg>
-                <p class="text-lg font-medium mb-2">No input signals configured</p>
+                <p class="font-medium">No input signals configured</p>
                 <p class="text-sm">Click "Add Signal" to create your first input signal</p>
               </div>
             </div>
@@ -371,24 +371,25 @@
                     </td>
                     <td>
                       <div class="flex gap-2">
+
+                        <!-- Edit button -->
                         <button 
                           @click="editSignal(signal, index)"
-                          class="btn btn-ghost btn-xs"
+                          class="btn btn-xs btn-primary"
                           title="Edit signal"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
+                        Edit
                         </button>
+
+                        <!-- Delete button -->
                         <button 
                           @click="deleteSignal(index)"
-                          class="btn btn-ghost btn-xs text-error hover:bg-error hover:text-error-content"
+                          class="btn btn-xs btn-error"
                           title="Delete signal"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
+                          >
+                          Delete
                         </button>
+
                       </div>
                     </td>
                   </tr>
