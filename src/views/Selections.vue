@@ -142,29 +142,27 @@
                   </div>
                 </td>
                 <td>
-                  <!-- Input Signals -->
+                  <!-- Input Signals Count -->
                   <div class="space-y-1">
                     <div v-if="selection.inputSignals && selection.inputSignals.length > 0">
-                      <div v-for="input in selection.inputSignals" :key="input.id" class="text-xs">
-                        <div class="badge badge-sm badge-outline">
-                          {{ input.multicastAddress }}:{{ input.multicastPort }}
+                      <div class="flex items-center gap-2">
+                        <div class="badge badge-primary badge-lg">
+                          {{ selection.inputSignals.length }}
                         </div>
+                        <span class="text-sm">
+                          {{ selection.inputSignals.length === 1 ? 'input' : 'inputs' }}
+                        </span>
                       </div>
                       <div class="text-xs opacity-50 mt-1">
-                        {{ selection.currentInputSignalNumber }}/{{ selection.maxInputSignals }} inputs
+                        {{ selection.currentInputSignalNumber }}/{{ selection.maxInputSignals }} active
                       </div>
                     </div>
-                    <div v-else class="text-xs opacity-50">No inputs</div>
-                    <button 
-                      @click="openAddInputModal(selection)"
-                      class="btn btn-xs btn-ghost"
-                      :disabled="selection.running"
-                      title="Add input"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                      </svg>
-                    </button>
+                    <div v-else>
+                      <div class="flex items-center gap-2">
+                        <div class="badge badge-ghost badge-lg">0</div>
+                        <span class="text-sm opacity-50">inputs</span>
+                      </div>
+                    </div>
                   </div>
                 </td>
                 <td>
@@ -328,7 +326,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { SelectionController } from '../controllers/index.js'
+
+const router = useRouter()
 
 // Reactive data
 const selections = ref([])
@@ -444,9 +445,8 @@ async function toggleSelection(selection) {
 }
 
 function editSelection(selection) {
-  // TODO: Implement edit selection modal
   console.log('✏️ Edit selection:', selection.name)
-  alert(`Edit selection "${selection.name}" - Coming soon`)
+  router.push(`/selections/edit/${selection.id}`)
 }
 
 async function deleteSelection(selection) {

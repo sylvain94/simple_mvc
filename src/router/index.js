@@ -70,6 +70,12 @@ const routes = [
     meta: { requiresAuth: true, page: 'selections' }
   },
   { 
+    path: '/selections/edit/:id', 
+    name: 'EditSelection', 
+    component: () => import('../views/EditSelection.vue'),
+    meta: { requiresAuth: true, page: 'selections' }
+  },
+  { 
     path: '/settings', 
     name: 'Settings', 
     component: () => import('../views/Settings.vue'),
