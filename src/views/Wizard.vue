@@ -14,13 +14,14 @@
           <li class="step" :class="currentStep >= 2 ? 'step-primary' : ''">Admin Instance</li>
           <li class="step" :class="currentStep >= 3 ? 'step-primary' : ''">Default Instance</li>
           <li class="step" :class="currentStep >= 4 ? 'step-primary' : ''">Network</li>
-          <li class="step" :class="currentStep >= 5 ? 'step-primary' : ''">Finalization</li>
+          <li class="step" :class="currentStep >= 5 ? 'step-primary' : ''">Instance Interfaces</li>
+          <li class="step" :class="currentStep >= 6 ? 'step-primary' : ''">Finalization</li>
         </ul>
       </div>
 
       <!-- Main Card -->
-      <div class="card bg-base-100 shadow-xl">
-        <div class="card-body">
+      <div class="card bg-base-100 shadow-xl min-h-[600px] max-h-[80vh] flex flex-col">
+        <div class="card-body flex-1 flex flex-col overflow-hidden">
           <!-- Step 1: Application Validation -->
           <div v-if="currentStep === 1" class="space-y-6">
             <h2 class="card-title text-2xl mb-4 flex items-center gap-2">
@@ -547,7 +548,7 @@
                 @click="nextStep" 
                 :disabled="!networkInterfaces.length"
               >
-                Next: Finalization
+                Next: Instance Interfaces
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -555,8 +556,165 @@
             </div>
           </div>
 
-          <!-- Step 5: Finalization -->
-          <div v-else-if="currentStep === 5" class="space-y-6">
+          <!-- Step 5: Instance Interfaces Configuration -->
+          <div v-else-if="currentStep === 5" class="flex flex-col h-full">
+            <!-- Header Section -->
+            <div class="flex-shrink-0 space-y-4 mb-6">
+              <h2 class="card-title text-2xl mb-4 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                </svg>
+                Instance Interfaces Configuration
+              </h2>
+
+              <div class="alert alert-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                  <h3 class="font-bold">Configure Instance Network Interfaces</h3>
+                  <div class="text-xs">Select the input and output network interfaces for each instance.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Content Section -->
+            <div class="flex-1 flex flex-col min-h-0">
+              <!-- Loading State -->
+              <div v-if="loadingInstanceInterfaces" class="flex justify-center items-center py-8">
+                <span class="loading loading-spinner loading-lg"></span>
+                <span class="ml-3">Loading instances and interfaces...</span>
+              </div>
+
+              <!-- Error State -->
+              <div v-else-if="instanceInterfacesError" class="alert alert-error">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{{ instanceInterfacesError }}</span>
+              </div>
+
+              <!-- Instance Interfaces Configuration -->
+              <div v-else class="flex-1 overflow-y-auto space-y-6 pr-2">
+                <div v-for="instance in instances" :key="instance.id" class="card bg-base-200/50">
+                  <div class="card-body">
+                    <h3 class="card-title text-lg mb-4">
+                      <div class="badge badge-primary badge-sm mr-2">{{ instance.type }}</div>
+                      {{ instance.name }}
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <!-- Input Interface Selection -->
+                      <div class="form-control">
+                        <label class="label">
+                          <span class="label-text font-medium">Input interface (IN)</span>
+                          <span class="label-text-alt text-info">Required</span>
+                        </label>
+                        <select 
+                          :value="instanceInterfaceConfig[instance.id] ? instanceInterfaceConfig[instance.id].inputInterface : ''"
+                          @change="(event) => updateInstanceInterface(instance.id, 'inputInterface', event.target.value)"
+                          class="select select-bordered"
+                          :class="{ 'select-error': !instanceInterfaceConfig[instance.id] || !instanceInterfaceConfig[instance.id].inputInterface }"
+                          required
+                        >
+                          <option value="">Select an input interface</option>
+                          <option 
+                            v-for="iface in availableInputInterfaces" 
+                            :key="iface.ifName" 
+                            :value="iface.ifName"
+                          >
+                            {{ iface.ifName }} ({{ iface.primaryIPv4 || 'No IP' }})
+                          </option>
+                        </select>
+                      </div>
+
+                      <!-- Output Interface Selection -->
+                      <div class="form-control">
+                        <label class="label">
+                          <span class="label-text font-medium">Output interface (OUT)</span>
+                          <span class="label-text-alt text-info">Required</span>
+                        </label>
+                        <select 
+                          :value="instanceInterfaceConfig[instance.id] ? instanceInterfaceConfig[instance.id].outputInterface : ''"
+                          @change="(event) => updateInstanceInterface(instance.id, 'outputInterface', event.target.value)"
+                          class="select select-bordered"
+                          :class="{ 'select-error': !instanceInterfaceConfig[instance.id] || !instanceInterfaceConfig[instance.id].outputInterface }"
+                          required
+                        >
+                          <option value="">Select an output interface</option>
+                          <option 
+                            v-for="iface in availableOutputInterfaces" 
+                            :key="iface.ifName" 
+                            :value="iface.ifName"
+                          >
+                            {{ iface.ifName }} ({{ iface.primaryIPv4 || 'No IP' }})
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Instance Details -->
+                    <div class="mt-4 p-3 bg-base-300/50 rounded-lg">
+                      <div class="text-sm space-y-1">
+                        <div><strong>Position:</strong> {{ instance.position }}</div>
+                        <div><strong>IP Range:</strong> {{ instance.startIP }} - {{ instance.endIP }}</div>
+                        <div><strong>Port Range:</strong> {{ instance.startMCPort }} - {{ instance.endMCPort }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Validation Summary -->
+                <div class="card bg-base-200/30">
+                  <div class="card-body">
+                    <h4 class="font-semibold mb-3">Configuration Summary</h4>
+                    <div class="space-y-2">
+                      <div v-for="instance in instances" :key="instance.id" class="flex justify-between items-center text-sm">
+                        <span>{{ instance.name }}:</span>
+                        <div class="flex gap-2">
+                          <span class="badge badge-sm" :class="(instanceInterfaceConfig[instance.id] && instanceInterfaceConfig[instance.id].inputInterface) ? 'badge-success' : 'badge-error'">
+                            IN: {{ (instanceInterfaceConfig[instance.id] && instanceInterfaceConfig[instance.id].inputInterface) || 'Not set' }}
+                          </span>
+                          <span class="badge badge-sm" :class="(instanceInterfaceConfig[instance.id] && instanceInterfaceConfig[instance.id].outputInterface) ? 'badge-success' : 'badge-error'">
+                            OUT: {{ (instanceInterfaceConfig[instance.id] && instanceInterfaceConfig[instance.id].outputInterface) || 'Not set' }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Navigation - Always visible at bottom -->
+            <div class="flex-shrink-0 flex justify-between pt-6 mt-6 border-t border-base-300">
+              <button 
+                class="btn btn-outline" 
+                @click="currentStep = 4"
+                :disabled="loadingInstanceInterfaces"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Previous
+              </button>
+              
+              <button 
+                class="btn btn-primary" 
+                @click="proceedToFinalization"
+                :disabled="loadingInstanceInterfaces || !allInstanceInterfacesConfigured"
+              >
+                <span v-if="savingInstanceInterfaces" class="loading loading-spinner loading-sm mr-2"></span>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+                {{ savingInstanceInterfaces ? 'Saving...' : 'Continue to Finalization' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 6: Finalization -->
+          <div v-else-if="currentStep === 6" class="space-y-6">
             <h2 class="card-title text-2xl mb-4 flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -615,7 +773,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ApplicationController } from '../controllers/ApplicationController.js'
 import { apiGet, apiPost, apiPut } from '../services/api.js'
@@ -665,7 +823,16 @@ const networkError = ref(null)
 const updatingInterface = ref(null)
 const interfaceUpdateStatus = ref({})
 
-// Step 5: Finalization
+// Step 5: Instance Interfaces Configuration
+const loadingInstanceInterfaces = ref(false)
+const savingInstanceInterfaces = ref(false)
+const instanceInterfacesError = ref(null)
+const instances = ref([])
+const instanceInterfaceConfig = ref({})
+const availableInputInterfaces = ref([])
+const availableOutputInterfaces = ref([])
+
+// Step 6: Finalization
 const finishing = ref(false)
 
 // Methods for Step 1: Application Validation
@@ -878,7 +1045,7 @@ const getIPv4Address = (iface) => {
 
 // Navigation methods
 const nextStep = () => {
-  if (currentStep.value < 5) {
+  if (currentStep.value < 6) {
     currentStep.value++
   }
 }
@@ -889,10 +1056,119 @@ const previousStep = () => {
   }
 }
 
+// Methods for Step 5: Instance Interfaces Configuration
+const loadInstancesAndInterfaces = async () => {
+  try {
+    loadingInstanceInterfaces.value = true
+    instanceInterfacesError.value = null
+    
+    console.log('🔍 Wizard: Loading instances and interfaces...')
+    
+    // Load instances (admin and default)
+    const instancesList = []
+    
+    if (adminInstance.value) {
+      instancesList.push(adminInstance.value)
+    }
+    
+    if (defaultInstance.value) {
+      instancesList.push(defaultInstance.value)
+    }
+    
+    instances.value = instancesList
+    console.log('📋 Wizard: Instances loaded:', instancesList)
+    
+    // Initialize interface configuration for each instance
+    instancesList.forEach(instance => {
+      if (!instanceInterfaceConfig.value[instance.id]) {
+        instanceInterfaceConfig.value[instance.id] = {
+          inputInterface: '',
+          outputInterface: ''
+        }
+      }
+    })
+    
+    // Load available interfaces (filter UP interfaces)
+    const allInterfaces = await apiGet('/utils/ifs/getAll', true)
+    const upInterfaces = allInterfaces.filter(iface => iface.ifStatus === 'UP')
+    
+    // Separate interfaces by direction for better UX
+    availableInputInterfaces.value = upInterfaces.filter(iface => 
+      iface.ifStreamDirection === 'IN' || iface.ifStreamDirection === 'BOTH'
+    )
+    
+    availableOutputInterfaces.value = upInterfaces.filter(iface => 
+      iface.ifStreamDirection === 'OUT' || iface.ifStreamDirection === 'BOTH'
+    )
+    
+    console.log('📋 Wizard: Available input interfaces:', availableInputInterfaces.value.length)
+    console.log('📋 Wizard: Available output interfaces:', availableOutputInterfaces.value.length)
+    
+  } catch (error) {
+    console.error('❌ Wizard: Failed to load instances and interfaces:', error)
+    instanceInterfacesError.value = `Failed to load instances and interfaces: ${error.message}`
+  } finally {
+    loadingInstanceInterfaces.value = false
+  }
+}
+
+const updateInstanceInterface = (instanceId, interfaceType, value) => {
+  if (!instanceInterfaceConfig.value[instanceId]) {
+    instanceInterfaceConfig.value[instanceId] = {
+      inputInterface: '',
+      outputInterface: ''
+    }
+  }
+  instanceInterfaceConfig.value[instanceId][interfaceType] = value
+  console.log(`🔧 Wizard: Updated ${instanceId} ${interfaceType} to ${value}`)
+}
+
+const proceedToFinalization = async () => {
+  try {
+    savingInstanceInterfaces.value = true
+    instanceInterfacesError.value = null
+    
+    console.log('🔍 Wizard: Saving instance interface configuration...')
+    console.log('📋 Wizard: Instance interface config:', instanceInterfaceConfig.value)
+    
+    // Here you could save the interface configuration to the backend if needed
+    // For now, we'll just proceed to finalization
+    
+    // Move to finalization step
+    currentStep.value = 6
+    
+  } catch (error) {
+    console.error('❌ Wizard: Failed to save instance interfaces:', error)
+    instanceInterfacesError.value = `Failed to save configuration: ${error.message}`
+  } finally {
+    savingInstanceInterfaces.value = false
+  }
+}
+
+// Computed property to check if all instances have interfaces configured
+const allInstanceInterfacesConfigured = computed(() => {
+  return instances.value.every(instance => {
+    const config = instanceInterfaceConfig.value[instance.id]
+    return config && config.inputInterface && config.outputInterface
+  })
+})
+
+// Watch for step changes to load data when entering step 5
+watch(currentStep, async (newStep) => {
+  if (newStep === 5) {
+    await loadInstancesAndInterfaces()
+  }
+})
+
 const finishConfiguration = async () => {
   try {
     finishing.value = true
      
+    console.log('✅ Wizard: Marking application as configured...')
+    
+    // Mark the application as configured
+    await ApplicationController.markAsConfigured()
+    
     console.log('✅ Wizard: Configuration completed, redirecting to dashboard...')
     
     // Redirect to the dashboard (main route)

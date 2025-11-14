@@ -155,7 +155,20 @@ export const useAppStore = defineStore('app', {
     // Hub properties management
     async updateHubProperties() {
       try {
-        const response = await fetch('/api/v1/getAllProperties');
+        // Use the correct API endpoint with authentication
+        const sessionData = localStorage.getItem('session');
+        if (!sessionData) {
+          throw new Error('No authentication token available');
+        }
+        
+        const { token } = JSON.parse(sessionData);
+        const response = await fetch('/api/v1/utils/application/getAllProperties', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const properties = await response.json();
