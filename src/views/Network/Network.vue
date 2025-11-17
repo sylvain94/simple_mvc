@@ -1,5 +1,6 @@
 <template>
-  <div class="container mx-auto p-6">
+  <div class="h-screen overflow-y-auto" style="height: 100vh; overflow-y: auto;">
+    <div class="container mx-auto p-6 pb-20" style="min-height: 120vh;">
     <!-- Header -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-base-content mb-2">Network Interfaces</h1>
@@ -154,6 +155,7 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
@@ -248,6 +250,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Scroll container */
+.h-screen {
+  scroll-behavior: smooth;
+  max-height: 100vh;
+}
+
+/* Ensure the container can scroll */
+.container {
+  max-height: none;
+}
+
 .stat {
   padding: 1rem;
 }
