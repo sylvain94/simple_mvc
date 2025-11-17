@@ -521,9 +521,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useAppStore } from '../stores/app.js'
-import { UserController } from '../controllers/UserController.js'
-import { roleService, userRoleService } from '../services/api.js'
+import { useAppStore } from '../../stores/app.js'
+import { UserController } from '../../controllers/UserController.js'
+import { roleService, userRoleService } from '../../services/api.js'
 
 const appStore = useAppStore()
 const isRefreshing = ref(false)

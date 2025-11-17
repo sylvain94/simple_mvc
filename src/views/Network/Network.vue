@@ -159,7 +159,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { NetworkInterfaceController } from '../controllers/NetworkInterfaceController.js'
+import { NetworkInterfaceController } from '../../controllers/NetworkInterfaceController.js'
 
 // Reactive data
 const loading = ref(false)
