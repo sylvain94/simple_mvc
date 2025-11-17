@@ -1,5 +1,6 @@
 <template>
-  <div class="container mx-auto p-6">
+  <div class="h-screen overflow-y-auto" style="height: 100vh; overflow-y: auto;">
+    <div class="container mx-auto p-6 pb-20" style="min-height: 120vh;">
     <!-- Header -->
     <div class="mb-8">
       <div class="flex items-center gap-4 mb-4">
@@ -418,13 +419,14 @@
       </svg>
       <span>{{ errorMessage }}</span>
     </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { selectionService } from '../services/api.js'
+import { selectionService } from '../../services/api.js'
 
 const router = useRouter()
 
@@ -597,6 +599,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Scroll container */
+.h-screen {
+  scroll-behavior: smooth;
+  max-height: 100vh;
+}
+
+/* Ensure the container can scroll */
+.container {
+  max-height: none;
+}
+
 .card {
   transition: all 0.2s ease;
 }

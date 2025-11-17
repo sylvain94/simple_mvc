@@ -1,5 +1,6 @@
 <template>
-  <div class="container mx-auto p-6">
+  <div class="h-screen overflow-y-auto" style="height: 100vh; overflow-y: auto;">
+    <div class="container mx-auto p-6 pb-20" style="min-height: 120vh;">
     <!-- Header -->
     <div class="flex items-center gap-4 mb-6">
       <button 
@@ -498,6 +499,7 @@
     </div>
     <div class="modal-backdrop" @click="closeEditSignalModal"></div>
   </div>
+  </div>
 </template>
 
 <script setup>
@@ -733,3 +735,16 @@ onMounted(() => {
   loadSelection()
 })
 </script>
+
+<style scoped>
+/* Scroll container */
+.h-screen {
+  scroll-behavior: smooth;
+  max-height: 100vh;
+}
+
+/* Ensure the container can scroll */
+.container {
+  max-height: none;
+}
+</style>

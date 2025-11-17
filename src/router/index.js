@@ -134,14 +134,14 @@ router.beforeEach(async (to, from, next) => {
       }
     } catch (error) {
       console.error('❌ Router: Error checking configuration status:', error)
-      // En cas d'erreur, rediriger vers le wizard par sécurité
+      // in case of error, redirect to the wizard for security
       console.log('🧙‍♂️ Router: Redirecting to wizard (error fallback)')
       next('/wizard')
     }
     return
   }
 
-  // Si l'utilisateur est authentifié et essaie d'accéder à une page qui nécessite une configuration
+  // if the user is authenticated and requires configuration and the path is not /wizard
   if (isAuthenticated && requiresConfiguration && to.path !== '/wizard') {
     try {
       console.log(`🔍 Router: Checking configuration for page access: ${to.path}`)
