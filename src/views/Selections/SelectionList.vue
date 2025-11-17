@@ -389,17 +389,6 @@ async function refreshSelections() {
   }
 }
 
-function openCreateModal() {
-  // TODO: Implement create selection modal
-  console.log('🔄 Create selection - Coming soon')
-  alert('Create selection functionality will be implemented soon.')
-}
-
-function onSearchInput() {
-  // Search is reactive through computed property
-  console.log('🔍 Search query:', searchQuery.value)
-}
-
 function toggleAllSelection() {
   if (allSelected.value) {
     selectedSelections.value = []

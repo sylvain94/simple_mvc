@@ -33,16 +33,16 @@
                 General Information
               </h3>
               
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Name -->
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Name<span class="text-error">*</span></span>
+                    <span class="label-text font-medium w-40">Name<span class="text-error">*</span></span>
                   </label>
                   <input 
                     type="text" 
                     v-model="formData.name"
-                    class="input input-bordered"
+                    class="input input-bordered w-full"
                     :class="{ 'input-error': errors.name }"
                     placeholder="Enter selection name"
                     required
@@ -55,12 +55,12 @@
                 <!-- Command -->
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Command<span class="text-error">*</span></span>
+                    <span class="label-text font-medium w-40">Command<span class="text-error">*</span></span>
                   </label>
                   <input 
                     type="text" 
                     v-model="formData.command"
-                    class="input input-bordered"
+                    class="input input-bordered w-full"
                     :class="{ 'input-error': errors.command }"
                     placeholder="Enter command"
                     required
@@ -74,11 +74,11 @@
               <!-- Description -->
               <div class="form-control">
                 <label class="label">
-                  <span class="label-text font-medium">Description</span>
+                  <span class="label-text font-medium w-40">Description</span>
                 </label>
                 <textarea 
                   v-model="formData.description"
-                  class="textarea textarea-bordered h-20"
+                  class="textarea textarea-bordered h-20 w-full"
                   placeholder="Enter description"
                 ></textarea>
               </div>
@@ -95,15 +95,15 @@
                 Protocol Configuration
               </h3>
               
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Output Protocol -->
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Output Protocol<span class="text-error">*</span></span>
+                    <span class="label-text font-medium w-40">Output Protocol<span class="text-error">*</span></span>
                   </label>
                   <select 
                     v-model="formData.outputProtocol"
-                    class="select select-bordered"
+                    class="select select-bordered w-full"
                     :class="{ 'select-error': errors.outputProtocol }"
                     required
                   >
@@ -121,12 +121,12 @@
                 <!-- Control IP Address -->
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Control IP Address<span class="text-error">*</span></span>
+                    <span class="label-text font-medium w-40">Control IP Address<span class="text-error">*</span></span>
                   </label>
                   <input 
                     type="text" 
                     v-model="formData.controlIPAddress"
-                    class="input input-bordered"
+                    class="input input-bordered w-full"
                     :class="{ 'input-error': errors.controlIPAddress }"
                     placeholder="Ex: 192.168.1.141"
                     pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
@@ -136,16 +136,18 @@
                     <span class="label-text-alt text-error">{{ errors.controlIPAddress }}</span>
                   </label>
                 </div>
+              </div>
 
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Control Port -->
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Control Port<span class="text-error">*</span></span>
+                    <span class="label-text font-medium w-40">Control Port<span class="text-error">*</span></span>
                   </label>
                   <input 
                     type="number" 
                     v-model.number="formData.controlPort"
-                    class="input input-bordered"
+                    class="input input-bordered w-full"
                     :class="{ 'input-error': errors.controlPort }"
                     placeholder="Ex: 4445"
                     min="1"
@@ -156,6 +158,7 @@
                     <span class="label-text-alt text-error">{{ errors.controlPort }}</span>
                   </label>
                 </div>
+                <div></div> <!-- Empty div for grid alignment -->
               </div>
             </div>
           </div>
@@ -170,16 +173,16 @@
                 Analysis Configuration
               </h3>
               
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Input Analyze Command -->
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Input Analyze Command</span>
+                    <span class="label-text font-medium w-40">Input Analyze Command</span>
                   </label>
                   <input 
                     type="text" 
                     v-model="formData.inputAnalyzeCommand"
-                    class="input input-bordered"
+                    class="input input-bordered w-full"
                     placeholder="Enter input analyze command"
                   />
                 </div>
@@ -187,11 +190,11 @@
                 <!-- Input Analyze Format -->
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Input Analyze Format</span>
+                    <span class="label-text font-medium w-40">Input Analyze Format</span>
                   </label>
                   <select 
                     v-model="formData.inputAnalyzeFormat"
-                    class="select select-bordered"
+                    class="select select-bordered w-full"
                   >
                     <option value="">Select a format</option>
                     <option value="JSON">JSON</option>
@@ -199,16 +202,18 @@
                     <option value="TEXT">TEXT</option>
                   </select>
                 </div>
+              </div>
 
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Output Analyze Command -->
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Output Analyze Command</span>
+                    <span class="label-text font-medium w-40">Output Analyze Command</span>
                   </label>
                   <input 
                     type="text" 
                     v-model="formData.outputAnalyzeCommand"
-                    class="input input-bordered"
+                    class="input input-bordered w-full"
                     placeholder="Enter output analyze command"
                   />
                 </div>
@@ -216,11 +221,11 @@
                 <!-- Output Analyze Format -->
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Output Analyze Format</span>
+                    <span class="label-text font-medium w-40">Output Analyze Format</span>
                   </label>
                   <select 
                     v-model="formData.outputAnalyzeFormat"
-                    class="select select-bordered"
+                    class="select select-bordered w-full"
                   >
                     <option value="">Select a format</option>
                     <option value="JSON">JSON</option>
@@ -242,16 +247,16 @@
                 Signal Configuration
               </h3>
               
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Max Input Signals -->
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Max Input Signals</span>
+                    <span class="label-text font-medium w-40">Max Input Signals</span>
                   </label>
                   <input 
                     type="number" 
                     v-model.number="formData.maxInputSignals"
-                    class="input input-bordered"
+                    class="input input-bordered w-full"
                     placeholder="16"
                     min="0"
                     max="999"
@@ -261,27 +266,29 @@
                 <!-- Max Output Signals -->
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Max Output Signals</span>
+                    <span class="label-text font-medium w-40">Max Output Signals</span>
                   </label>
                   <input 
                     type="number" 
                     v-model.number="formData.maxOutputSignals"
-                    class="input input-bordered"
+                    class="input input-bordered w-full"
                     placeholder="1"
                     min="0"
                     max="999"
                   />
                 </div>
+              </div>
 
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Current Output Signal Number -->
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Current Output Signal Number</span>
+                    <span class="label-text font-medium w-40">Current Output Signal Number</span>
                   </label>
                   <input 
                     type="number" 
                     v-model.number="formData.currentOutputSignalNumber"
-                    class="input input-bordered"
+                    class="input input-bordered w-full"
                     placeholder="0"
                     min="0"
                   />
@@ -290,12 +297,12 @@
                 <!-- Current Input Signal Number -->
                 <div class="form-control">
                   <label class="label">
-                    <span class="label-text font-medium">Current Input Signal Number</span>
+                    <span class="label-text font-medium w-40">Current Input Signal Number</span>
                   </label>
                   <input 
                     type="number" 
                     v-model.number="formData.currentInputSignalNumber"
-                    class="input input-bordered"
+                    class="input input-bordered w-full"
                     placeholder="0"
                     min="0"
                   />
@@ -314,52 +321,54 @@
                 Options
               </h3>
               
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Active -->
                 <div class="form-control">
-                  <label class="label cursor-pointer">
-                    <span class="label-text font-medium">Active</span>
+                  <label class="label cursor-pointer justify-start gap-3">
                     <input 
                       type="checkbox" 
                       v-model="formData.active"
                       class="checkbox checkbox-primary"
                     />
+                    <span class="label-text font-medium">Active</span>
                   </label>
                 </div>
 
                 <!-- Enabled -->
                 <div class="form-control">
-                  <label class="label cursor-pointer">
-                    <span class="label-text font-medium">Enabled</span>
+                  <label class="label cursor-pointer justify-start gap-3">
                     <input 
                       type="checkbox" 
                       v-model="formData.enabled"
                       class="checkbox checkbox-primary"
                     />
+                    <span class="label-text font-medium">Enabled</span>
                   </label>
                 </div>
+              </div>
 
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Auto Run -->
                 <div class="form-control">
-                  <label class="label cursor-pointer">
-                    <span class="label-text font-medium">Auto Run</span>
+                  <label class="label cursor-pointer justify-start gap-3">
                     <input 
                       type="checkbox" 
                       v-model="formData.autoRun"
                       class="checkbox checkbox-primary"
                     />
+                    <span class="label-text font-medium">Auto Run</span>
                   </label>
                 </div>
 
                 <!-- Persistent -->
                 <div class="form-control">
-                  <label class="label cursor-pointer">
-                    <span class="label-text font-medium">Persistent</span>
+                  <label class="label cursor-pointer justify-start gap-3">
                     <input 
                       type="checkbox" 
                       v-model="formData.persistent"
                       class="checkbox checkbox-primary"
                     />
+                    <span class="label-text font-medium">Persistent</span>
                   </label>
                 </div>
               </div>
