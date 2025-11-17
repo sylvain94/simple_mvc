@@ -32,8 +32,8 @@
     </div>
 
     <!-- Edit Form -->
-    <div v-else-if="selection" class="card bg-base-100 shadow-xl max-h-[80vh] flex flex-col">
-      <div class="card-body flex-1 overflow-hidden">
+    <div v-else-if="selection" class="card bg-base-100 shadow-xl flex flex-col">
+      <div class="card-body flex-1">
         <!-- Tabs Navigation -->
         <div class="tabs tabs-bordered mb-6">
           <button 
@@ -52,8 +52,8 @@
           
         <!-- Configuration Tab -->
         <form v-if="activeTab === 'configuration'" @submit.prevent="updateSelection" class="flex flex-col h-full">
-          <!-- Scrollable Content Area -->
-          <div class="flex-1 overflow-y-auto pr-2 space-y-6 max-h-[500px] scrollbar-thin scrollbar-thumb-primary scrollbar-track-base-200">
+          <!-- Content Area -->
+          <div class="flex-1 space-y-6">
           <!-- General Information -->
           <div class="space-y-4">
             <h3 class="font-bold text-lg text-base-content border-b border-base-300 pb-2">General Information</h3>
@@ -96,9 +96,7 @@
                 </label>
                 <select v-model="form.outputProtocol" class="select select-bordered w-full">
                   <option value="udp">UDP</option>
-                  <option value="tcp">TCP</option>
-                  <option value="http">HTTP</option>
-                  <option value="https">HTTPS</option>
+                  <option value="rtp">RTP</option>
                 </select>
               </div>
 
@@ -324,7 +322,7 @@
           </div>
 
           <!-- Input Signals Table -->
-          <div class="flex-1 overflow-y-auto">
+          <div class="flex-1">
             <div v-if="inputSignals.length === 0" class="text-center py-8">
               <div class="text-base-content/50">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
