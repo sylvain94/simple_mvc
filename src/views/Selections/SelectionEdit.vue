@@ -403,7 +403,7 @@
   <!-- Edit Signal Modal -->
   <div v-if="showEditSignalModal" class="modal modal-open">
     <div class="modal-box max-w-2xl">
-      <h3 class="font-bold text-lg mb-4">Edit Signal</h3>
+      <h3 class="font-bold text-lg mb-4">{{ editingSignalIndex === -1 ? 'Add Signal' : 'Edit Signal' }}</h3>
       
       <form @submit.prevent="saveSignalChanges" class="space-y-6">
         <!-- Signal Name (full width) -->
@@ -460,7 +460,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="form-control">
             <label class="label">
-              <span class="label-text font-medium w-40">Source Address</span>
+              <span class="label-text font-medium w-40">Source Address{{ editingSignalIndex === -1 ? ' *' : '' }}</span>
             </label>
             <input 
               type="text" 
@@ -468,9 +468,10 @@
               placeholder="192.168.1.141"
               class="input input-bordered w-full"
               pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$"
+              :required="editingSignalIndex === -1"
             />
             <label class="label">
-              <span class="label-text-alt">Source IP (optional)</span>
+              <span class="label-text-alt">{{ editingSignalIndex === -1 ? 'Source IP (required for new signals)' : 'Source IP (optional)' }}</span>
             </label>
           </div>
 
@@ -492,7 +493,7 @@
           <button type="button" @click="closeEditSignalModal" class="btn">Cancel</button>
           <button type="submit" class="btn btn-primary" :disabled="savingSignal">
             <span v-if="savingSignal" class="loading loading-spinner loading-sm mr-2"></span>
-            Save Changes
+            {{ editingSignalIndex === -1 ? 'Add Signal' : 'Save Changes' }}
           </button>
         </div>
       </form>
@@ -506,6 +507,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { apiGet, apiPut } from '../../services/api.js'
+import { SelectionController } from '../../controllers/SelectionController.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -625,19 +627,20 @@ const updateSelection = async () => {
 
 // Input Signals Management
 const openAddSignalModal = () => {
-  // TODO: Implement modal for adding new signal
-  const newSignal = {
-    id: `signal_${Date.now()}`,
-    signalType: 'MulticastSignalEntity',
+  console.log('➕ Opening add signal modal')
+  
+  // Initialize empty signal data for new signal
+  editingSignal.value = {
     signalName: `Signal ${inputSignals.value.length + 1}`,
-    protocol: 'UDP',
     multicastAddress: '224.10.10.' + (10 + inputSignals.value.length),
+    multicastPort: 2000 + inputSignals.value.length,
     sourceAddress: '192.168.1.141',
-    multicastPort: 2000 + inputSignals.value.length
+    protocol: 'UDP',
+    signalType: 'MulticastSignalEntity'
   }
   
-  inputSignals.value.push(newSignal)
-  console.log('✅ Added new signal:', newSignal)
+  editingSignalIndex.value = -1 // -1 indicates this is a new signal
+  showEditSignalModal.value = true
 }
 
 const editSignal = (signal, index) => {
@@ -676,8 +679,48 @@ const saveSignalChanges = async () => {
       return
     }
     
-    // Update the signal in the array
-    if (editingSignalIndex.value >= 0 && editingSignalIndex.value < inputSignals.value.length) {
+    // Validate source address for new signals (required by API)
+    if (editingSignalIndex.value === -1 && !editingSignal.value.sourceAddress) {
+      alert('Source address is required for new signals')
+      return
+    }
+    
+    if (editingSignalIndex.value === -1) {
+      // Adding new signal via API
+      const selectionId = route.params.id
+      
+      console.log('🚀 Adding multicast input via API:', {
+        selectionId,
+        multicastAddress: editingSignal.value.multicastAddress,
+        multicastPort: editingSignal.value.multicastPort,
+        sourceAddress: editingSignal.value.sourceAddress
+      })
+      
+      const response = await SelectionController.addMulticastInput(
+        selectionId,
+        editingSignal.value.multicastAddress,
+        editingSignal.value.multicastPort,
+        editingSignal.value.sourceAddress
+      )
+      
+      console.log('✅ API response:', response)
+      
+      // Create local signal object for immediate UI update
+      const newSignal = {
+        id: `signal_${Date.now()}`,
+        signalType: editingSignal.value.signalType || 'MulticastSignalEntity',
+        signalName: editingSignal.value.signalName,
+        protocol: editingSignal.value.protocol,
+        multicastAddress: editingSignal.value.multicastAddress,
+        sourceAddress: editingSignal.value.sourceAddress,
+        multicastPort: editingSignal.value.multicastPort
+      }
+      
+      inputSignals.value.push(newSignal)
+      console.log('✅ New signal added successfully:', newSignal)
+      
+    } else if (editingSignalIndex.value >= 0 && editingSignalIndex.value < inputSignals.value.length) {
+      // Updating existing signal
       const updatedSignal = {
         ...inputSignals.value[editingSignalIndex.value],
         signalName: editingSignal.value.signalName,
