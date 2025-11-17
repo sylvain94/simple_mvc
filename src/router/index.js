@@ -84,19 +84,19 @@ const routes = [
   { 
     path: '/network', 
     name: 'Network', 
-    component: () => import('../views/Network.vue'),
+    component: () => import('../views/Network/Network.vue'),
     meta: { requiresAuth: true, page: 'network' }
   },
   { 
     path: '/users', 
     name: 'Users', 
-    component: () => import('../views/Users.vue'),
+    component: () => import('../views/Users/Users.vue'),
     meta: { requiresAuth: true, page: 'users' }
   },
   { 
     path: '/help', 
     name: 'Help', 
-    component: () => import('../views/Help.vue'),
+    component: () => import('../views/Help/Help.vue'),
     meta: { requiresAuth: true, page: 'help' }
   }
 ]
