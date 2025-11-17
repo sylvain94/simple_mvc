@@ -24,61 +24,61 @@ const routes = [
   { 
     path: '/gateways', 
     name: 'SRTGateways', 
-    component: () => import('../views/SRTGateways.vue'),
+    component: () => import('../views/SRTGateways/SRTGatewayList.vue'),
     meta: { requiresAuth: true, page: 'gateways' }
   },
   { 
     path: '/rist-gateways', 
     name: 'RISTGateways', 
-    component: () => import('../views/RISTGateways.vue'),
+    component: () => import('../views/RISTGateways/RISTGatewayList.vue'),
     meta: { requiresAuth: true, page: 'ristGateways' }
   },
   { 
     path: '/mbts-gateways', 
     name: 'MBTSGateways', 
-    component: () => import('../views/MBTSGateways.vue'),
+    component: () => import('../views/MBTSGateways/MBTSGatewayList.vue'),
     meta: { requiresAuth: true, page: 'mbtsGateways' }
   },
   { 
     path: '/files', 
     name: 'Files', 
-    component: () => import('../views/Files.vue'),
+    component: () => import('../views/Files/FilesList.vue'),
     meta: { requiresAuth: true, page: 'files' }
   },
   { 
     path: '/packaging', 
     name: 'Packaging', 
-    component: () => import('../views/Packaging.vue'),
+    component: () => import('../views/Packagings/PackagingList.vue'),
     meta: { requiresAuth: true, page: 'packaging' }
   },
   { 
     path: '/transcoding', 
     name: 'Transcoding', 
-    component: () => import('../views/Transcoding.vue'),
+    component: () => import('../views/Transcodings/TranscodingList.vue'),
     meta: { requiresAuth: true, page: 'transcoding' }
   },
   { 
     path: '/selections', 
     name: 'Selections', 
-    component: () => import('../views/Selections.vue'),
+    component: () => import('../views/Selections/SelectionList.vue'),
     meta: { requiresAuth: true, page: 'selections' }
   },
   { 
     path: '/selections/create', 
     name: 'CreateSelection', 
-    component: () => import('../views/CreateSelection.vue'),
+    component: () => import('../views/Selections/SelectionCreate.vue'),
     meta: { requiresAuth: true, page: 'selections' }
   },
   { 
     path: '/selections/edit/:id', 
     name: 'EditSelection', 
-    component: () => import('../views/EditSelection.vue'),
+    component: () => import('../views/Selections/SelectionEdit.vue'),
     meta: { requiresAuth: true, page: 'selections' }
   },
   { 
     path: '/settings', 
     name: 'Settings', 
-    component: () => import('../views/Settings.vue'),
+    component: () => import('../views/Settings/Settings.vue'),
     meta: { requiresAuth: true, page: 'settings' }
   },
   { 

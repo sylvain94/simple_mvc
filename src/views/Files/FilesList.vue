@@ -385,9 +385,9 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { InputFileController } from '../controllers/InputFileController.js'
-import { AnalyzeController } from '../controllers/AnalyzeController.js'
-import AnalyzeModal from '../components/AnalyzeModal.vue'
+import { InputFileController } from '../../controllers/InputFileController.js'
+import { AnalyzeController } from '../../controllers/AnalyzeController.js'
+import AnalyzeModal from '../../components/AnalyzeModal.vue'
 
 // Reactive data
 const inputFiles = ref([])

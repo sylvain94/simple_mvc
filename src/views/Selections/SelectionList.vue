@@ -326,7 +326,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { SelectionController } from '../controllers/index.js'
+import { SelectionController } from '../../controllers/index.js'
 
 const router = useRouter()
 

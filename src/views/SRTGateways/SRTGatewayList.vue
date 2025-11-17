@@ -247,8 +247,8 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useAppStore } from '../stores/app.js'
-import SRTGatewayModal from '../components/SRTGatewayModal.vue'
+import { useAppStore } from '../../stores/app.js'
+import SRTGatewayModal from '../../components/SRTGatewayModal.vue'
 
 const appStore = useAppStore()
 const isRefreshing = ref(false)

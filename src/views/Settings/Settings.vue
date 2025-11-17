@@ -673,9 +673,9 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useAppStore } from '../stores/app.js'
-import { useAuthStore } from '../stores/auth.js'
-import { ApplicationController, UserProfileController, InstanceController } from '../controllers/index.js'
+import { useAppStore } from '../../stores/app.js'
+import { useAuthStore } from '../../stores/auth.js'
+import { ApplicationController, UserProfileController, InstanceController } from '../../controllers/index.js'
 
 // Store imports
 const appStore = useAppStore()
