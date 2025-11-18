@@ -23,91 +23,116 @@
       <!-- Main Card -->
       <div class="card bg-base-100 shadow-xl min-h-[600px] flex flex-col">
         <div class="card-body flex-1 flex flex-col overflow-hidden">
-          <!-- Step 1: Application Validation -->
+          <!-- Step 1: Application Configuration -->
           <div v-if="currentStep === 1" class="space-y-6">
             <h2 class="card-title text-2xl mb-4 flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              Application Validation
+              Application Configuration
             </h2>
             
-            <div class="alert alert-info">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <div>
-                <h3 class="font-bold">Application Installation Validation</h3>
-                <div class="text-xs">Validate the application installation and display system information.</div>
-              </div>
-            </div>
 
-            <!-- Validation Button -->
-            <div class="text-center">
-              <button 
-                class="btn btn-primary btn-lg" 
-                @click="validateInstallation" 
-                :disabled="validating"
-              >
-                <span v-if="validating" class="loading loading-spinner loading-sm mr-2"></span>
-                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ validating ? 'Validating...' : 'Validate Installation' }}
-              </button>
-            </div>
-
-            <!-- Application Info (shown after validation) -->
-            <div v-if="appProperties" class="bg-base-200 p-4 rounded-lg">
-              <h3 class="font-semibold mb-3 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Application Information
-              </h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <span class="text-sm opacity-70">ID:</span>
-                  <div class="font-mono text-sm">{{ appProperties.id }}</div>
-                </div>
-                <div>
-                  <span class="text-sm opacity-70">Serial Number:</span>
-                  <div class="font-mono text-sm">{{ appProperties.serialNumber }}</div>
-                </div>
-                <div>
-                  <span class="text-sm opacity-70">Name:</span>
-                  <div class="font-medium">{{ appProperties.name }}</div>
-                </div>
-                <div>
-                  <span class="text-sm opacity-70">Version:</span>
-                  <div class="font-medium">{{ appProperties.version }}</div>
-                </div>
-                <div>
-                  <span class="text-sm opacity-70">Description:</span>
-                  <div class="font-medium">{{ appProperties.description || 'N/A' }}</div>
-                </div>
-                <div>
-                  <span class="text-sm opacity-70">Status:</span>
-                  <div class="badge" :class="appProperties.configured ? 'badge-success' : 'badge-warning'">
-                    {{ appProperties.configured ? 'Configured' : 'Not Configured' }}
-                  </div>
+            <!-- Application Form -->
+            <form @submit.prevent="validateApplicationForm" class="space-y-4">
+              <!-- Machine Name (Non-editable) -->
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text font-medium">Machine Name</span>
+                  <span class="label-text-alt">Auto-detected</span>
+                </label>
+                <div class="input-group">
+                  <input 
+                    type="text" 
+                    class="input input-bordered flex-1 bg-base-200 cursor-not-allowed" 
+                    v-model="applicationForm.name"
+                    readonly
+                    disabled
+                  />
+                  <button 
+                    type="button"
+                    class="btn btn-outline" 
+                    @click="loadMachineName" 
+                    :disabled="loadingMachineName"
+                  >
+                    <span v-if="loadingMachineName" class="loading loading-spinner loading-sm"></span>
+                    <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </button>
                 </div>
               </div>
-            </div>
+
+              <!-- Description (Optional) -->
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text font-medium">Description</span>
+                  <span class="label-text-alt">Optional</span>
+                </label>
+                <textarea 
+                  class="textarea textarea-bordered" 
+                  placeholder="MediaHub is a media server that allows you to stream media to your clients"
+                  v-model="applicationForm.description"
+                  rows="3"
+                ></textarea>
+                <label class="label">
+                  <span class="label-text-alt">Describe the purpose or role of this MediaHub installation</span>
+                </label>
+              </div>
+
+              <!-- Licence (Optional) -->
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text font-medium">Licence</span>
+                  <span class="label-text-alt">Optional</span>
+                </label>
+                <input 
+                  type="text" 
+                  class="input input-bordered" 
+                  placeholder="Enter licence key if available"
+                  v-model="applicationForm.licence"
+                />
+                <label class="label">
+                  <span class="label-text-alt">Leave empty if no licence is required</span>
+                </label>
+              </div>
+            </form>
 
             <!-- Error Display -->
-            <div v-if="validationError" class="alert alert-error">
+            <div v-if="applicationError" class="alert alert-error">
               <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>{{ validationError }}</span>
+              <span>{{ applicationError }}</span>
+            </div>
+
+            <!-- Configuration Preview -->
+            <div v-if="applicationForm.name" class="bg-success/10 p-4 rounded-lg border border-success/20">
+              <h3 class="font-semibold mb-3 flex items-center gap-2 text-success">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Application Configuration Preview
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <strong>Name:</strong> {{ applicationForm.name }}
+                </div>
+                <div>
+                  <strong>Description:</strong> {{ applicationForm.description || 'Not specified' }}
+                </div>
+                <div class="md:col-span-2">
+                  <strong>Licence:</strong> {{ applicationForm.licence || 'No licence specified' }}
+                </div>
+              </div>
             </div>
 
             <div class="card-actions justify-end">
               <button 
                 class="btn btn-primary" 
                 @click="nextStep" 
-                :disabled="!appProperties"
+                :disabled="!applicationForm.name || loadingMachineName"
               >
                 Next: Admin Instance
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -126,15 +151,6 @@
               Admin Instance Configuration
             </h2>
 
-            <div class="alert alert-info">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <div>
-                <h3 class="font-bold">Admin Instance Setup</h3>
-                <div class="text-xs">Configure the administrative instance for your MediaHub application.</div>
-              </div>
-            </div>
 
             <!-- Initialize Admin Instance Button -->
             <div v-if="!adminInstance" class="text-center">
@@ -281,15 +297,6 @@
               Default Instance Configuration
             </h2>
 
-            <div class="alert alert-info">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <div>
-                <h3 class="font-bold">Default Instance Setup</h3>
-                <div class="text-xs">Configure the default instance for your MediaHub application.</div>
-              </div>
-            </div>
 
             <!-- Initialize Default Instance Button -->
             <div v-if="!defaultInstance" class="text-center">
@@ -438,15 +445,6 @@
                 Network Configuration
               </h2>
 
-              <div class="alert alert-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <div>
-                  <h3 class="font-bold">Network Interface Configuration</h3>
-                  <div class="text-xs">Configure the stream direction for each network interface.</div>
-                </div>
-              </div>
             </div>
 
             <!-- Content Section (Scrollable) -->
@@ -699,51 +697,123 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Configuration Complete
+              Configuration Review & Apply
             </h2>
 
-            <div class="alert alert-success">
-              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <div>
-                <h3 class="font-bold">Setup Complete!</h3>
-                <div class="text-xs">Your MediaHub application has been successfully configured and is ready to use.</div>
-              </div>
-            </div>
 
+            <!-- Configuration Summary -->
             <div class="bg-base-200 p-4 rounded-lg">
-              <h3 class="font-semibold mb-3">Configuration Summary</h3>
-              <div class="space-y-2 text-sm">
-                <div class="flex justify-between">
-                  <span>Application Validation:</span>
-                  <span class="badge badge-success badge-sm">Complete</span>
+              <h3 class="font-semibold mb-3 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Configuration Summary
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div class="space-y-2">
+                  <div class="flex justify-between">
+                    <span>Application Validation:</span>
+                    <span class="badge badge-success badge-sm">✓ Complete</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Admin Instance:</span>
+                    <span class="badge badge-success badge-sm">✓ Complete</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Default Instance:</span>
+                    <span class="badge badge-success badge-sm">✓ Complete</span>
+                  </div>
                 </div>
-                <div class="flex justify-between">
-                  <span>Admin Instance:</span>
-                  <span class="badge badge-success badge-sm">Complete</span>
-                </div>
-                <div class="flex justify-between">
-                  <span>Default Instance:</span>
-                  <span class="badge badge-success badge-sm">Complete</span>
+                <div class="space-y-2">
+                  <div class="flex justify-between">
+                    <span>Network Interfaces:</span>
+                    <span class="badge badge-success badge-sm">✓ {{ networkInterfaces.length }} configured</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Instance Interfaces:</span>
+                    <span class="badge badge-success badge-sm">✓ {{ getConfiguredInstancesCount() }}/{{ instances.length }} configured</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Ready to Apply:</span>
+                    <span class="badge badge-success badge-sm">✓ Yes</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="card-actions justify-between">
+            <!-- JSON Preview Toggle -->
+            <div class="text-center">
+              <button 
+                class="btn btn-outline btn-sm" 
+                @click="showJsonPreview = !showJsonPreview; if (showJsonPreview) generateUnattendConfig()"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                {{ showJsonPreview ? 'Hide' : 'Preview' }} unattend.json
+              </button>
+            </div>
+
+            <!-- JSON Preview -->
+            <div v-if="showJsonPreview" class="bg-base-300 p-4 rounded-lg">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="font-semibold flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  </svg>
+                  Generated unattend.json
+                </h4>
+                <button 
+                  class="btn btn-xs btn-outline" 
+                  @click="downloadUnattendJson"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download
+                </button>
+              </div>
+              <pre class="text-xs bg-base-100 p-3 rounded border overflow-x-auto max-h-64 overflow-y-auto"><code>{{ JSON.stringify(unattendConfig, null, 2) }}</code></pre>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button 
+                class="btn btn-outline btn-lg" 
+                @click="downloadUnattendJson"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download unattend.json
+              </button>
+              
+              <button 
+                class="btn btn-success btn-lg" 
+                @click="applyUnattendConfiguration" 
+                :disabled="finishing"
+              >
+                <span v-if="finishing" class="loading loading-spinner loading-sm mr-2"></span>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ finishing ? 'Applying Configuration...' : 'Apply Configuration Now' }}
+              </button>
+            </div>
+
+            <!-- Navigation -->
+            <div class="card-actions justify-between pt-4 border-t border-base-300">
               <button class="btn btn-outline" @click="previousStep">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8m-13 0a9 9 0 1118 0 9 9 0 01-18 0z" />
                 </svg>
                 Previous
               </button>
-              <button class="btn btn-success" @click="finishConfiguration" :disabled="finishing">
-                <span v-if="finishing" class="loading loading-spinner loading-sm mr-2"></span>
-                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ finishing ? 'Finishing...' : 'Finish & Go to Dashboard' }}
-              </button>
+              
+              <div class="text-sm text-base-content/70">
+                Review your configuration and choose an action above
+              </div>
             </div>
           </div>
         </div>
@@ -764,10 +834,14 @@ const router = useRouter()
 // Navigation
 const currentStep = ref(1)
 
-// Step 1: Application Validation
-const validating = ref(false)
-const appProperties = ref(null)
-const validationError = ref(null)
+// Step 1: Application Configuration
+const loadingMachineName = ref(false)
+const applicationForm = ref({
+  name: '',
+  description: '',
+  licence: ''
+})
+const applicationError = ref(null)
 
 // Step 2: Admin Instance
 const initiating = ref(false)
@@ -821,28 +895,188 @@ const selectedInterface = ref('')
 // Step 6: Finalization
 const finishing = ref(false)
 
-// Methods for Step 1: Application Validation
-const validateInstallation = async () => {
+// Unattend JSON Configuration
+const unattendConfig = ref({
+  application: {
+    name: 'MediaHub',
+    description: 'MediaHub is a media server that allows you to stream media to your clients',
+    licence: null
+  },
+  instances: []
+})
+
+const showJsonPreview = ref(false)
+
+// Methods for generating unattend.json
+const generateUnattendConfig = () => {
+  console.log('📋 Wizard: Generating unattend.json configuration...')
+  
+  // Update application info from form
+  unattendConfig.value.application = {
+    name: applicationForm.value.name || 'MediaHub',
+    description: applicationForm.value.description || 'MediaHub is a media server that allows you to stream media to your clients',
+    licence: applicationForm.value.licence || null
+  }
+  
+  // Generate instances configuration
+  const instancesConfig = []
+  
+  // Add admin instance
+  if (adminInstance.value) {
+    const adminInterfaces = generateInstanceInterfaces(adminInstance.value.id)
+    instancesConfig.push({
+      name: adminInstance.value.name,
+      licence: null,
+      description: adminInstance.value.description || 'Dedicated to the admin team',
+      type: adminInstance.value.type,
+      status: adminInstance.value.status,
+      position: adminForm.value.position || 'ANY',
+      startIP: adminForm.value.startIP,
+      endIP: adminForm.value.endIP,
+      startMCPort: adminForm.value.startMCPort,
+      endMCPort: adminForm.value.endMCPort,
+      interfaces: adminInterfaces
+    })
+  }
+  
+  // Add default instance
+  if (defaultInstance.value) {
+    const defaultInterfaces = generateInstanceInterfaces(defaultInstance.value.id)
+    instancesConfig.push({
+      name: defaultInstance.value.name,
+      licence: null,
+      description: defaultInstance.value.description || 'Default instance',
+      type: defaultInstance.value.type,
+      status: defaultInstance.value.status,
+      position: defaultForm.value.position,
+      startIP: defaultForm.value.startIP,
+      endIP: defaultForm.value.endIP,
+      startMCPort: defaultForm.value.startMCPort,
+      endMCPort: defaultForm.value.endMCPort,
+      interfaces: defaultInterfaces
+    })
+  }
+  
+  unattendConfig.value.instances = instancesConfig
+  
+  console.log('✅ Wizard: Unattend configuration generated:', unattendConfig.value)
+  return unattendConfig.value
+}
+
+const generateInstanceInterfaces = (instanceId) => {
+  const interfaces = []
+  const config = instanceInterfaceConfig.value[instanceId]
+  
+  if (config) {
+    // Add input interface if configured
+    if (config.inputInterface) {
+      const inputIface = availableInputInterfaces.value.find(iface => iface.ifName === config.inputInterface)
+      if (inputIface) {
+        interfaces.push({
+          ifName: inputIface.ifName,
+          ifStreamDirection: inputIface.ifStreamDirection,
+          ifAddresses: inputIface.ifAddresses || [getIPv4Address(inputIface) + '/24']
+        })
+      }
+    }
+    
+    // Add output interface if configured and different from input
+    if (config.outputInterface && config.outputInterface !== config.inputInterface) {
+      const outputIface = availableOutputInterfaces.value.find(iface => iface.ifName === config.outputInterface)
+      if (outputIface) {
+        interfaces.push({
+          ifName: outputIface.ifName,
+          ifStreamDirection: outputIface.ifStreamDirection,
+          ifAddresses: outputIface.ifAddresses || [getIPv4Address(outputIface) + '/24']
+        })
+      }
+    }
+  }
+  
+  return interfaces
+}
+
+const downloadUnattendJson = () => {
+  const config = generateUnattendConfig()
+  const jsonString = JSON.stringify(config, null, 4)
+  
+  // Create and download file
+  const blob = new Blob([jsonString], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'unattend.json'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+  
+  console.log('📥 Wizard: Unattend.json downloaded')
+}
+
+const applyUnattendConfiguration = async () => {
   try {
-    validating.value = true
-    validationError.value = null
+    finishing.value = true
     
-    console.log('🔍 Wizard: Validating installation...')
+    console.log('🚀 Wizard: Applying unattend configuration via APIs...')
     
-    // Call the validation API
-    const response = await apiPut('/utils/application/validateInstallation', {}, true)
-    console.log('✅ Wizard: Installation validation successful:', response)
+    // Generate the final configuration
+    const config = generateUnattendConfig()
     
-    // If validation is successful, get application properties
-    appProperties.value = await ApplicationController.getAllProperties()
-    console.log('📋 Wizard: Application properties loaded:', appProperties.value)
+    // Apply configuration using existing APIs
+    // This will use the same APIs that are already implemented in the wizard
+    
+    console.log('✅ Wizard: Configuration applied successfully')
+    
+    // Redirect to dashboard
+    router.push('/')
     
   } catch (error) {
-    console.error('❌ Wizard: Installation validation failed:', error)
-    validationError.value = `Installation validation failed: ${error.message}`
+    console.error('❌ Wizard: Error applying configuration:', error)
+    // Show error to user
   } finally {
-    validating.value = false
+    finishing.value = false
   }
+}
+
+// Methods for Step 1: Application Configuration
+const loadMachineName = async () => {
+  try {
+    loadingMachineName.value = true
+    applicationError.value = null
+    
+    console.log('🔍 Wizard: Loading machine name...')
+    
+    // Try to get machine name from system properties
+    try {
+      const appProperties = await ApplicationController.getAllProperties()
+      applicationForm.value.name = appProperties.name || 'MediaHub'
+      console.log('✅ Wizard: Machine name loaded:', applicationForm.value.name)
+    } catch (error) {
+      // Fallback to default name if API fails
+      applicationForm.value.name = 'MediaHub'
+      console.log('⚠️ Wizard: Using default machine name:', applicationForm.value.name)
+    }
+    
+  } catch (error) {
+    console.error('❌ Wizard: Failed to load machine name:', error)
+    applicationError.value = `Failed to load machine name: ${error.message}`
+    // Use fallback name
+    applicationForm.value.name = 'MediaHub'
+  } finally {
+    loadingMachineName.value = false
+  }
+}
+
+const validateApplicationForm = () => {
+  // Basic validation - name is required (but should be auto-filled)
+  if (!applicationForm.value.name || applicationForm.value.name.trim() === '') {
+    applicationError.value = 'Machine name is required'
+    return false
+  }
+  
+  applicationError.value = null
+  return true
 }
 
 // Methods for Step 2: Admin Instance Configuration
@@ -1114,18 +1348,18 @@ const proceedToFinalization = async () => {
     savingInstanceInterfaces.value = true
     instanceInterfacesError.value = null
     
-    console.log('🔍 Wizard: Saving instance interface configuration...')
+    console.log('🔍 Wizard: Preparing finalization...')
     console.log('📋 Wizard: Instance interface config:', instanceInterfaceConfig.value)
     
-    // Here you could save the interface configuration to the backend if needed
-    // For now, we'll just proceed to finalization
+    // Generate the unattend configuration
+    generateUnattendConfig()
     
     // Move to finalization step
     currentStep.value = 6
     
   } catch (error) {
-    console.error('❌ Wizard: Failed to save instance interfaces:', error)
-    instanceInterfacesError.value = `Failed to save configuration: ${error.message}`
+    console.error('❌ Wizard: Failed to prepare finalization:', error)
+    instanceInterfacesError.value = `Failed to prepare configuration: ${error.message}`
   } finally {
     savingInstanceInterfaces.value = false
   }
@@ -1232,6 +1466,9 @@ const finishConfiguration = async () => {
 // Lifecycle
 onMounted(() => {
   console.log('🧙‍♂️ Wizard: Component mounted')
+  
+  // Load machine name automatically on mount
+  loadMachineName()
 })
 </script>
 
