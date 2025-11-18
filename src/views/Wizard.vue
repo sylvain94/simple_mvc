@@ -25,7 +25,7 @@
         <div class="card-body flex-1 flex flex-col overflow-hidden">
           <!-- Step 1: Application Configuration -->
           <div v-if="currentStep === 1" class="space-y-6">
-            <h2 class="card-title text-2xl mb-4 flex items-center gap-2">
+            <h2 class="card-title text-2xl mb-6 flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -33,102 +33,156 @@
               Application Configuration
             </h2>
             
+            <!-- Two Column Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              
+              <!-- Left Column: Form -->
+              <div class="space-y-6">
+                <h3 class="text-lg font-semibold text-base-content mb-4">Configuration Form</h3>
+                
+                <!-- Application Form -->
+                <form @submit.prevent="validateApplicationForm" class="space-y-4">
+                  <!-- Machine Name (Non-editable) -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text font-medium">Machine Name</span>
+                      <span class="label-text-alt">Auto-detected</span>
+                    </label>
+                    <div class="input-group">
+                      <input 
+                        type="text" 
+                        class="input input-bordered flex-1 bg-base-200 cursor-not-allowed" 
+                        v-model="applicationForm.name"
+                        readonly
+                        disabled
+                      />
+                      <button 
+                        type="button"
+                        class="btn btn-outline" 
+                        @click="loadMachineName" 
+                        :disabled="loadingMachineName"
+                      >
+                        <span v-if="loadingMachineName" class="loading loading-spinner loading-sm"></span>
+                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
 
-            <!-- Application Form -->
-            <form @submit.prevent="validateApplicationForm" class="space-y-4">
-              <!-- Machine Name (Non-editable) -->
-              <div class="form-control">
-                <label class="label">
-                  <span class="label-text font-medium">Machine Name</span>
-                  <span class="label-text-alt">Auto-detected</span>
-                </label>
-                <div class="input-group">
-                  <input 
-                    type="text" 
-                    class="input input-bordered flex-1 bg-base-200 cursor-not-allowed" 
-                    v-model="applicationForm.name"
-                    readonly
-                    disabled
-                  />
-                  <button 
-                    type="button"
-                    class="btn btn-outline" 
-                    @click="loadMachineName" 
-                    :disabled="loadingMachineName"
-                  >
-                    <span v-if="loadingMachineName" class="loading loading-spinner loading-sm"></span>
-                    <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  <!-- Description (Optional) -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text font-medium">Description</span>
+                      <span class="label-text-alt">Optional</span>
+                    </label>
+                    <textarea 
+                      class="textarea textarea-bordered" 
+                      placeholder="MediaHub is a media server that allows you to stream media to your clients"
+                      v-model="applicationForm.description"
+                      rows="3"
+                    ></textarea>
+                    <label class="label">
+                      <span class="label-text-alt">Describe the purpose or role of this MediaHub installation</span>
+                    </label>
+                  </div>
+
+                  <!-- Licence (Optional) -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text font-medium">Licence</span>
+                      <span class="label-text-alt">Optional</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      class="input input-bordered" 
+                      placeholder="Enter licence key if available"
+                      v-model="applicationForm.licence"
+                    />
+                    <label class="label">
+                      <span class="label-text-alt">Leave empty if no licence is required</span>
+                    </label>
+                  </div>
+                </form>
+
+                <!-- Error Display -->
+                <div v-if="applicationError" class="alert alert-error">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>{{ applicationError }}</span>
+                </div>
+              </div>
+
+              <!-- Right Column: Preview -->
+              <div class="space-y-6">
+                <h3 class="text-lg font-semibold text-base-content mb-4">Configuration Preview</h3>
+                
+                <!-- Configuration Preview -->
+                <div v-if="applicationForm.name" class="bg-success/10 p-6 rounded-lg border border-success/20 h-fit">
+                  <h4 class="font-semibold mb-4 flex items-center gap-2 text-success">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                  </button>
+                    Application Configuration
+                  </h4>
+                  
+                  <div class="space-y-3 text-sm">
+                    <div class="flex flex-col">
+                      <span class="font-medium text-base-content/70 mb-1">Name:</span>
+                      <span class="font-mono bg-base-200 px-2 py-1 rounded">{{ applicationForm.name }}</span>
+                    </div>
+                    
+                    <div class="flex flex-col">
+                      <span class="font-medium text-base-content/70 mb-1">Description:</span>
+                      <span class="bg-base-200 px-2 py-1 rounded min-h-[2rem] flex items-center">
+                        {{ applicationForm.description || 'Not specified' }}
+                      </span>
+                    </div>
+                    
+                    <div class="flex flex-col">
+                      <span class="font-medium text-base-content/70 mb-1">Licence:</span>
+                      <span class="font-mono bg-base-200 px-2 py-1 rounded">
+                        {{ applicationForm.licence || 'No licence specified' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- JSON Preview -->
+                  <div class="mt-6 pt-4 border-t border-success/20">
+                    <h5 class="font-medium mb-2 text-success flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                      </svg>
+                      JSON Output
+                    </h5>
+                    <pre class="text-xs bg-base-100 p-3 rounded border overflow-x-auto"><code>{
+  "application": {
+    "name": "{{ applicationForm.name }}",
+    "description": "{{ applicationForm.description || 'MediaHub is a media server that allows you to stream media to your clients' }}",
+    "licence": {{ applicationForm.licence ? `"${applicationForm.licence}"` : 'null' }}
+  }
+}</code></pre>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Description (Optional) -->
-              <div class="form-control">
-                <label class="label">
-                  <span class="label-text font-medium">Description</span>
-                  <span class="label-text-alt">Optional</span>
-                </label>
-                <textarea 
-                  class="textarea textarea-bordered" 
-                  placeholder="MediaHub is a media server that allows you to stream media to your clients"
-                  v-model="applicationForm.description"
-                  rows="3"
-                ></textarea>
-                <label class="label">
-                  <span class="label-text-alt">Describe the purpose or role of this MediaHub installation</span>
-                </label>
-              </div>
-
-              <!-- Licence (Optional) -->
-              <div class="form-control">
-                <label class="label">
-                  <span class="label-text font-medium">Licence</span>
-                  <span class="label-text-alt">Optional</span>
-                </label>
-                <input 
-                  type="text" 
-                  class="input input-bordered" 
-                  placeholder="Enter licence key if available"
-                  v-model="applicationForm.licence"
-                />
-                <label class="label">
-                  <span class="label-text-alt">Leave empty if no licence is required</span>
-                </label>
-              </div>
-            </form>
-
-            <!-- Error Display -->
-            <div v-if="applicationError" class="alert alert-error">
-              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>{{ applicationError }}</span>
-            </div>
-
-            <!-- Configuration Preview -->
-            <div v-if="applicationForm.name" class="bg-success/10 p-4 rounded-lg border border-success/20">
-              <h3 class="font-semibold mb-3 flex items-center gap-2 text-success">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Application Configuration Preview
-              </h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <strong>Name:</strong> {{ applicationForm.name }}
-                </div>
-                <div>
-                  <strong>Description:</strong> {{ applicationForm.description || 'Not specified' }}
-                </div>
-                <div class="md:col-span-2">
-                  <strong>Licence:</strong> {{ applicationForm.licence || 'No licence specified' }}
+                <!-- Loading State -->
+                <div v-else class="bg-base-200/50 p-6 rounded-lg border border-base-300 h-fit">
+                  <div class="flex items-center justify-center py-8">
+                    <div class="text-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <p class="text-base-content/60">Configuration preview will appear here</p>
+                      <p class="text-sm text-base-content/40 mt-1">Fill in the form to see the preview</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="card-actions justify-end">
+            <!-- Navigation -->
+            <div class="card-actions justify-end pt-4 border-t border-base-300">
               <button 
                 class="btn btn-primary" 
                 @click="nextStep" 
@@ -144,131 +198,344 @@
 
           <!-- Step 2: Admin Instance Configuration -->
           <div v-else-if="currentStep === 2" class="space-y-6">
-            <h2 class="card-title text-2xl mb-4 flex items-center gap-2">
+            <h2 class="card-title text-2xl mb-6 flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
               Admin Instance Configuration
             </h2>
 
+            <!-- Two Column Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              
+              <!-- Left Column: Form -->
+              <div class="space-y-6">
+                <h3 class="text-lg font-semibold text-base-content mb-4">Instance Configuration</h3>
+                
+                <!-- Admin Instance Form -->
+                <form @submit.prevent="validateAdminForm" class="space-y-4">
+                  <!-- Instance Name -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text font-medium">Instance Name</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      class="input input-bordered" 
+                      v-model="adminForm.name"
+                      placeholder="admin-instance"
+                    />
+                  </div>
 
-            <!-- Initialize Admin Instance Button -->
-            <div v-if="!adminInstance" class="text-center">
-              <button 
-                class="btn btn-primary btn-lg" 
-                @click="initiateAdminConfiguration" 
-                :disabled="initiating"
-              >
-                <span v-if="initiating" class="loading loading-spinner loading-sm mr-2"></span>
-                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                {{ initiating ? 'Initializing...' : 'Initialize Admin Instance' }}
-              </button>
-            </div>
+                  <!-- Description -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text font-medium">Description</span>
+                      <span class="label-text-alt">Optional</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      class="input input-bordered" 
+                      v-model="adminForm.description"
+                      placeholder="Dedicated to the admin team"
+                    />
+                  </div>
 
-            <!-- Admin Instance Form -->
-            <div v-if="adminInstance" class="space-y-4">
-              <div class="bg-success/10 p-4 rounded-lg border border-success/20">
-                <h3 class="font-semibold mb-3 flex items-center gap-2 text-success">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <!-- Licence -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text font-medium">Licence</span>
+                      <span class="label-text-alt">Optional</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      class="input input-bordered" 
+                      v-model="adminForm.licence"
+                      placeholder="Enter licence key if available"
+                    />
+                  </div>
+
+                  <!-- Type (Fixed) -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text font-medium">Type</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      class="input input-bordered bg-base-200 cursor-not-allowed" 
+                      value="ADMIN"
+                      readonly
+                      disabled
+                    />
+                  </div>
+
+                  <!-- Status (Fixed) -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text font-medium">Status</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      class="input input-bordered bg-base-200 cursor-not-allowed" 
+                      value="ACTIVE"
+                      readonly
+                      disabled
+                    />
+                  </div>
+
+                  <!-- Position (Fixed) -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text font-medium">Position</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      class="input input-bordered bg-base-200 cursor-not-allowed" 
+                      value="ANY"
+                      readonly
+                      disabled
+                    />
+                  </div>
+
+                  <!-- IP Range -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                      <label class="label">
+                        <span class="label-text font-medium">Start IP</span>
+                      </label>
+                      <input 
+                        type="text" 
+                        class="input input-bordered" 
+                        v-model="adminForm.startIP"
+                        placeholder="239.0.0.0"
+                      />
+                    </div>
+                    <div class="form-control">
+                      <label class="label">
+                        <span class="label-text font-medium">End IP</span>
+                      </label>
+                      <input 
+                        type="text" 
+                        class="input input-bordered" 
+                        v-model="adminForm.endIP"
+                        placeholder="239.0.0.255"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Port Range -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                      <label class="label">
+                        <span class="label-text font-medium">Start MC Port</span>
+                      </label>
+                      <input 
+                        type="number" 
+                        class="input input-bordered" 
+                        v-model.number="adminForm.startMCPort"
+                        placeholder="4000"
+                      />
+                    </div>
+                    <div class="form-control">
+                      <label class="label">
+                        <span class="label-text font-medium">End MC Port</span>
+                      </label>
+                      <input 
+                        type="number" 
+                        class="input input-bordered" 
+                        v-model.number="adminForm.endMCPort"
+                        placeholder="6535"
+                      />
+                    </div>
+                  </div>
+                </form>
+
+                <!-- Network Interfaces Section -->
+                <div class="space-y-4">
+                  <div class="flex items-center justify-between">
+                    <h4 class="text-md font-semibold text-base-content">Network Interfaces</h4>
+                    <div class="flex gap-2">
+                      <button 
+                        type="button"
+                        class="btn btn-sm btn-outline" 
+                        @click="loadNetworkInterfaces"
+                        :disabled="loadingNetworkInterfaces"
+                      >
+                        <span v-if="loadingNetworkInterfaces" class="loading loading-spinner loading-sm mr-1"></span>
+                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        {{ loadingNetworkInterfaces ? 'Loading...' : 'Refresh' }}
+                      </button>
+                      <button 
+                        type="button"
+                        class="btn btn-sm btn-primary" 
+                        @click="addAdminInterface"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Add Interface
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Network Interfaces Error -->
+                  <div v-if="networkInterfacesError" class="alert alert-warning">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <span>{{ networkInterfacesError }}</span>
+                  </div>
+
+                  <!-- Interface List -->
+                  <div v-if="adminForm.interfaces.length === 0" class="text-center py-8 bg-base-200/50 rounded-lg border border-dashed border-base-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47.881-6.08 2.33l-.147.083A7.994 7.994 0 0112 21.001z" />
+                    </svg>
+                    <p class="text-base-content/60">No network interfaces configured</p>
+                    <p class="text-sm text-base-content/40 mt-1">Click "Add Interface" to add one</p>
+                  </div>
+
+                  <div v-else class="space-y-3">
+                    <div 
+                      v-for="(iface, index) in adminForm.interfaces" 
+                      :key="index"
+                      class="bg-base-200/50 p-4 rounded-lg border border-base-300"
+                    >
+                      <div class="flex items-center justify-between mb-3">
+                        <h5 class="font-medium">Interface {{ index + 1 }}</h5>
+                        <button 
+                          type="button"
+                          class="btn btn-xs btn-error" 
+                          @click="removeAdminInterface(index)"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                      
+                      <!-- Network Interface Selector -->
+                      <div class="form-control mb-3">
+                        <label class="label">
+                          <span class="label-text font-medium text-sm">Select Network Interface</span>
+                          <span class="label-text-alt">{{ availableNetworkInterfaces.length }} available</span>
+                        </label>
+                        <select 
+                          class="select select-bordered select-sm" 
+                          :value="iface.ifName"
+                          @change="selectNetworkInterface(index, $event.target.value)"
+                        >
+                          <option value="">Choose an interface...</option>
+                          <option 
+                            v-for="netIface in availableNetworkInterfaces" 
+                            :key="netIface.name" 
+                            :value="netIface.name"
+                          >
+                            {{ netIface.displayName }} ({{ netIface.addresses[0]?.replace(/^\//, '') }})
+                          </option>
+                        </select>
+                      </div>
+                      
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="form-control">
+                          <label class="label">
+                            <span class="label-text font-medium text-sm">Interface Name</span>
+                          </label>
+                          <input 
+                            type="text" 
+                            class="input input-bordered input-sm bg-base-200 cursor-not-allowed" 
+                            v-model="iface.ifName"
+                            placeholder="Select interface above"
+                            readonly
+                            disabled
+                          />
+                        </div>
+                        
+                        <div class="form-control">
+                          <label class="label">
+                            <span class="label-text font-medium text-sm">Stream Direction</span>
+                          </label>
+                          <select class="select select-bordered select-sm" v-model="iface.ifStreamDirection">
+                            <option value="IN">IN</option>
+                            <option value="OUT">OUT</option>
+                            <option value="BOTH">BOTH</option>
+                          </select>
+                        </div>
+                      </div>
+                      
+                      <div class="form-control mt-3">
+                        <label class="label">
+                          <span class="label-text font-medium text-sm">IP Address</span>
+                        </label>
+                        <input 
+                          type="text" 
+                          class="input input-bordered input-sm" 
+                          v-model="iface.ifAddresses[0]"
+                          placeholder="192.168.1.1/24"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Error Display -->
+                <div v-if="adminError" class="alert alert-error">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  Admin Instance Created
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div><strong>Name:</strong> {{ adminInstance.name }}</div>
-                  <div><strong>Type:</strong> {{ adminInstance.type }}</div>
-                  <div><strong>Status:</strong> {{ adminInstance.status }}</div>
-                  <div><strong>Position:</strong> {{ adminInstance.position }}</div>
+                  <span>{{ adminError }}</span>
                 </div>
               </div>
 
-              <div class="form-control">
-                <label class="label">
-                  <span class="label-text font-medium">Position</span>
-                </label>
-                <input 
-                  type="text" 
-                  class="input input-bordered bg-base-200 cursor-not-allowed" 
-                  value="ANY"
-                  readonly
-                  disabled
-                />
-              </div>
+              <!-- Right Column: Preview -->
+              <div class="space-y-6">
+                <h3 class="text-lg font-semibold text-base-content mb-4">JSON Preview</h3>
+                
+                <!-- Configuration Preview -->
+                <div class="bg-success/10 p-6 rounded-lg border border-success/20 h-fit">
+                  <h4 class="font-semibold mb-4 flex items-center gap-2 text-success">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    Admin Instance Configuration
+                  </h4>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text font-medium">Start IP</span>
-                  </label>
-                  <input 
-                    type="text" 
-                    class="input input-bordered" 
-                    v-model="adminForm.startIP"
-                    placeholder="224.10.10.10"
-                  />
-                </div>
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text font-medium">End IP</span>
-                  </label>
-                  <input 
-                    type="text" 
-                    class="input input-bordered" 
-                    v-model="adminForm.endIP"
-                    placeholder="224.10.10.100"
-                  />
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text font-medium">Start MC Port</span>
-                  </label>
-                  <input 
-                    type="number" 
-                    class="input input-bordered" 
-                    v-model.number="adminForm.startMCPort"
-                    placeholder="2000"
-                  />
-                </div>
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text font-medium">End MC Port</span>
-                  </label>
-                  <input 
-                    type="number" 
-                    class="input input-bordered" 
-                    v-model.number="adminForm.endMCPort"
-                    placeholder="2000"
-                  />
+                  <!-- JSON Preview -->
+                  <div class="mt-4">
+                    <h5 class="font-medium mb-2 text-success flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                      </svg>
+                      JSON Output
+                    </h5>
+                    <pre class="text-xs bg-base-100 p-3 rounded border overflow-x-auto max-h-96 overflow-y-auto"><code>{
+  "name": "{{ adminForm.name }}",
+  "licence": {{ adminForm.licence ? `"${adminForm.licence}"` : 'null' }},
+  "description": "{{ adminForm.description }}",
+  "type": "{{ adminForm.type }}",
+  "status": "{{ adminForm.status }}",
+  "position": "{{ adminForm.position }}",
+  "startIP": "{{ adminForm.startIP }}",
+  "endIP": "{{ adminForm.endIP }}",
+  "startMCPort": {{ adminForm.startMCPort }},
+  "endMCPort": {{ adminForm.endMCPort }},
+  "interfaces": [{{ adminForm.interfaces.map((iface, index) => `
+    {
+      "ifName": "${iface.ifName}",
+      "ifStreamDirection": "${iface.ifStreamDirection}",
+      "ifAddresses": ["${iface.ifAddresses[0]}"]
+    }`).join(',') }}
+  ]
+}</code></pre>
+                  </div>
                 </div>
               </div>
-
-              <button 
-                class="btn btn-primary w-full" 
-                @click="updateAdminConfiguration" 
-                :disabled="updating"
-              >
-                <span v-if="updating" class="loading loading-spinner loading-sm mr-2"></span>
-                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                </svg>
-                {{ updating ? 'Updating...' : 'Update Admin Configuration' }}
-              </button>
             </div>
 
-            <!-- Error Display -->
-            <div v-if="adminError" class="alert alert-error">
-              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>{{ adminError }}</span>
-            </div>
-
-            <div class="card-actions justify-between">
+            <!-- Navigation -->
+            <div class="card-actions justify-between pt-4 border-t border-base-300">
               <button class="btn btn-outline" @click="previousStep">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8m-13 0a9 9 0 1118 0 9 9 0 01-18 0z" />
@@ -278,7 +545,7 @@
               <button 
                 class="btn btn-primary" 
                 @click="nextStep" 
-                :disabled="!adminInstance || !adminConfigured"
+                :disabled="!validateAdminForm()"
               >
                 Next: Default Instance
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -290,131 +557,344 @@
 
           <!-- Step 3: Default Instance Configuration -->
           <div v-else-if="currentStep === 3" class="space-y-6">
-            <h2 class="card-title text-2xl mb-4 flex items-center gap-2">
+            <h2 class="card-title text-2xl mb-6 flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
               Default Instance Configuration
             </h2>
 
+            <!-- Two Column Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              
+              <!-- Left Column: Form -->
+              <div class="space-y-6">
+                <h3 class="text-lg font-semibold text-base-content mb-4">Instance Configuration</h3>
+                
+                <!-- Default Instance Form -->
+                <form @submit.prevent="validateDefaultForm" class="space-y-4">
+                  <!-- Instance Name -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text font-medium">Instance Name</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      class="input input-bordered" 
+                      v-model="defaultForm.name"
+                      placeholder="default-instance"
+                    />
+                  </div>
 
-            <!-- Initialize Default Instance Button -->
-            <div v-if="!defaultInstance" class="text-center">
-              <button 
-                class="btn btn-primary btn-lg" 
-                @click="initiateDefaultConfiguration" 
-                :disabled="initiatingDefault"
-              >
-                <span v-if="initiatingDefault" class="loading loading-spinner loading-sm mr-2"></span>
-                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                {{ initiatingDefault ? 'Initializing...' : 'Initialize Default Instance' }}
-              </button>
-            </div>
+                  <!-- Description -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text font-medium">Description</span>
+                      <span class="label-text-alt">Optional</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      class="input input-bordered" 
+                      v-model="defaultForm.description"
+                      placeholder="Default instance for MediaHub"
+                    />
+                  </div>
 
-            <!-- Default Instance Form -->
-            <div v-if="defaultInstance" class="space-y-4">
-              <div class="bg-success/10 p-4 rounded-lg border border-success/20">
-                <h3 class="font-semibold mb-3 flex items-center gap-2 text-success">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <!-- Licence -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text font-medium">Licence</span>
+                      <span class="label-text-alt">Optional</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      class="input input-bordered" 
+                      v-model="defaultForm.licence"
+                      placeholder="Enter licence key if available"
+                    />
+                  </div>
+
+                  <!-- Type (Fixed) -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text font-medium">Type</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      class="input input-bordered bg-base-200 cursor-not-allowed" 
+                      value="DEFAULT"
+                      readonly
+                      disabled
+                    />
+                  </div>
+
+                  <!-- Status (Fixed) -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text font-medium">Status</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      class="input input-bordered bg-base-200 cursor-not-allowed" 
+                      value="ACTIVE"
+                      readonly
+                      disabled
+                    />
+                  </div>
+
+                  <!-- Position (Editable) -->
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text font-medium">Position</span>
+                    </label>
+                    <select class="select select-bordered" v-model="defaultForm.position">
+                      <option value="EDGE_IN">EDGE_IN</option>
+                      <option value="EDGE_OUT">EDGE_OUT</option>
+                      <option value="INTERNAL">INTERNAL</option>
+                      <option value="REMOTE">REMOTE</option>
+                      <option value="ANY">ANY</option>
+                    </select>
+                  </div>
+
+                  <!-- IP Range -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                      <label class="label">
+                        <span class="label-text font-medium">Start IP</span>
+                      </label>
+                      <input 
+                        type="text" 
+                        class="input input-bordered" 
+                        v-model="defaultForm.startIP"
+                        placeholder="224.10.10.10"
+                      />
+                    </div>
+                    <div class="form-control">
+                      <label class="label">
+                        <span class="label-text font-medium">End IP</span>
+                      </label>
+                      <input 
+                        type="text" 
+                        class="input input-bordered" 
+                        v-model="defaultForm.endIP"
+                        placeholder="224.10.10.100"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Port Range -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                      <label class="label">
+                        <span class="label-text font-medium">Start MC Port</span>
+                      </label>
+                      <input 
+                        type="number" 
+                        class="input input-bordered" 
+                        v-model.number="defaultForm.startMCPort"
+                        placeholder="2000"
+                      />
+                    </div>
+                    <div class="form-control">
+                      <label class="label">
+                        <span class="label-text font-medium">End MC Port</span>
+                      </label>
+                      <input 
+                        type="number" 
+                        class="input input-bordered" 
+                        v-model.number="defaultForm.endMCPort"
+                        placeholder="2000"
+                      />
+                    </div>
+                  </div>
+                </form>
+
+                <!-- Network Interfaces Section -->
+                <div class="space-y-4">
+                  <div class="flex items-center justify-between">
+                    <h4 class="text-md font-semibold text-base-content">Network Interfaces</h4>
+                    <div class="flex gap-2">
+                      <button 
+                        type="button"
+                        class="btn btn-sm btn-outline" 
+                        @click="loadNetworkInterfaces"
+                        :disabled="loadingNetworkInterfaces"
+                      >
+                        <span v-if="loadingNetworkInterfaces" class="loading loading-spinner loading-sm mr-1"></span>
+                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        {{ loadingNetworkInterfaces ? 'Loading...' : 'Refresh' }}
+                      </button>
+                      <button 
+                        type="button"
+                        class="btn btn-sm btn-primary" 
+                        @click="addDefaultInterface"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Add Interface
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Network Interfaces Error -->
+                  <div v-if="networkInterfacesError" class="alert alert-warning">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <span>{{ networkInterfacesError }}</span>
+                  </div>
+
+                  <!-- Interface List -->
+                  <div v-if="defaultForm.interfaces.length === 0" class="text-center py-8 bg-base-200/50 rounded-lg border border-dashed border-base-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47.881-6.08 2.33l-.147.083A7.994 7.994 0 0112 21.001z" />
+                    </svg>
+                    <p class="text-base-content/60">No network interfaces configured</p>
+                    <p class="text-sm text-base-content/40 mt-1">Click "Add Interface" to add one</p>
+                  </div>
+
+                  <div v-else class="space-y-3">
+                    <div 
+                      v-for="(iface, index) in defaultForm.interfaces" 
+                      :key="index"
+                      class="bg-base-200/50 p-4 rounded-lg border border-base-300"
+                    >
+                      <div class="flex items-center justify-between mb-3">
+                        <h5 class="font-medium">Interface {{ index + 1 }}</h5>
+                        <button 
+                          type="button"
+                          class="btn btn-xs btn-error" 
+                          @click="removeDefaultInterface(index)"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                      
+                      <!-- Network Interface Selector -->
+                      <div class="form-control mb-3">
+                        <label class="label">
+                          <span class="label-text font-medium text-sm">Select Network Interface</span>
+                          <span class="label-text-alt">{{ availableNetworkInterfaces.length }} available</span>
+                        </label>
+                        <select 
+                          class="select select-bordered select-sm" 
+                          :value="iface.ifName"
+                          @change="selectDefaultNetworkInterface(index, $event.target.value)"
+                        >
+                          <option value="">Choose an interface...</option>
+                          <option 
+                            v-for="netIface in availableNetworkInterfaces" 
+                            :key="netIface.name" 
+                            :value="netIface.name"
+                          >
+                            {{ netIface.displayName }} ({{ netIface.addresses[0]?.replace(/^\//, '') }})
+                          </option>
+                        </select>
+                      </div>
+                      
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="form-control">
+                          <label class="label">
+                            <span class="label-text font-medium text-sm">Interface Name</span>
+                          </label>
+                          <input 
+                            type="text" 
+                            class="input input-bordered input-sm bg-base-200 cursor-not-allowed" 
+                            v-model="iface.ifName"
+                            placeholder="Select interface above"
+                            readonly
+                            disabled
+                          />
+                        </div>
+                        
+                        <div class="form-control">
+                          <label class="label">
+                            <span class="label-text font-medium text-sm">Stream Direction</span>
+                          </label>
+                          <select class="select select-bordered select-sm" v-model="iface.ifStreamDirection">
+                            <option value="IN">IN</option>
+                            <option value="OUT">OUT</option>
+                            <option value="BOTH">BOTH</option>
+                          </select>
+                        </div>
+                      </div>
+                      
+                      <div class="form-control mt-3">
+                        <label class="label">
+                          <span class="label-text font-medium text-sm">IP Address</span>
+                        </label>
+                        <input 
+                          type="text" 
+                          class="input input-bordered input-sm" 
+                          v-model="iface.ifAddresses[0]"
+                          placeholder="192.168.1.1/24"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Error Display -->
+                <div v-if="defaultError" class="alert alert-error">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  Default Instance Created
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div><strong>Name:</strong> {{ defaultInstance.name }}</div>
-                  <div><strong>Type:</strong> {{ defaultInstance.type }}</div>
-                  <div><strong>Status:</strong> {{ defaultInstance.status }}</div>
-                  <div><strong>Position:</strong> {{ defaultInstance.position }}</div>
+                  <span>{{ defaultError }}</span>
                 </div>
               </div>
 
-              <div class="form-control">
-                <label class="label">
-                  <span class="label-text font-medium">Position</span>
-                </label>
-                <select class="select select-bordered" v-model="defaultForm.position">
-                  <option value="EDGE_IN">EDGE_IN</option>
-                  <option value="EDGE_OUT">EDGE_OUT</option>
-                  <option value="INTERNAL">INTERNAL</option>
-                  <option value="REMOTE">REMOTE</option>
-                  <option value="ANY">ANY</option>
-                </select>
-              </div>
+              <!-- Right Column: Preview -->
+              <div class="space-y-6">
+                <h3 class="text-lg font-semibold text-base-content mb-4">JSON Preview</h3>
+                
+                <!-- Configuration Preview -->
+                <div class="bg-success/10 p-6 rounded-lg border border-success/20 h-fit">
+                  <h4 class="font-semibold mb-4 flex items-center gap-2 text-success">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    Default Instance Configuration
+                  </h4>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text font-medium">Start IP</span>
-                  </label>
-                  <input 
-                    type="text" 
-                    class="input input-bordered" 
-                    v-model="defaultForm.startIP"
-                    placeholder="224.10.10.10"
-                  />
-                </div>
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text font-medium">End IP</span>
-                  </label>
-                  <input 
-                    type="text" 
-                    class="input input-bordered" 
-                    v-model="defaultForm.endIP"
-                    placeholder="224.10.10.100"
-                  />
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text font-medium">Start MC Port</span>
-                  </label>
-                  <input 
-                    type="number" 
-                    class="input input-bordered" 
-                    v-model.number="defaultForm.startMCPort"
-                    placeholder="2000"
-                  />
-                </div>
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text font-medium">End MC Port</span>
-                  </label>
-                  <input 
-                    type="number" 
-                    class="input input-bordered" 
-                    v-model.number="defaultForm.endMCPort"
-                    placeholder="2000"
-                  />
+                  <!-- JSON Preview -->
+                  <div class="mt-4">
+                    <h5 class="font-medium mb-2 text-success flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                      </svg>
+                      JSON Output
+                    </h5>
+                    <pre class="text-xs bg-base-100 p-3 rounded border overflow-x-auto max-h-96 overflow-y-auto"><code>{
+  "name": "{{ defaultForm.name }}",
+  "licence": {{ defaultForm.licence ? `"${defaultForm.licence}"` : 'null' }},
+  "description": "{{ defaultForm.description }}",
+  "type": "{{ defaultForm.type }}",
+  "status": "{{ defaultForm.status }}",
+  "position": "{{ defaultForm.position }}",
+  "startIP": "{{ defaultForm.startIP }}",
+  "endIP": "{{ defaultForm.endIP }}",
+  "startMCPort": {{ defaultForm.startMCPort }},
+  "endMCPort": {{ defaultForm.endMCPort }},
+  "interfaces": [{{ defaultForm.interfaces.map((iface, index) => `
+    {
+      "ifName": "${iface.ifName}",
+      "ifStreamDirection": "${iface.ifStreamDirection}",
+      "ifAddresses": ["${iface.ifAddresses[0]}"]
+    }`).join(',') }}
+  ]
+}</code></pre>
+                  </div>
                 </div>
               </div>
-
-              <button 
-                class="btn btn-primary w-full" 
-                @click="updateDefaultConfiguration" 
-                :disabled="updatingDefault"
-              >
-                <span v-if="updatingDefault" class="loading loading-spinner loading-sm mr-2"></span>
-                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                </svg>
-                {{ updatingDefault ? 'Updating...' : 'Update Default Configuration' }}
-              </button>
             </div>
 
-            <!-- Error Display -->
-            <div v-if="defaultError" class="alert alert-error">
-              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>{{ defaultError }}</span>
-            </div>
-
-            <div class="card-actions justify-between">
+            <!-- Navigation -->
+            <div class="card-actions justify-between pt-4 border-t border-base-300">
               <button class="btn btn-outline" @click="previousStep">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8m-13 0a9 9 0 1118 0 9 9 0 01-18 0z" />
@@ -424,7 +904,7 @@
               <button 
                 class="btn btn-primary" 
                 @click="nextStep" 
-                :disabled="!defaultInstance || !defaultConfigured"
+                :disabled="!validateDefaultForm()"
               >
                 Next: Network
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -850,12 +1330,23 @@ const adminInstance = ref(null)
 const adminConfigured = ref(false)
 const adminError = ref(null)
 const adminForm = ref({
+  name: 'admin-instance',
+  licence: '',
+  description: 'Dedicated to the admin team',
+  type: 'ADMIN',
+  status: 'ACTIVE',
   position: 'ANY', // Admin instance position is always ANY
-  startIP: '224.10.10.10',
-  endIP: '224.10.10.100',
-  startMCPort: 2000,
-  endMCPort: 2000
+  startIP: '239.0.0.0',
+  endIP: '239.0.0.255',
+  startMCPort: 4000,
+  endMCPort: 6535,
+  interfaces: []
 })
+
+// Network interfaces from API
+const availableNetworkInterfaces = ref([])
+const loadingNetworkInterfaces = ref(false)
+const networkInterfacesError = ref(null)
 
 // Step 3: Default Instance
 const initiatingDefault = ref(false)
@@ -864,11 +1355,17 @@ const defaultInstance = ref(null)
 const defaultConfigured = ref(false)
 const defaultError = ref(null)
 const defaultForm = ref({
+  name: 'default-instance',
+  licence: '',
+  description: 'Default instance for MediaHub',
+  type: 'DEFAULT',
+  status: 'ACTIVE',
   position: 'EDGE_OUT',
   startIP: '224.10.10.10',
   endIP: '224.10.10.100',
   startMCPort: 2000,
-  endMCPort: 2000
+  endMCPort: 2000,
+  interfaces: []
 })
 
 // Step 4: Network Configuration
@@ -1076,6 +1573,179 @@ const validateApplicationForm = () => {
   }
   
   applicationError.value = null
+  return true
+}
+
+// Methods for Step 2: Admin Instance Configuration
+const loadNetworkInterfaces = async () => {
+  try {
+    loadingNetworkInterfaces.value = true
+    networkInterfacesError.value = null
+    
+    console.log('🔍 Admin: Loading network interfaces from API...')
+    
+    const response = await apiGet('/utils/instances/getAllNetworkInterfaces', true)
+    console.log('✅ Admin: Network interfaces loaded:', response)
+    
+    // Transform API response to our format
+    if (response && response.interfaces) {
+      availableNetworkInterfaces.value = response.interfaces.map(iface => ({
+        index: iface.index,
+        name: iface.name,
+        displayName: iface.display_name,
+        mtu: iface.mtu,
+        addresses: iface.inetAddresses.map(addr => addr.address).filter(addr => {
+          // Filter out IPv6 and loopback addresses, keep only IPv4
+          return !addr.includes(':') && !addr.startsWith('/127.') && !addr.includes('%')
+        })
+      })).filter(iface => 
+        // Only keep interfaces with IPv4 addresses and exclude loopback
+        iface.addresses.length > 0 && iface.name !== 'lo'
+      )
+      
+      console.log('📋 Admin: Processed network interfaces:', availableNetworkInterfaces.value)
+    }
+    
+  } catch (error) {
+    console.error('❌ Admin: Failed to load network interfaces:', error)
+    networkInterfacesError.value = `Failed to load network interfaces: ${error.message}`
+  } finally {
+    loadingNetworkInterfaces.value = false
+  }
+}
+
+const addAdminInterface = () => {
+  adminForm.value.interfaces.push({
+    ifName: '',
+    ifStreamDirection: 'BOTH',
+    ifAddresses: ['192.168.1.1/24']
+  })
+  console.log('➕ Admin: Added new interface')
+}
+
+const selectNetworkInterface = (adminInterfaceIndex, selectedInterfaceName) => {
+  const selectedInterface = availableNetworkInterfaces.value.find(iface => iface.name === selectedInterfaceName)
+  
+  if (selectedInterface && adminForm.value.interfaces[adminInterfaceIndex]) {
+    // Update the admin interface with selected network interface data
+    adminForm.value.interfaces[adminInterfaceIndex].ifName = selectedInterface.name
+    
+    // Use the first IPv4 address if available
+    if (selectedInterface.addresses.length > 0) {
+      // Remove leading slash and add /24 if no CIDR notation
+      let address = selectedInterface.addresses[0].replace(/^\//, '')
+      if (!address.includes('/')) {
+        address += '/24'
+      }
+      adminForm.value.interfaces[adminInterfaceIndex].ifAddresses = [address]
+    }
+    
+    console.log(`🔗 Admin: Selected interface ${selectedInterface.name} for admin interface ${adminInterfaceIndex}`)
+  }
+}
+
+const removeAdminInterface = (index) => {
+  if (adminForm.value.interfaces.length > 0) {
+    adminForm.value.interfaces.splice(index, 1)
+    console.log(`🗑️ Admin: Removed interface at index ${index}`)
+  }
+}
+
+const validateAdminForm = () => {
+  // Basic validation
+  if (!adminForm.value.name || adminForm.value.name.trim() === '') {
+    adminError.value = 'Instance name is required'
+    return false
+  }
+  
+  if (!adminForm.value.startIP || !adminForm.value.endIP) {
+    adminError.value = 'IP range is required'
+    return false
+  }
+  
+  if (!adminForm.value.startMCPort || !adminForm.value.endMCPort) {
+    adminError.value = 'Port range is required'
+    return false
+  }
+  
+  // Validate interfaces
+  for (let i = 0; i < adminForm.value.interfaces.length; i++) {
+    const iface = adminForm.value.interfaces[i]
+    if (!iface.ifName || iface.ifName.trim() === '') {
+      adminError.value = `Interface ${i + 1}: Name is required`
+      return false
+    }
+  }
+  
+  adminError.value = null
+  return true
+}
+
+// Methods for Step 3: Default Instance Configuration
+const addDefaultInterface = () => {
+  defaultForm.value.interfaces.push({
+    ifName: '',
+    ifStreamDirection: 'BOTH',
+    ifAddresses: ['192.168.1.1/24']
+  })
+  console.log('➕ Default: Added new interface')
+}
+
+const removeDefaultInterface = (index) => {
+  if (defaultForm.value.interfaces.length > 0) {
+    defaultForm.value.interfaces.splice(index, 1)
+    console.log(`🗑️ Default: Removed interface at index ${index}`)
+  }
+}
+
+const selectDefaultNetworkInterface = (defaultInterfaceIndex, selectedInterfaceName) => {
+  const selectedInterface = availableNetworkInterfaces.value.find(iface => iface.name === selectedInterfaceName)
+  
+  if (selectedInterface && defaultForm.value.interfaces[defaultInterfaceIndex]) {
+    // Update the default interface with selected network interface data
+    defaultForm.value.interfaces[defaultInterfaceIndex].ifName = selectedInterface.name
+    
+    // Use the first IPv4 address if available
+    if (selectedInterface.addresses.length > 0) {
+      // Remove leading slash and add /24 if no CIDR notation
+      let address = selectedInterface.addresses[0].replace(/^\//, '')
+      if (!address.includes('/')) {
+        address += '/24'
+      }
+      defaultForm.value.interfaces[defaultInterfaceIndex].ifAddresses = [address]
+    }
+    
+    console.log(`🔗 Default: Selected interface ${selectedInterface.name} for default interface ${defaultInterfaceIndex}`)
+  }
+}
+
+const validateDefaultForm = () => {
+  // Basic validation
+  if (!defaultForm.value.name || defaultForm.value.name.trim() === '') {
+    defaultError.value = 'Instance name is required'
+    return false
+  }
+  
+  if (!defaultForm.value.startIP || !defaultForm.value.endIP) {
+    defaultError.value = 'IP range is required'
+    return false
+  }
+  
+  if (!defaultForm.value.startMCPort || !defaultForm.value.endMCPort) {
+    defaultError.value = 'Port range is required'
+    return false
+  }
+  
+  // Validate interfaces
+  for (let i = 0; i < defaultForm.value.interfaces.length; i++) {
+    const iface = defaultForm.value.interfaces[i]
+    if (!iface.ifName || iface.ifName.trim() === '') {
+      defaultError.value = `Interface ${i + 1}: Name is required`
+      return false
+    }
+  }
+  
+  defaultError.value = null
   return true
 }
 
@@ -1439,9 +2109,12 @@ const clearAllConfigurations = () => {
   console.log('✅ Wizard: All configurations cleared')
 }
 
-// Watch for step changes to load data when entering step 5
+// Watch for step changes to load data when entering specific steps
 watch(currentStep, async (newStep) => {
-  if (newStep === 5) {
+  if (newStep === 2 || newStep === 3) {
+    // Load network interfaces when entering admin or default instance configuration
+    await loadNetworkInterfaces()
+  } else if (newStep === 5) {
     await loadInstancesAndInterfaces()
   }
 })
