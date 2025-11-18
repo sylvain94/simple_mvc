@@ -2,11 +2,10 @@
  * Controller Index - Centralized Entry Point
  * 
  * Allows to import all controllers from a single place:
- * import { UserController, ProjectController } from '@/controllers'
+ * import { UserController, SelectionController } from '@/controllers'
  */
 
 export { UserController } from './UserController.js'
-export { ProjectController } from './ProjectController.js'
 export { default as DashboardController } from './DashboardController.js'
 export { InputFileController } from './InputFileController.js'
 export { AnalyzeController } from './AnalyzeController.js'
@@ -19,7 +18,6 @@ export { NetworkInterfaceController } from './NetworkInterfaceController.js'
 
 // Default reexport
 export { default as UserCtrll } from './UserController.js'
-export { default as ProjectCtrl } from './ProjectController.js'
 export { default as DashboardCtrl } from './DashboardController.js'
 export { default as InputFileCtrl } from './InputFileController.js'
 export { default as AnalyzeCtrl } from './AnalyzeController.js'
