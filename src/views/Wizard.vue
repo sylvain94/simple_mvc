@@ -1,5 +1,6 @@
 <template>
-  <div class="min-h-screen bg-base-200 flex justify-center p-4 pt-8">
+  <div class="h-screen overflow-y-auto bg-base-200" style="height: 100vh; overflow-y: auto;">
+    <div class="min-h-screen bg-base-200 flex justify-center p-4 pt-8 pb-20" style="min-height: 120vh;">
     <div class="max-w-4xl w-full">
       <!-- Header -->
       <div class="text-center mb-6">
@@ -20,7 +21,7 @@
       </div>
 
       <!-- Main Card -->
-      <div class="card bg-base-100 shadow-xl min-h-[600px] max-h-[80vh] flex flex-col">
+      <div class="card bg-base-100 shadow-xl min-h-[600px] flex flex-col">
         <div class="card-body flex-1 flex flex-col overflow-hidden">
           <!-- Step 1: Application Validation -->
           <div v-if="currentStep === 1" class="space-y-6">
@@ -748,6 +749,7 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
@@ -1232,3 +1234,21 @@ onMounted(() => {
   console.log('🧙‍♂️ Wizard: Component mounted')
 })
 </script>
+
+<style scoped>
+/* Scroll container */
+.h-screen {
+  scroll-behavior: smooth;
+  max-height: 100vh;
+}
+
+/* Ensure the container can scroll */
+.min-h-screen {
+  max-height: none;
+}
+
+/* Wizard card adjustments for better scrolling */
+.card {
+  max-height: none;
+}
+</style>
