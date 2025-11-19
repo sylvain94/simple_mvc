@@ -948,26 +948,50 @@
 
             <!-- Content Section (Scrollable) -->
             <div class="space-y-4">
-              <!-- Refresh Network Interfaces Button -->
-              <div v-if="!networkInterfaces.length" class="text-center">
+              <!-- Loading State -->
+              <div v-if="refreshingNetwork && !networkInterfaces.length" class="text-center py-8">
+                <span class="loading loading-spinner loading-lg"></span>
+                <p class="mt-4 text-base-content/70">Loading network interfaces...</p>
+              </div>
+
+              <!-- Error State -->
+              <div v-else-if="networkError && !networkInterfaces.length" class="text-center py-8">
+                <div class="alert alert-error max-w-md mx-auto">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  <span>{{ networkError }}</span>
+                </div>
                 <button 
-                  class="btn btn-primary btn-lg" 
-                  @click="refreshNetworkInterfaces" 
+                  class="btn btn-outline mt-4" 
+                  @click="refreshNetworkInterfaces"
                   :disabled="refreshingNetwork"
                 >
-                  <span v-if="refreshingNetwork" class="loading loading-spinner loading-sm mr-2"></span>
-                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  {{ refreshingNetwork ? 'Loading...' : 'Load Network Interfaces' }}
+                  Retry
                 </button>
               </div>
 
               <!-- Network Interfaces List -->
-              <div v-if="networkInterfaces.length" class="space-y-4">
-                <h3 class="font-semibold mb-3">Network Interfaces ({{ networkInterfaces.length }})</h3>
+              <div v-else-if="networkInterfaces.length" class="space-y-4">
+                <div class="flex justify-between items-center mb-3">
+                  <h3 class="font-semibold">Network Interfaces ({{ networkInterfaces.length }})</h3>
+                  <button 
+                    class="btn btn-outline btn-sm" 
+                    @click="refreshNetworkInterfaces"
+                    :disabled="refreshingNetwork"
+                    title="Refresh network interfaces"
+                  >
+                    <span v-if="refreshingNetwork" class="loading loading-spinner loading-xs"></span>
+                    <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </button>
+                </div>
                 
-                <div class="overflow-x-auto max-h-64 overflow-y-auto border border-base-300 rounded-lg">
+                <div class="overflow-x-auto max-h-96 overflow-y-auto border border-base-300 rounded-lg">
                   <table class="table w-full">
                     <thead class="sticky top-0 bg-base-200 z-10">
                       <tr>
@@ -2110,11 +2134,15 @@ const refreshNetworkInterfaces = async () => {
     const interfaces = await apiGet('/utils/ifs/getAll', true)
     console.log('📋 Wizard: Network interfaces loaded:', interfaces)
     
-    // Filter only interfaces with status "UP"
-    const upInterfaces = interfaces.filter(iface => iface.ifStatus === 'UP')
-    console.log(`📋 Wizard: Filtered ${upInterfaces.length} UP interfaces from ${interfaces.length} total interfaces`)
+    // Filter only interfaces with status "UP" and exclude loopback interfaces
+    const filteredInterfaces = interfaces.filter(iface => 
+      iface.ifStatus === 'UP' && 
+      iface.ifName !== 'lo' && 
+      !iface.ifName.startsWith('lo')
+    )
+    console.log(`📋 Wizard: Filtered ${filteredInterfaces.length} UP interfaces (excluding loopback) from ${interfaces.length} total interfaces`)
     
-    networkInterfaces.value = upInterfaces
+    networkInterfaces.value = filteredInterfaces
     
   } catch (error) {
     console.error('❌ Wizard: Network interfaces loading failed:', error)
@@ -2360,7 +2388,10 @@ const clearAllConfigurations = () => {
 
 // Watch for step changes to load data when entering specific steps
 watch(currentStep, async (newStep) => {
-  if (newStep === 3 || newStep === 4) {
+  if (newStep === 2) {
+    // Load network interfaces when entering network configuration
+    await refreshNetworkInterfaces()
+  } else if (newStep === 3 || newStep === 4) {
     // Load network interfaces when entering admin or default instance configuration
     await loadNetworkInterfaces()
   } else if (newStep === 5) {
@@ -2386,11 +2417,16 @@ const finishConfiguration = async () => {
 }
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
   console.log('🧙‍♂️ Wizard: Component mounted')
   
   // Load machine name automatically on mount
   loadMachineName()
+  
+  // If we're on step 2 (Network Configuration), load network interfaces automatically
+  if (currentStep.value === 2) {
+    await refreshNetworkInterfaces()
+  }
 })
 </script>
 
