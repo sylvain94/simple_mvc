@@ -368,136 +368,6 @@
                   </div>
                 </form>
 
-                <!-- Network Interfaces Section -->
-                <div class="space-y-4">
-                  <div class="flex items-center justify-between">
-                    <h4 class="text-md font-semibold text-base-content">Network Interfaces</h4>
-                    <div class="flex gap-2">
-                      <button 
-                        type="button"
-                        class="btn btn-sm btn-outline" 
-                        @click="loadNetworkInterfaces"
-                        :disabled="loadingNetworkInterfaces"
-                      >
-                        <span v-if="loadingNetworkInterfaces" class="loading loading-spinner loading-sm mr-1"></span>
-                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        {{ loadingNetworkInterfaces ? 'Loading...' : 'Refresh' }}
-                      </button>
-                      <button 
-                        type="button"
-                        class="btn btn-sm btn-primary" 
-                        @click="addAdminInterface"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        Add Interface
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Network Interfaces Error -->
-                  <div v-if="networkInterfacesError" class="alert alert-warning">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                    </svg>
-                    <span>{{ networkInterfacesError }}</span>
-                  </div>
-
-                  <!-- Interface List -->
-                  <div v-if="adminForm.interfaces.length === 0" class="text-center py-8 bg-base-200/50 rounded-lg border border-dashed border-base-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47.881-6.08 2.33l-.147.083A7.994 7.994 0 0112 21.001z" />
-                    </svg>
-                    <p class="text-base-content/60">No network interfaces configured</p>
-                    <p class="text-sm text-base-content/40 mt-1">Click "Add Interface" to add one</p>
-                  </div>
-
-                  <div v-else class="space-y-3">
-                    <div 
-                      v-for="(iface, index) in adminForm.interfaces" 
-                      :key="index"
-                      class="bg-base-200/50 p-4 rounded-lg border border-base-300"
-                    >
-                      <div class="flex items-center justify-between mb-3">
-                        <h5 class="font-medium">Interface {{ index + 1 }}</h5>
-                        <button 
-                          type="button"
-                          class="btn btn-xs btn-error" 
-                          @click="removeAdminInterface(index)"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                      
-                      <!-- Network Interface Selector -->
-                      <div class="form-control mb-3">
-                        <label class="label">
-                          <span class="label-text font-medium text-sm">Select Network Interface</span>
-                          <span class="label-text-alt">{{ availableNetworkInterfaces.length }} available</span>
-                        </label>
-                        <select 
-                          class="select select-bordered select-sm" 
-                          :value="iface.ifName"
-                          @change="selectNetworkInterface(index, $event.target.value)"
-                        >
-                          <option value="">Choose an interface...</option>
-                          <option 
-                            v-for="netIface in availableNetworkInterfaces" 
-                            :key="netIface.name" 
-                            :value="netIface.name"
-                          >
-                            {{ netIface.displayName }} ({{ netIface.addresses[0]?.replace(/^\//, '') }})
-                          </option>
-                        </select>
-                      </div>
-                      
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div class="form-control">
-                          <label class="label">
-                            <span class="label-text font-medium text-sm">Interface Name</span>
-                          </label>
-                          <input 
-                            type="text" 
-                            class="input input-bordered input-sm bg-base-200 cursor-not-allowed" 
-                            v-model="iface.ifName"
-                            placeholder="Select interface above"
-                            readonly
-                            disabled
-                          />
-                        </div>
-                        
-                        <div class="form-control">
-                          <label class="label">
-                            <span class="label-text font-medium text-sm">Stream Direction</span>
-                          </label>
-                          <select class="select select-bordered select-sm" v-model="iface.ifStreamDirection">
-                            <option value="IN">IN</option>
-                            <option value="OUT">OUT</option>
-                            <option value="BOTH">BOTH</option>
-                          </select>
-                        </div>
-                      </div>
-                      
-                      <div class="form-control mt-3">
-                        <label class="label">
-                          <span class="label-text font-medium text-sm">IP Address</span>
-                        </label>
-                        <input 
-                          type="text" 
-                          class="input input-bordered input-sm" 
-                          v-model="iface.ifAddresses[0]"
-                          placeholder="192.168.1.1/24"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
                 <!-- Error Display -->
                 <div v-if="adminError" class="alert alert-error">
                   <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
@@ -539,14 +409,14 @@
   "endIP": "{{ adminForm.endIP }}",
   "startMCPort": {{ adminForm.startMCPort }},
   "endMCPort": {{ adminForm.endMCPort }},
-  "interfaces": [{{ adminForm.interfaces.map((iface, index) => `
-    {
-      "ifName": "${iface.ifName}",
-      "ifStreamDirection": "${iface.ifStreamDirection}",
-      "ifAddresses": ["${iface.ifAddresses[0]}"]
-    }`).join(',') }}
-  ]
+  "interfaces": "auto"
 }</code></pre>
+                    <div class="mt-3 p-2 bg-info/10 rounded border border-info/20">
+                      <p class="text-xs text-info">
+                        <strong>Note:</strong> The admin instance automatically inherits all network interfaces. 
+                        The "interfaces" field will be populated with all available interfaces at runtime.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1750,42 +1620,6 @@ const loadNetworkInterfaces = async () => {
   }
 }
 
-const addAdminInterface = () => {
-  adminForm.value.interfaces.push({
-    ifName: '',
-    ifStreamDirection: 'BOTH',
-    ifAddresses: ['192.168.1.1/24']
-  })
-  console.log('➕ Admin: Added new interface')
-}
-
-const selectNetworkInterface = (adminInterfaceIndex, selectedInterfaceName) => {
-  const selectedInterface = availableNetworkInterfaces.value.find(iface => iface.name === selectedInterfaceName)
-  
-  if (selectedInterface && adminForm.value.interfaces[adminInterfaceIndex]) {
-    // Update the admin interface with selected network interface data
-    adminForm.value.interfaces[adminInterfaceIndex].ifName = selectedInterface.name
-    
-    // Use the first IPv4 address if available
-    if (selectedInterface.addresses.length > 0) {
-      // Remove leading slash and add /24 if no CIDR notation
-      let address = selectedInterface.addresses[0].replace(/^\//, '')
-      if (!address.includes('/')) {
-        address += '/24'
-      }
-      adminForm.value.interfaces[adminInterfaceIndex].ifAddresses = [address]
-    }
-    
-    console.log(`🔗 Admin: Selected interface ${selectedInterface.name} for admin interface ${adminInterfaceIndex}`)
-  }
-}
-
-const removeAdminInterface = (index) => {
-  if (adminForm.value.interfaces.length > 0) {
-    adminForm.value.interfaces.splice(index, 1)
-    console.log(`🗑️ Admin: Removed interface at index ${index}`)
-  }
-}
 
 const validateAdminForm = () => {
   // Basic validation
@@ -1804,14 +1638,7 @@ const validateAdminForm = () => {
     return false
   }
   
-  // Validate interfaces
-  for (let i = 0; i < adminForm.value.interfaces.length; i++) {
-    const iface = adminForm.value.interfaces[i]
-    if (!iface.ifName || iface.ifName.trim() === '') {
-      adminError.value = `Interface ${i + 1}: Name is required`
-      return false
-    }
-  }
+  // Note: Interface validation removed - admin instance has automatic access to all interfaces
   
   adminError.value = null
   return true
