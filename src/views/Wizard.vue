@@ -980,12 +980,20 @@
                 </div>
                 <div class="space-y-2">
                   <div class="flex justify-between">
+                    <span>Application Configuration:</span>
+                    <span class="badge badge-success badge-sm">✓ Configured</span>
+                  </div>
+                  <div class="flex justify-between">
                     <span>Network Interfaces:</span>
                     <span class="badge badge-success badge-sm">✓ {{ networkInterfaces.length }} configured</span>
                   </div>
                   <div class="flex justify-between">
-                    <span>Instance Interfaces:</span>
-                    <span class="badge badge-success badge-sm">✓ {{ getConfiguredInstancesCount() }}/{{ instances.length }} configured</span>
+                    <span>Admin Instance:</span>
+                    <span class="badge badge-success badge-sm">✓ Configured</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Default Instance:</span>
+                    <span class="badge badge-success badge-sm">✓ Configured</span>
                   </div>
                   <div class="flex justify-between">
                     <span>Ready to Apply:</span>
@@ -1181,90 +1189,56 @@ const showJsonPreview = ref(false)
 const generateUnattendConfig = () => {
   console.log('📋 Wizard: Generating unattend.json configuration...')
   
-  // Update application info from form
+  // Step 1: Application Configuration
   unattendConfig.value.application = {
     name: applicationForm.value.name || 'MediaHub',
     description: applicationForm.value.description || 'MediaHub is a media server that allows you to stream media to your clients',
     licence: applicationForm.value.licence || null
   }
   
-  // Generate instances configuration
+  // Generate instances configuration from Steps 3 and 4
   const instancesConfig = []
   
-  // Add admin instance
-  if (adminInstance.value) {
-    const adminInterfaces = generateInstanceInterfaces(adminInstance.value.id)
-    instancesConfig.push({
-      name: adminInstance.value.name,
-      licence: null,
-      description: adminInstance.value.description || 'Dedicated to the admin team',
-      type: adminInstance.value.type,
-      status: adminInstance.value.status,
-      position: adminForm.value.position || 'ANY',
-      startIP: adminForm.value.startIP,
-      endIP: adminForm.value.endIP,
-      startMCPort: adminForm.value.startMCPort,
-      endMCPort: adminForm.value.endMCPort,
-      interfaces: adminInterfaces
-    })
-  }
+  // Step 3: Admin Instance Configuration
+  instancesConfig.push({
+    name: adminForm.value.name || 'admin-instance',
+    licence: adminForm.value.licence || null,
+    description: adminForm.value.description || 'Dedicated to the admin team',
+    type: 'ADMIN',
+    status: 'ACTIVE',
+    position: 'ANY', // Admin instance position is always ANY
+    startIP: adminForm.value.startIP || '239.0.0.0',
+    endIP: adminForm.value.endIP || '239.0.0.255',
+    startMCPort: adminForm.value.startMCPort || 4000,
+    endMCPort: adminForm.value.endMCPort || 6535,
+    interfaces: 'auto' // Admin instance has automatic access to all interfaces
+  })
   
-  // Add default instance
-  if (defaultInstance.value) {
-    const defaultInterfaces = generateInstanceInterfaces(defaultInstance.value.id)
-    instancesConfig.push({
-      name: defaultInstance.value.name,
-      licence: null,
-      description: defaultInstance.value.description || 'Default instance',
-      type: defaultInstance.value.type,
-      status: defaultInstance.value.status,
-      position: defaultForm.value.position,
-      startIP: defaultForm.value.startIP,
-      endIP: defaultForm.value.endIP,
-      startMCPort: defaultForm.value.startMCPort,
-      endMCPort: defaultForm.value.endMCPort,
-      interfaces: defaultInterfaces
-    })
-  }
+  // Step 4: Default Instance Configuration
+  instancesConfig.push({
+    name: defaultForm.value.name || 'default-instance',
+    licence: defaultForm.value.licence || null,
+    description: defaultForm.value.description || 'Default instance for MediaHub',
+    type: 'DEFAULT',
+    status: 'ACTIVE',
+    position: defaultForm.value.position || 'EDGE_OUT',
+    startIP: defaultForm.value.startIP || '224.10.10.10',
+    endIP: defaultForm.value.endIP || '224.10.10.100',
+    startMCPort: defaultForm.value.startMCPort || 2000,
+    endMCPort: defaultForm.value.endMCPort || 2000,
+    interfaces: defaultForm.value.interfaces || [] // Configured interfaces from Step 4
+  })
   
   unattendConfig.value.instances = instancesConfig
   
   console.log('✅ Wizard: Unattend configuration generated:', unattendConfig.value)
+  console.log('📋 Step 1 (Application):', unattendConfig.value.application)
+  console.log('📋 Step 3 (Admin Instance):', instancesConfig[0])
+  console.log('📋 Step 4 (Default Instance):', instancesConfig[1])
+  
   return unattendConfig.value
 }
 
-const generateInstanceInterfaces = (instanceId) => {
-  const interfaces = []
-  const config = instanceInterfaceConfig.value[instanceId]
-  
-  if (config) {
-    // Add input interface if configured
-    if (config.inputInterface) {
-      const inputIface = availableInputInterfaces.value.find(iface => iface.ifName === config.inputInterface)
-      if (inputIface) {
-        interfaces.push({
-          ifName: inputIface.ifName,
-          ifStreamDirection: inputIface.ifStreamDirection,
-          ifAddresses: inputIface.ifAddresses || [getIPv4Address(inputIface) + '/24']
-        })
-      }
-    }
-    
-    // Add output interface if configured and different from input
-    if (config.outputInterface && config.outputInterface !== config.inputInterface) {
-      const outputIface = availableOutputInterfaces.value.find(iface => iface.ifName === config.outputInterface)
-      if (outputIface) {
-        interfaces.push({
-          ifName: outputIface.ifName,
-          ifStreamDirection: outputIface.ifStreamDirection,
-          ifAddresses: outputIface.ifAddresses || [getIPv4Address(outputIface) + '/24']
-        })
-      }
-    }
-  }
-  
-  return interfaces
-}
 
 const downloadUnattendJson = () => {
   const config = generateUnattendConfig()
@@ -1701,12 +1675,20 @@ const validateDefaultForm = () => {
     return false
   }
   
-  // Validate interfaces
+  // Validate interfaces - only validate configured interfaces (with names)
   for (let i = 0; i < defaultForm.value.interfaces.length; i++) {
     const iface = defaultForm.value.interfaces[i]
-    if (!iface.ifName || iface.ifName.trim() === '') {
-      defaultError.value = `Interface ${i + 1}: Name is required`
-      return false
+    // Skip validation for empty interfaces (not yet configured)
+    if (iface.ifName && iface.ifName.trim() !== '') {
+      // If interface has a name, validate other required fields
+      if (!iface.ifStreamDirection) {
+        defaultError.value = `Interface ${i + 1}: Stream direction is required`
+        return false
+      }
+      if (!iface.ifAddresses || iface.ifAddresses.length === 0 || !iface.ifAddresses[0]) {
+        defaultError.value = `Interface ${i + 1}: IP address is required`
+        return false
+      }
     }
   }
   
@@ -1717,12 +1699,28 @@ const validateDefaultForm = () => {
 const handleDefaultInstanceNext = () => {
   console.log('🔍 Wizard: Handling Default Instance Next button click')
   
+  // Clean up empty interfaces before validation
+  cleanupEmptyInterfaces()
+  
   // Validate the form first
   if (validateDefaultForm()) {
     console.log('✅ Wizard: Default Instance validation passed, proceeding to next step')
     nextStep()
   } else {
     console.log('❌ Wizard: Default Instance validation failed:', defaultError.value)
+  }
+}
+
+const cleanupEmptyInterfaces = () => {
+  // Remove interfaces that have no name (not configured)
+  const originalLength = defaultForm.value.interfaces.length
+  defaultForm.value.interfaces = defaultForm.value.interfaces.filter(iface => 
+    iface.ifName && iface.ifName.trim() !== ''
+  )
+  
+  const removedCount = originalLength - defaultForm.value.interfaces.length
+  if (removedCount > 0) {
+    console.log(`🧹 Wizard: Cleaned up ${removedCount} empty interface(s)`)
   }
 }
 
