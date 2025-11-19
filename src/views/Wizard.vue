@@ -12,9 +12,9 @@
       <div class="flex justify-center mb-8">
         <ul class="steps steps-horizontal">
           <li class="step" :class="currentStep >= 1 ? 'step-primary' : ''">Application</li>
-          <li class="step" :class="currentStep >= 2 ? 'step-primary' : ''">Admin Instance</li>
-          <li class="step" :class="currentStep >= 3 ? 'step-primary' : ''">Default Instance</li>
-          <li class="step" :class="currentStep >= 4 ? 'step-primary' : ''">Network</li>
+          <li class="step" :class="currentStep >= 2 ? 'step-primary' : ''">Network</li>
+          <li class="step" :class="currentStep >= 3 ? 'step-primary' : ''">Admin Instance</li>
+          <li class="step" :class="currentStep >= 4 ? 'step-primary' : ''">Default Instance</li>
           <li class="step" :class="currentStep >= 5 ? 'step-primary' : ''">Instance Interfaces</li>
           <li class="step" :class="currentStep >= 6 ? 'step-primary' : ''">Finalization</li>
         </ul>
@@ -42,25 +42,32 @@
                 
                 <!-- Application Form -->
                 <form @submit.prevent="validateApplicationForm" class="space-y-4">
-                  <!-- Machine Name (Non-editable) -->
+                  <!-- Application Name (Editable) -->
                   <div class="form-control">
                     <label class="label">
-                      <span class="label-text font-medium">Machine Name</span>
-                      <span class="label-text-alt">Auto-detected</span>
+                      <span class="label-text font-medium">Application Name</span>
+                      <span v-if="loadingMachineName" class="label-text-alt text-info">
+                        <span class="loading loading-spinner loading-xs"></span>
+                        Loading...
+                      </span>
+                      <span v-else class="label-text-alt">Auto-detected, editable</span>
                     </label>
                     <div class="input-group">
                       <input 
                         type="text" 
-                        class="input input-bordered flex-1 bg-base-200 cursor-not-allowed" 
+                        class="input input-bordered flex-1" 
                         v-model="applicationForm.name"
-                        readonly
-                        disabled
+                        :placeholder="loadingMachineName ? 'Loading application name...' : 'Enter application name'"
+                        @input="validateApplicationNameInput"
+                        :class="{ 'input-error': applicationNameError }"
+                        required
                       />
                       <button 
                         type="button"
                         class="btn btn-outline" 
                         @click="loadMachineName" 
                         :disabled="loadingMachineName"
+                        title="Auto-detect from system"
                       >
                         <span v-if="loadingMachineName" class="loading loading-spinner loading-sm"></span>
                         <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -68,6 +75,10 @@
                         </svg>
                       </button>
                     </div>
+                    <label class="label">
+                      <span v-if="applicationNameError" class="label-text-alt text-error">{{ applicationNameError }}</span>
+                      <span v-else class="label-text-alt">This will be used as the application identifier in the configuration</span>
+                    </label>
                   </div>
 
                   <!-- Description (Optional) -->
@@ -105,13 +116,21 @@
                   </div>
                 </form>
 
-                <!-- Error Display -->
-                <div v-if="applicationError" class="alert alert-error">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>{{ applicationError }}</span>
-                </div>
+                  <!-- Error Display -->
+                  <div v-if="applicationError" class="alert alert-error">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>{{ applicationError }}</span>
+                    <button 
+                      type="button"
+                      class="btn btn-sm btn-outline" 
+                      @click="loadMachineName"
+                      :disabled="loadingMachineName"
+                    >
+                      Retry
+                    </button>
+                  </div>
               </div>
 
               <!-- Right Column: Preview -->
@@ -196,8 +215,8 @@
             </div>
           </div>
 
-          <!-- Step 2: Admin Instance Configuration -->
-          <div v-else-if="currentStep === 2" class="space-y-6">
+          <!-- Step 3: Admin Instance Configuration -->
+          <div v-else-if="currentStep === 3" class="space-y-6">
             <h2 class="card-title text-2xl mb-6 flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -555,8 +574,8 @@
             </div>
           </div>
 
-          <!-- Step 3: Default Instance Configuration -->
-          <div v-else-if="currentStep === 3" class="space-y-6">
+          <!-- Step 4: Default Instance Configuration -->
+          <div v-else-if="currentStep === 4" class="space-y-6">
             <h2 class="card-title text-2xl mb-6 flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -914,8 +933,8 @@
             </div>
           </div>
 
-          <!-- Step 4: Network Configuration -->
-          <div v-else-if="currentStep === 4" class="space-y-6">
+          <!-- Step 2: Network Configuration -->
+          <div v-else-if="currentStep === 2" class="space-y-6">
             <!-- Header Section (Fixed) -->
             <div class="space-y-4">
               <h2 class="card-title text-2xl mb-4 flex items-center gap-2">
@@ -1322,8 +1341,9 @@ const applicationForm = ref({
   licence: ''
 })
 const applicationError = ref(null)
+const applicationNameError = ref(null)
 
-// Step 2: Admin Instance
+// Step 3: Admin Instance
 const initiating = ref(false)
 const updating = ref(false)
 const adminInstance = ref(null)
@@ -1348,7 +1368,7 @@ const availableNetworkInterfaces = ref([])
 const loadingNetworkInterfaces = ref(false)
 const networkInterfacesError = ref(null)
 
-// Step 3: Default Instance
+// Step 4: Default Instance
 const initiatingDefault = ref(false)
 const updatingDefault = ref(false)
 const defaultInstance = ref(null)
@@ -1368,7 +1388,7 @@ const defaultForm = ref({
   interfaces: []
 })
 
-// Step 4: Network Configuration
+// Step 2: Network Configuration
 const refreshingNetwork = ref(false)
 const networkInterfaces = ref([])
 const networkError = ref(null)
@@ -1536,6 +1556,75 @@ const applyUnattendConfiguration = async () => {
   }
 }
 
+// Helper function to try getting the real hostname
+const tryGetRealHostname = async () => {
+  try {
+    // Method 1: Try a system command API if available
+    try {
+      console.log('🔍 Trying to get hostname via system command API...')
+      const response = await apiGet('/utils/system/hostname', true)
+      if (response && response.hostname) {
+        console.log('✅ Got hostname from system API:', response.hostname)
+        return response.hostname
+      }
+    } catch (error) {
+      console.log('⚠️ System hostname API not available:', error.message)
+    }
+
+    // Method 2: Try getting hostname from environment info API
+    try {
+      console.log('🔍 Trying to get hostname via environment API...')
+      const response = await apiGet('/utils/environment/info', true)
+      if (response && (response.hostname || response.HOSTNAME || response.HOST)) {
+        const hostname = response.hostname || response.HOSTNAME || response.HOST
+        console.log('✅ Got hostname from environment API:', hostname)
+        return hostname
+      }
+    } catch (error) {
+      console.log('⚠️ Environment API not available:', error.message)
+    }
+
+    // Method 3: Try to extract from server headers or other sources
+    try {
+      console.log('🔍 Trying to get hostname via server info...')
+      const response = await fetch(window.location.origin + '/api/v1/utils/server/info', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('session') ? JSON.parse(localStorage.getItem('session')).token : ''}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data && (data.hostname || data.serverName || data.host)) {
+          const hostname = data.hostname || data.serverName || data.host
+          console.log('✅ Got hostname from server info:', hostname)
+          return hostname
+        }
+      }
+    } catch (error) {
+      console.log('⚠️ Server info API not available:', error.message)
+    }
+
+    // Method 4: Try to parse from URL or other browser info
+    const url = new URL(window.location.href)
+    if (url.hostname && !url.hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+      // If hostname is not an IP, try to use it
+      const hostname = url.hostname.split('.')[0]
+      if (hostname && hostname !== 'localhost') {
+        console.log('✅ Extracted hostname from URL:', hostname)
+        return hostname
+      }
+    }
+
+    return null
+  } catch (error) {
+    console.error('❌ Error trying to get real hostname:', error)
+    return null
+  }
+}
+
 // Methods for Step 1: Application Configuration
 const loadMachineName = async () => {
   try {
@@ -1547,28 +1636,188 @@ const loadMachineName = async () => {
     // Try to get machine name from system properties
     try {
       const appProperties = await ApplicationController.getAllProperties()
-      applicationForm.value.name = appProperties.name || 'MediaHub'
+      console.log('📋 Wizard: Application properties received:', appProperties)
+      
+      // Try different possible property names for machine name
+      const machineName = appProperties.name || 
+                         appProperties.machineName || 
+                         appProperties.hostname || 
+                         appProperties.instanceName ||
+                         await tryGetRealHostname() ||
+                         'dev-01'
+      
+      applicationForm.value.name = machineName
       console.log('✅ Wizard: Machine name loaded:', applicationForm.value.name)
+      
     } catch (error) {
-      // Fallback to default name if API fails
-      applicationForm.value.name = 'MediaHub'
-      console.log('⚠️ Wizard: Using default machine name:', applicationForm.value.name)
+      console.error('⚠️ Wizard: Primary API call failed, trying alternative methods:', error)
+      
+      // Try alternative API endpoints for system information
+      try {
+        console.log('🔄 Wizard: Trying alternative system info API...')
+        const systemInfo = await apiGet('/utils/system/info', true)
+        console.log('📋 Wizard: System info received:', systemInfo)
+        
+        const machineName = systemInfo.hostname || 
+                           systemInfo.name || 
+                           systemInfo.machineName ||
+                           await tryGetRealHostname() ||
+                           'dev-01'
+        
+        applicationForm.value.name = machineName
+        console.log('✅ Wizard: Machine name loaded from system info:', applicationForm.value.name)
+        
+      } catch (systemError) {
+        console.error('⚠️ Wizard: System info API also failed, trying instances API:', systemError)
+        
+        // Try instances API which might have system information
+        try {
+          console.log('🔄 Wizard: Trying instances API for system info...')
+          const instancesInfo = await apiGet('/utils/instances/getAllNetworkInterfaces', true)
+          console.log('📋 Wizard: Instances info received:', instancesInfo)
+          
+          // Try to extract machine name from network interfaces or use IP-based name
+          if (instancesInfo && instancesInfo.interfaces && instancesInfo.interfaces.length > 0) {
+            // Look for a non-loopback interface with a meaningful name
+            const mainInterface = instancesInfo.interfaces.find(iface => 
+              iface.name && 
+              !iface.name.includes('lo') && 
+              !iface.name.includes('docker') &&
+              !iface.name.includes('br-') &&
+              iface.inetAddresses && 
+              iface.inetAddresses.length > 0
+            )
+            
+            if (mainInterface && mainInterface.inetAddresses[0]) {
+              const ipAddress = mainInterface.inetAddresses[0].address.replace('/', '')
+              const ipParts = ipAddress.split('.')
+              if (ipParts.length === 4 && !ipAddress.startsWith('127.')) {
+                applicationForm.value.name = `MediaHub-${ipParts[2]}-${ipParts[3]}`
+                console.log('✅ Wizard: Using network-based name:', applicationForm.value.name)
+              } else {
+                throw new Error('No suitable IP found')
+              }
+            } else {
+              throw new Error('No suitable network interface found')
+            }
+          } else {
+            throw new Error('No network interfaces data')
+          }
+          
+        } catch (instancesError) {
+          console.error('⚠️ Wizard: Instances API also failed:', instancesError)
+          
+          // Final fallback: try to get hostname from browser if available
+          try {
+            const hostname = window.location.hostname
+            console.log('🌐 Wizard: Browser hostname:', hostname)
+            
+            // Check if hostname is an IP address
+            const isIPAddress = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname)
+            
+            if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1' && !isIPAddress) {
+              // Use hostname if it's a proper domain name
+              applicationForm.value.name = hostname.split('.')[0] // Take first part of FQDN
+              console.log('✅ Wizard: Using hostname from browser:', applicationForm.value.name)
+            } else if (isIPAddress) {
+              // If it's an IP, try to create a meaningful name
+              const ipParts = hostname.split('.')
+              applicationForm.value.name = `MediaHub-${ipParts[2]}-${ipParts[3]}`
+              console.log('✅ Wizard: Using IP-based name:', applicationForm.value.name)
+            } else {
+              // Try to get the real hostname using different methods
+              let machineName = await tryGetRealHostname()
+              
+              if (!machineName) {
+                // Final fallback based on platform
+                const platform = navigator.platform
+                
+                if (platform.includes('Linux')) {
+                  machineName = 'dev-01' // Default Linux hostname pattern
+                } else if (platform.includes('Win')) {
+                  machineName = 'MediaHub-Windows'
+                } else if (platform.includes('Mac')) {
+                  machineName = 'MediaHub-Mac'
+                } else {
+                  machineName = 'MediaHub'
+                }
+              }
+              
+              applicationForm.value.name = machineName
+              console.log('⚠️ Wizard: Using hostname-based fallback name:', applicationForm.value.name)
+            }
+          } catch (hostnameError) {
+            // Final fallback - use the known hostname pattern
+            applicationForm.value.name = 'dev-01'
+            console.log('⚠️ Wizard: All methods failed, using default hostname:', applicationForm.value.name)
+          }
+        }
+      }
     }
     
   } catch (error) {
     console.error('❌ Wizard: Failed to load machine name:', error)
     applicationError.value = `Failed to load machine name: ${error.message}`
-    // Use fallback name
-    applicationForm.value.name = 'MediaHub'
+    // Use fallback hostname
+    applicationForm.value.name = 'dev-01'
   } finally {
     loadingMachineName.value = false
   }
 }
 
+const validateApplicationNameInput = () => {
+  const name = applicationForm.value.name.trim()
+  
+  // Clear previous errors
+  applicationNameError.value = null
+  
+  if (!name) {
+    return // Don't show error for empty field during typing
+  }
+  
+  // Validate name format (alphanumeric, hyphens, underscores allowed)
+  const nameRegex = /^[a-zA-Z0-9_-]+$/
+  if (!nameRegex.test(name)) {
+    applicationNameError.value = 'Only letters, numbers, hyphens, and underscores allowed'
+    return
+  }
+  
+  // Check minimum length
+  if (name.length < 2) {
+    applicationNameError.value = 'Must be at least 2 characters long'
+    return
+  }
+  
+  // Check maximum length
+  if (name.length > 50) {
+    applicationNameError.value = 'Must be less than 50 characters'
+    return
+  }
+}
+
 const validateApplicationForm = () => {
-  // Basic validation - name is required (but should be auto-filled)
+  // Basic validation - name is required
   if (!applicationForm.value.name || applicationForm.value.name.trim() === '') {
-    applicationError.value = 'Machine name is required'
+    applicationError.value = 'Application name is required'
+    return false
+  }
+  
+  // Validate name format (alphanumeric, hyphens, underscores allowed)
+  const nameRegex = /^[a-zA-Z0-9_-]+$/
+  if (!nameRegex.test(applicationForm.value.name.trim())) {
+    applicationError.value = 'Application name can only contain letters, numbers, hyphens, and underscores'
+    return false
+  }
+  
+  // Check minimum length
+  if (applicationForm.value.name.trim().length < 2) {
+    applicationError.value = 'Application name must be at least 2 characters long'
+    return false
+  }
+  
+  // Check maximum length
+  if (applicationForm.value.name.trim().length > 50) {
+    applicationError.value = 'Application name must be less than 50 characters'
     return false
   }
   
@@ -1576,7 +1825,7 @@ const validateApplicationForm = () => {
   return true
 }
 
-// Methods for Step 2: Admin Instance Configuration
+// Methods for Step 3: Admin Instance Configuration
 const loadNetworkInterfaces = async () => {
   try {
     loadingNetworkInterfaces.value = true
@@ -1681,7 +1930,7 @@ const validateAdminForm = () => {
   return true
 }
 
-// Methods for Step 3: Default Instance Configuration
+// Methods for Step 4: Default Instance Configuration
 const addDefaultInterface = () => {
   defaultForm.value.interfaces.push({
     ifName: '',
@@ -1749,7 +1998,7 @@ const validateDefaultForm = () => {
   return true
 }
 
-// Methods for Step 2: Admin Instance Configuration
+// Methods for Step 3: Admin Instance Configuration
 const initiateAdminConfiguration = async () => {
   try {
     initiating.value = true
@@ -1797,7 +2046,7 @@ const updateAdminConfiguration = async () => {
   }
 }
 
-// Methods for Step 3: Default Instance Configuration
+// Methods for Step 4: Default Instance Configuration
 const initiateDefaultConfiguration = async () => {
   try {
     initiatingDefault.value = true
@@ -1845,7 +2094,7 @@ const updateDefaultConfiguration = async () => {
   }
 }
 
-// Methods for Step 4: Network Configuration
+// Methods for Step 2: Network Configuration
 const refreshNetworkInterfaces = async () => {
   try {
     refreshingNetwork.value = true
@@ -2111,7 +2360,7 @@ const clearAllConfigurations = () => {
 
 // Watch for step changes to load data when entering specific steps
 watch(currentStep, async (newStep) => {
-  if (newStep === 2 || newStep === 3) {
+  if (newStep === 3 || newStep === 4) {
     // Load network interfaces when entering admin or default instance configuration
     await loadNetworkInterfaces()
   } else if (newStep === 5) {
