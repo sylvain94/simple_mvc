@@ -663,11 +663,11 @@
                         </button>
                       </div>
                       
-                      <!-- Network Interface Selector -->
+                      <!-- 1ère ligne: Select Network Interface available -->
                       <div class="form-control mb-3">
                         <label class="label">
-                          <span class="label-text font-medium text-sm">Select Network Interface</span>
-                          <span class="label-text-alt">{{ availableNetworkInterfaces.length }} available</span>
+                          <span class="label-text font-medium text-sm">Select Network Interface available</span>
+                          <span class="label-text-alt">{{ networkInterfaces.length }} total interfaces</span>
                         </label>
                         <select 
                           class="select select-bordered select-sm" 
@@ -676,16 +676,31 @@
                         >
                           <option value="">Choose an interface...</option>
                           <option 
-                            v-for="netIface in availableNetworkInterfaces" 
-                            :key="netIface.name" 
-                            :value="netIface.name"
+                            v-for="netIface in networkInterfaces" 
+                            :key="netIface.ifName" 
+                            :value="netIface.ifName"
                           >
-                            {{ netIface.displayName }} ({{ netIface.addresses[0]?.replace(/^\//, '') }})
+                            {{ netIface.ifName }} ({{ getIPv4Address(netIface) }}) - {{ netIface.ifStreamDirection }}
                           </option>
                         </select>
                       </div>
                       
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <!-- 2ème ligne: Stream Direction et Interface Name -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                        <div class="form-control">
+                          <label class="label">
+                            <span class="label-text font-medium text-sm">Stream Direction</span>
+                          </label>
+                          <input 
+                            type="text" 
+                            class="input input-bordered input-sm bg-base-200 cursor-not-allowed" 
+                            v-model="iface.ifStreamDirection"
+                            placeholder="Auto-filled from interface"
+                            readonly
+                            disabled
+                          />
+                        </div>
+                        
                         <div class="form-control">
                           <label class="label">
                             <span class="label-text font-medium text-sm">Interface Name</span>
@@ -699,28 +714,20 @@
                             disabled
                           />
                         </div>
-                        
-                        <div class="form-control">
-                          <label class="label">
-                            <span class="label-text font-medium text-sm">Stream Direction</span>
-                          </label>
-                          <select class="select select-bordered select-sm" v-model="iface.ifStreamDirection">
-                            <option value="IN">IN</option>
-                            <option value="OUT">OUT</option>
-                            <option value="BOTH">BOTH</option>
-                          </select>
-                        </div>
                       </div>
                       
-                      <div class="form-control mt-3">
+                      <!-- 3ème ligne: IP Address -->
+                      <div class="form-control">
                         <label class="label">
                           <span class="label-text font-medium text-sm">IP Address</span>
                         </label>
                         <input 
                           type="text" 
-                          class="input input-bordered input-sm" 
+                          class="input input-bordered input-sm bg-base-200 cursor-not-allowed" 
                           v-model="iface.ifAddresses[0]"
-                          placeholder="192.168.1.1/24"
+                          placeholder="Auto-filled from interface"
+                          readonly
+                          disabled
                         />
                       </div>
                     </div>
@@ -768,11 +775,9 @@
   "endIP": "{{ defaultForm.endIP }}",
   "startMCPort": {{ defaultForm.startMCPort }},
   "endMCPort": {{ defaultForm.endMCPort }},
-  "interfaces": [{{ defaultForm.interfaces.map((iface, index) => `
+  "interfaces": [{{ defaultForm.interfaces.filter(iface => iface.ifName && iface.ifName.trim() !== '').map((iface, index) => `
     {
-      "ifName": "${iface.ifName}",
-      "ifStreamDirection": "${iface.ifStreamDirection}",
-      "ifAddresses": ["${iface.ifAddresses[0]}"]
+      "ifName": "${iface.ifName}"
     }`).join(',') }}
   ]
 }</code></pre>
@@ -1169,6 +1174,54 @@ const updatingInterface = ref(null)
 const interfaceUpdateStatus = ref({})
 
 // ================================
+// COMPUTED PROPERTIES
+// ================================
+
+// Filter available interfaces based on selected stream direction
+const getFilteredInterfacesForDirection = (selectedDirection) => {
+  if (!selectedDirection) {
+    console.log('⚠️ Wizard: No stream direction selected')
+    return []
+  }
+  
+  if (!networkInterfaces.value.length) {
+    console.log('⚠️ Wizard: No network interfaces available from Step 2 (Network Configuration)')
+    return []
+  }
+  
+  console.log(`🔍 Wizard: Filtering interfaces for direction: ${selectedDirection}`)
+  console.log(`📋 Wizard: Available network interfaces from Step 2:`, networkInterfaces.value)
+  
+  let filteredInterfaces = []
+  
+  if (selectedDirection === 'BOTH') {
+    // Show all interfaces that are configured as IN or OUT (exclude ADMIN)
+    filteredInterfaces = networkInterfaces.value.filter(iface => 
+      iface.ifStreamDirection === 'IN' || 
+      iface.ifStreamDirection === 'OUT'
+    )
+  } else if (selectedDirection === 'IN') {
+    // Show only interfaces configured as IN
+    filteredInterfaces = networkInterfaces.value.filter(iface => 
+      iface.ifStreamDirection === 'IN'
+    )
+  } else if (selectedDirection === 'OUT') {
+    // Show only interfaces configured as OUT
+    filteredInterfaces = networkInterfaces.value.filter(iface => 
+      iface.ifStreamDirection === 'OUT'
+    )
+  }
+  
+  console.log(`✅ Wizard: Filtered ${filteredInterfaces.length} interfaces for direction ${selectedDirection}:`, filteredInterfaces)
+  
+  if (filteredInterfaces.length === 0) {
+    console.log(`⚠️ Wizard: No interfaces found with direction ${selectedDirection}. Please configure interfaces in Step 2 (Network Configuration) first.`)
+  }
+  
+  return filteredInterfaces
+}
+
+// ================================
 // STEP 5: FINALIZATION
 // ================================
 const finishing = ref(false)
@@ -1215,6 +1268,13 @@ const generateUnattendConfig = () => {
   })
   
   // Step 4: Default Instance Configuration
+  // Transform interfaces to only keep the interface name (ifName)
+  const simplifiedInterfaces = (defaultForm.value.interfaces || [])
+    .filter(iface => iface.ifName && iface.ifName.trim() !== '') // Only keep configured interfaces
+    .map(iface => ({
+      ifName: iface.ifName
+    }))
+  
   instancesConfig.push({
     name: defaultForm.value.name || 'default-instance',
     licence: defaultForm.value.licence || null,
@@ -1226,7 +1286,7 @@ const generateUnattendConfig = () => {
     endIP: defaultForm.value.endIP || '224.10.10.100',
     startMCPort: defaultForm.value.startMCPort || 2000,
     endMCPort: defaultForm.value.endMCPort || 2000,
-    interfaces: defaultForm.value.interfaces || [] // Configured interfaces from Step 4
+    interfaces: simplifiedInterfaces // Only interface names for M2M relationship
   })
   
   unattendConfig.value.instances = instancesConfig
@@ -1638,25 +1698,30 @@ const removeDefaultInterface = (index) => {
 }
 
 const selectDefaultNetworkInterface = (defaultInterfaceIndex, selectedInterfaceName) => {
-  const selectedInterface = availableNetworkInterfaces.value.find(iface => iface.name === selectedInterfaceName)
+  console.log(`🔗 Default: Selecting interface ${selectedInterfaceName} for interface ${defaultInterfaceIndex}`)
+  
+  // Find the selected interface from all network interfaces
+  const selectedInterface = networkInterfaces.value.find(iface => iface.ifName === selectedInterfaceName)
   
   if (selectedInterface && defaultForm.value.interfaces[defaultInterfaceIndex]) {
     // Update the default interface with selected network interface data
-    defaultForm.value.interfaces[defaultInterfaceIndex].ifName = selectedInterface.name
+    defaultForm.value.interfaces[defaultInterfaceIndex].ifName = selectedInterface.ifName
     
-    // Use the first IPv4 address if available
-    if (selectedInterface.addresses.length > 0) {
-      // Remove leading slash and add /24 if no CIDR notation
-      let address = selectedInterface.addresses[0].replace(/^\//, '')
-      if (!address.includes('/')) {
-        address += '/24'
-      }
-      defaultForm.value.interfaces[defaultInterfaceIndex].ifAddresses = [address]
+    // Auto-set the stream direction from the network configuration
+    defaultForm.value.interfaces[defaultInterfaceIndex].ifStreamDirection = selectedInterface.ifStreamDirection
+    
+    // Set the IP address from the network configuration
+    const ipv4Address = getIPv4Address(selectedInterface)
+    if (ipv4Address && ipv4Address !== 'N/A') {
+      // Add /24 subnet if not already present
+      const formattedIP = ipv4Address.includes('/') ? ipv4Address : `${ipv4Address}/24`
+      defaultForm.value.interfaces[defaultInterfaceIndex].ifAddresses = [formattedIP]
     }
     
-    console.log(`🔗 Default: Selected interface ${selectedInterface.name} for default interface ${defaultInterfaceIndex}`)
+    console.log('✅ Default: Interface selected with auto-configured direction:', defaultForm.value.interfaces[defaultInterfaceIndex])
   }
 }
+
 
 const validateDefaultForm = () => {
   // Basic validation
