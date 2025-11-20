@@ -1382,7 +1382,7 @@ const applyUnattendConfiguration = async () => {
     const defaultInstance = config.instances.find(instance => instance.type === 'DEFAULT')
     if (defaultInstance) {
         console.log('📋 Step 7: Configuring default instance multicast IP range...')
-        await apiPut(`/utils/instances/defineMulticastAddressRange/startIP/${defaultInstance.startIP}/endIP/${defaultInstance.endIP}/instance/${defaultInstanceId}`, null, true)
+        await apiPut(`/utils/instances/defineMulticastPortRange/startPort/${adminInstance.startMCPort}/endPort/${adminInstance.endMCPort}/instance/${adminInstanceId}`, null, true)
         console.log('✅ Step 7: Default instance IP range configured')
         
         // Step 8: Configure default instance port range
