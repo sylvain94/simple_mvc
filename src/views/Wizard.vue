@@ -1322,22 +1322,107 @@ const applyUnattendConfiguration = async () => {
   try {
     finishing.value = true
     
-    console.log('🚀 Wizard: Applying unattend configuration via APIs...')
+    console.log('🚀 Wizard: Starting configuration application workflow...')
     
     // Generate the final configuration
     const config = generateUnattendConfig()
+    console.log('📋 Wizard: Configuration to apply:', config)
     
-    // Apply configuration using existing APIs
-    // This will use the same APIs that are already implemented in the wizard
+    // Step 1: Activate application
+    console.log('📋 Step 1: Activating application...')
+    const activationResult = await apiPut('/utils/application/validateInstallation', null, true)
+    console.log('✅ Step 1: Application activation result:', activationResult)
     
-    console.log('✅ Wizard: Configuration applied successfully')
+    // If we reach here without exception, the API returned 200, so activation is successful
+    console.log('✅ Step 1: Application activation successful (HTTP 200)')
     
-    // Redirect to dashboard
-    router.push('/')
+    // Step 2: Update description if not empty
+    if (config.application.description && config.application.description.trim() !== '') {
+      console.log('📋 Step 2: Updating application description...')
+      await apiPut(`/utils/application/updateDescription/${encodeURIComponent(config.application.description)}`, null, true)
+      console.log('✅ Step 2: Application description updated')
+    } else {
+      console.log('⏭️ Step 2: Skipping description update (empty description)')
+    }
+    
+    // Step 3: Configure Admin Instance
+    console.log('📋 Step 3: Configuring admin instance...')
+    const adminInstanceResponse = await apiPost('/utils/instances/initiateAdminConfiguration', {}, true)
+    console.log('✅ Step 3: Admin instance created:', adminInstanceResponse)
+    
+    const adminInstanceId = adminInstanceResponse.id || adminInstanceResponse.instanceId
+    if (!adminInstanceId) {
+      throw new Error('Failed to get admin instance ID from response')
+    }
+    
+    // Step 4: Configure admin instance multicast IP range
+    const adminInstance = config.instances.find(instance => instance.type === 'ADMIN')
+    if (adminInstance) {
+      console.log('📋 Step 4: Configuring admin instance multicast IP range...')
+      await apiPut(`/utils/instances/defineMulticastAddressRange/startIP/{start_ip}/endIP/{end_ip}/instance/{instance_id}?start_ip=${adminInstance.startIP}&end_ip=${adminInstance.endIP}&instance_id=${adminInstanceId}`, null, true)
+      console.log('✅ Step 4: Admin instance IP range configured')
+      
+      // Step 5: Configure admin instance port range
+      console.log('📋 Step 5: Configuring admin instance port range...')
+      await apiPut(`/utils/instances/defineMulticastPortRange/startPort/${adminInstance.startMCPort}/endPort/${adminInstance.endMCPort}/instance/${adminInstanceId}`, null, true)
+      console.log('✅ Step 5: Admin instance port range configured')
+    }
+    
+    // Step 6: Configure Default Instance
+    console.log('📋 Step 6: Configuring default instance...')
+    const defaultInstanceResponse = await apiPost('/utils/instances/initiateDefaultConfiguration', {}, true)
+    console.log('✅ Step 6: Default instance created:', defaultInstanceResponse)
+    
+    const defaultInstanceId = defaultInstanceResponse.id || defaultInstanceResponse.instanceId
+    if (!defaultInstanceId) {
+      throw new Error('Failed to get default instance ID from response')
+    }
+    
+    // Step 7: Configure default instance multicast IP range
+    const defaultInstance = config.instances.find(instance => instance.type === 'DEFAULT')
+    if (defaultInstance) {
+        console.log('📋 Step 7: Configuring default instance multicast IP range...')
+        await apiPut(`/utils/instances/defineMulticastAddressRange/startIP/${defaultInstance.startIP}/endIP/${defaultInstance.endIP}/instance/${defaultInstanceId}`, null, true)
+        console.log('✅ Step 7: Default instance IP range configured')
+        
+        // Step 8: Configure default instance port range
+        console.log('📋 Step 8: Configuring default instance port range...')
+        await apiPut(`/utils/instances/defineMulticastPortRange/startPort/${defaultInstance.startMCPort}/endPort/${defaultInstance.endMCPort}/instance/${defaultInstanceId}`, null, true)
+        console.log('✅ Step 8: Default instance port range configured')
+      
+      // Step 9: Bind network interfaces to default instance
+      if (defaultInstance.interfaces && Array.isArray(defaultInstance.interfaces) && defaultInstance.interfaces.length > 0) {
+        console.log('📋 Step 9: Binding network interfaces to default instance...')
+        
+        for (let i = 0; i < defaultInstance.interfaces.length; i++) {
+          const interfaceConfig = defaultInstance.interfaces[i]
+          if (interfaceConfig.ifName) {
+            console.log(`📋 Step 9.${i + 1}: Binding interface ${interfaceConfig.ifName}...`)
+            await apiPut(`/utils/instances/bindNetworkInterface/interface_name/${interfaceConfig.ifName}/instance/${defaultInstanceId}`, null, true)
+            console.log(`✅ Step 9.${i + 1}: Interface ${interfaceConfig.ifName} bound successfully`)
+          }
+        }
+        
+        console.log('✅ Step 9: All network interfaces bound successfully')
+      } else {
+        console.log('⏭️ Step 9: No network interfaces to bind')
+      }
+    }
+    
+    console.log('🎉 Wizard: Configuration applied successfully! All steps completed with HTTP 200.')
+    
+    // Show success message briefly before redirect
+    setTimeout(() => {
+      console.log('🏠 Wizard: Redirecting to dashboard...')
+      router.push('/')
+    }, 1500)
     
   } catch (error) {
     console.error('❌ Wizard: Error applying configuration:', error)
+    
     // Show error to user
+    alert(`Configuration application failed: ${error.message}. Please check the console for details and try again.`)
+    
   } finally {
     finishing.value = false
   }
