@@ -16,9 +16,16 @@ export async function apiGet(endpoint, useAuth = false) {
     }
   }
 
-  const res = await fetch(`${API_BASE}${endpoint}`, { headers })
+  const fullUrl = `${API_BASE}${endpoint}`
+  console.log(`🔄 API GET Request: ${fullUrl}`)
+  console.log(`📋 Headers:`, headers)
+
+  const res = await fetch(fullUrl, { headers })
+  
+  console.log(`📊 API GET Response: ${res.status} ${res.statusText} for ${endpoint}`)
   
   if (!res.ok) {
+    console.error(`❌ API GET Error: ${res.status} - ${res.statusText} for ${endpoint}`)
     // create a new error with the status and status text
     const error = new Error(`GET ${endpoint} failed: ${res.status} - ${res.statusText}`)
     error.status = res.status
@@ -26,7 +33,9 @@ export async function apiGet(endpoint, useAuth = false) {
     throw error // re-throw the error to let the caller handle it
   }
   
-  return res.json() // return the response as JSON
+  const responseData = await res.json()
+  console.log(`✅ API GET Success: ${endpoint}`, responseData)
+  return responseData // return the response as JSON
 }
 
 export async function apiPost(endpoint, body, useAuth = false) {
@@ -41,17 +50,27 @@ export async function apiPost(endpoint, body, useAuth = false) {
   }
 
   const url = `${API_BASE}${endpoint}`
+  console.log(`🔄 API POST Request: ${url}`)
+  console.log(`📋 Headers:`, headers)
+  console.log(`📦 Body:`, body)
+
   const res = await fetch(url, {
     method: 'POST',
     headers,
     body: JSON.stringify(body),
   })
   
+  console.log(`📊 API POST Response: ${res.status} ${res.statusText} for ${endpoint}`)
+  
   if (!res.ok) {
     const errorText = await res.text()
+    console.error(`❌ API POST Error: ${res.status} - ${errorText} for ${endpoint}`)
     throw new Error(`POST ${endpoint} failed: ${res.status} - ${errorText}`)
   }
-  return res.json()
+  
+  const responseData = await res.json()
+  console.log(`✅ API POST Success: ${endpoint}`, responseData)
+  return responseData
 }
 
 export async function apiPut(endpoint, body, useAuth = false) {
@@ -65,13 +84,27 @@ export async function apiPut(endpoint, body, useAuth = false) {
     }
   }
 
-  const res = await fetch(`${API_BASE}${endpoint}`, {
+  const fullUrl = `${API_BASE}${endpoint}`
+  console.log(`🔄 API PUT Request: ${fullUrl}`)
+  console.log(`📋 Headers:`, headers)
+  console.log(`📦 Body:`, body)
+
+  const res = await fetch(fullUrl, {
     method: 'PUT',
     headers,
     body: JSON.stringify(body),
   })
-  if (!res.ok) throw new Error(`PUT ${endpoint} failed: ${res.status}`)
-  return res.text() // For challengeUseridPassword which returns text in case of error
+  
+  console.log(`📊 API PUT Response: ${res.status} ${res.statusText} for ${endpoint}`)
+  
+  if (!res.ok) {
+    console.error(`❌ API PUT Error: ${res.status} ${res.statusText} for ${endpoint}`)
+    throw new Error(`PUT ${endpoint} failed: ${res.status}`)
+  }
+  
+  const responseText = await res.text()
+  console.log(`✅ API PUT Success: ${endpoint}`, responseText)
+  return responseText // For challengeUseridPassword which returns text in case of error
 }
 
 export async function apiDelete(endpoint, useAuth = false) {
@@ -85,12 +118,25 @@ export async function apiDelete(endpoint, useAuth = false) {
     }
   }
 
-  const res = await fetch(`${API_BASE}${endpoint}`, {
+  const fullUrl = `${API_BASE}${endpoint}`
+  console.log(`🔄 API DELETE Request: ${fullUrl}`)
+  console.log(`📋 Headers:`, headers)
+
+  const res = await fetch(fullUrl, {
     method: 'DELETE',
     headers,
   })
-  if (!res.ok) throw new Error(`DELETE ${endpoint} failed: ${res.status}`)
-  return res.json()
+  
+  console.log(`📊 API DELETE Response: ${res.status} ${res.statusText} for ${endpoint}`)
+  
+  if (!res.ok) {
+    console.error(`❌ API DELETE Error: ${res.status} ${res.statusText} for ${endpoint}`)
+    throw new Error(`DELETE ${endpoint} failed: ${res.status}`)
+  }
+  
+  const responseData = await res.json()
+  console.log(`✅ API DELETE Success: ${endpoint}`, responseData)
+  return responseData
 }
 
 /**
