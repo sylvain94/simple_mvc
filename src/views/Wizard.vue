@@ -1428,74 +1428,6 @@ const applyUnattendConfiguration = async () => {
   }
 }
 
-// Helper function to try getting the real hostname
-const tryGetRealHostname = async () => {
-  try {
-    // Method 1: Try a system command API if available
-    try {
-      console.log('🔍 Trying to get hostname via system command API...')
-      const response = await apiGet('/utils/system/hostname', true)
-      if (response && response.hostname) {
-        console.log('✅ Got hostname from system API:', response.hostname)
-        return response.hostname
-      }
-    } catch (error) {
-      console.log('⚠️ System hostname API not available:', error.message)
-    }
-
-    // Method 2: Try getting hostname from environment info API
-    try {
-      console.log('🔍 Trying to get hostname via environment API...')
-      const response = await apiGet('/utils/environment/info', true)
-      if (response && (response.hostname || response.HOSTNAME || response.HOST)) {
-        const hostname = response.hostname || response.HOSTNAME || response.HOST
-        console.log('✅ Got hostname from environment API:', hostname)
-        return hostname
-      }
-    } catch (error) {
-      console.log('⚠️ Environment API not available:', error.message)
-    }
-
-    // Method 3: Try to extract from server headers or other sources
-    try {
-      console.log('🔍 Trying to get hostname via server info...')
-      const response = await fetch(window.location.origin + '/api/v1/utils/server/info', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('session') ? JSON.parse(localStorage.getItem('session')).token : ''}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        if (data && (data.hostname || data.serverName || data.host)) {
-          const hostname = data.hostname || data.serverName || data.host
-          console.log('✅ Got hostname from server info:', hostname)
-          return hostname
-        }
-      }
-    } catch (error) {
-      console.log('⚠️ Server info API not available:', error.message)
-    }
-
-    // Method 4: Try to parse from URL or other browser info
-    const url = new URL(window.location.href)
-    if (url.hostname && !url.hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
-      // If hostname is not an IP, try to use it
-      const hostname = url.hostname.split('.')[0]
-      if (hostname && hostname !== 'localhost') {
-        console.log('✅ Extracted hostname from URL:', hostname)
-        return hostname
-      }
-    }
-
-    return null
-  } catch (error) {
-    console.error('❌ Error trying to get real hostname:', error)
-    return null
-  }
-}
 
 // ================================
 // STEP 1 METHODS: APPLICATION CONFIGURATION
@@ -1507,133 +1439,75 @@ const loadMachineName = async () => {
     
     console.log('🔍 Wizard: Loading machine name...')
     
-    // Try to get machine name from system properties
+    // Use the dedicated hostname API
     try {
-      const appProperties = await ApplicationController.getAllProperties()
-      console.log('📋 Wizard: Application properties received:', appProperties)
+      console.log('🔄 Wizard: Calling getHostName API...')
+      const hostname = await apiGet('/utils/application/getHostName', true)
+      console.log('📋 Wizard: Hostname received:', hostname)
       
-      // Try different possible property names for machine name
-      const machineName = appProperties.name || 
-                         appProperties.machineName || 
-                         appProperties.hostname || 
-                         appProperties.instanceName ||
-                         await tryGetRealHostname() ||
-                         'dev-01'
-      
-      applicationForm.value.name = machineName
-      console.log('✅ Wizard: Machine name loaded:', applicationForm.value.name)
+      // The API returns the hostname as plain text
+      if (hostname && typeof hostname === 'string' && hostname.trim()) {
+        applicationForm.value.name = hostname.trim()
+        console.log('✅ Wizard: Machine name loaded from getHostName API:', applicationForm.value.name)
+      } else {
+        throw new Error('Empty or invalid hostname received')
+      }
       
     } catch (error) {
-      console.error('⚠️ Wizard: Primary API call failed, trying alternative methods:', error)
+      console.error('⚠️ Wizard: getHostName API failed, trying fallback methods:', error)
       
-      // Try alternative API endpoints for system information
+      // Fallback 1: Try to get machine name from system properties
       try {
-        console.log('🔄 Wizard: Trying alternative system info API...')
-        const systemInfo = await apiGet('/utils/system/info', true)
-        console.log('📋 Wizard: System info received:', systemInfo)
+        console.log('🔄 Wizard: Trying ApplicationController.getAllProperties...')
+        const appProperties = await ApplicationController.getAllProperties()
+        console.log('📋 Wizard: Application properties received:', appProperties)
         
-        const machineName = systemInfo.hostname || 
-                           systemInfo.name || 
-                           systemInfo.machineName ||
-                           await tryGetRealHostname() ||
-                           'dev-01'
+        const machineName = appProperties.name || 
+                           appProperties.machineName || 
+                           appProperties.hostname || 
+                           appProperties.instanceName
         
-        applicationForm.value.name = machineName
-        console.log('✅ Wizard: Machine name loaded from system info:', applicationForm.value.name)
+        if (machineName && machineName.trim()) {
+          applicationForm.value.name = machineName.trim()
+          console.log('✅ Wizard: Machine name loaded from application properties:', applicationForm.value.name)
+        } else {
+          throw new Error('No valid machine name in properties')
+        }
         
-      } catch (systemError) {
-        console.error('⚠️ Wizard: System info API also failed, trying instances API:', systemError)
+      } catch (propertiesError) {
+        console.error('⚠️ Wizard: Application properties failed, trying system info:', propertiesError)
         
-        // Try instances API which might have system information
+        // Fallback 2: Try system info API
         try {
-          console.log('🔄 Wizard: Trying instances API for system info...')
-          const instancesInfo = await apiGet('/utils/instances/getAllNetworkInterfaces', true)
-          console.log('📋 Wizard: Instances info received:', instancesInfo)
+          console.log('🔄 Wizard: Trying system info API...')
+          const systemInfo = await apiGet('/utils/system/info', true)
+          console.log('📋 Wizard: System info received:', systemInfo)
           
-          // Try to extract machine name from network interfaces or use IP-based name
-          if (instancesInfo && instancesInfo.interfaces && instancesInfo.interfaces.length > 0) {
-            // Look for a non-loopback interface with a meaningful name
-            const mainInterface = instancesInfo.interfaces.find(iface => 
-              iface.name && 
-              !iface.name.includes('lo') && 
-              !iface.name.includes('docker') &&
-              !iface.name.includes('br-') &&
-              iface.inetAddresses && 
-              iface.inetAddresses.length > 0
-            )
-            
-            if (mainInterface && mainInterface.inetAddresses[0]) {
-              const ipAddress = mainInterface.inetAddresses[0].address.replace('/', '')
-              const ipParts = ipAddress.split('.')
-              if (ipParts.length === 4 && !ipAddress.startsWith('127.')) {
-                applicationForm.value.name = `MediaHub-${ipParts[2]}-${ipParts[3]}`
-                console.log('✅ Wizard: Using network-based name:', applicationForm.value.name)
-              } else {
-                throw new Error('No suitable IP found')
-              }
-            } else {
-              throw new Error('No suitable network interface found')
-            }
+          const machineName = systemInfo.hostname || 
+                             systemInfo.name || 
+                             systemInfo.machineName
+          
+          if (machineName && machineName.trim()) {
+            applicationForm.value.name = machineName.trim()
+            console.log('✅ Wizard: Machine name loaded from system info:', applicationForm.value.name)
           } else {
-            throw new Error('No network interfaces data')
+            throw new Error('No valid machine name in system info')
           }
           
-        } catch (instancesError) {
-          console.error('⚠️ Wizard: Instances API also failed:', instancesError)
+        } catch (systemError) {
+          console.error('⚠️ Wizard: All API methods failed, using default:', systemError)
           
-          // Final fallback: try to get hostname from browser if available
-          try {
-            const hostname = window.location.hostname
-            console.log('🌐 Wizard: Browser hostname:', hostname)
-            
-            // Check if hostname is an IP address
-            const isIPAddress = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname)
-            
-            if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1' && !isIPAddress) {
-              // Use hostname if it's a proper domain name
-              applicationForm.value.name = hostname.split('.')[0] // Take first part of FQDN
-              console.log('✅ Wizard: Using hostname from browser:', applicationForm.value.name)
-            } else if (isIPAddress) {
-              // If it's an IP, try to create a meaningful name
-              const ipParts = hostname.split('.')
-              applicationForm.value.name = `MediaHub-${ipParts[2]}-${ipParts[3]}`
-              console.log('✅ Wizard: Using IP-based name:', applicationForm.value.name)
-            } else {
-              // Try to get the real hostname using different methods
-              let machineName = await tryGetRealHostname()
-              
-              if (!machineName) {
-                // Final fallback based on platform
-                const platform = navigator.platform
-                
-                if (platform.includes('Linux')) {
-                  machineName = 'dev-01' // Default Linux hostname pattern
-                } else if (platform.includes('Win')) {
-                  machineName = 'MediaHub-Windows'
-                } else if (platform.includes('Mac')) {
-                  machineName = 'MediaHub-Mac'
-                } else {
-                  machineName = 'MediaHub'
-                }
-              }
-              
-              applicationForm.value.name = machineName
-              console.log('⚠️ Wizard: Using hostname-based fallback name:', applicationForm.value.name)
-            }
-          } catch (hostnameError) {
-            // Final fallback - use the known hostname pattern
-            applicationForm.value.name = 'dev-01'
-            console.log('⚠️ Wizard: All methods failed, using default hostname:', applicationForm.value.name)
-          }
+          // Final fallback: use default name
+          applicationForm.value.name = 'dev-01'
+          console.log('✅ Wizard: Using default machine name:', applicationForm.value.name)
         }
       }
     }
     
   } catch (error) {
-    console.error('❌ Wizard: Failed to load machine name:', error)
-    applicationError.value = `Failed to load machine name: ${error.message}`
-    // Use fallback hostname
+    console.error('❌ Wizard: Critical error in loadMachineName:', error)
     applicationForm.value.name = 'dev-01'
+    applicationError.value = 'Impossible de charger le nom de la machine. Utilisation du nom par défaut.'
   } finally {
     loadingMachineName.value = false
   }
