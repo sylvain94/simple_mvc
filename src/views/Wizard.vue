@@ -667,7 +667,7 @@
                       <div class="form-control mb-3">
                         <label class="label">
                           <span class="label-text font-medium text-sm">Select Network Interface available</span>
-                          <span class="label-text-alt">{{ networkInterfaces.length }} total interfaces</span>
+                          <span class="label-text-alt">{{ availableInterfacesForDefault.length }} available interfaces ({{ networkInterfaces.length }} total)</span>
                         </label>
                         <select 
                           class="select select-bordered select-sm" 
@@ -676,7 +676,7 @@
                         >
                           <option value="">Choose an interface...</option>
                           <option 
-                            v-for="netIface in networkInterfaces" 
+                            v-for="netIface in availableInterfacesForDefault" 
                             :key="netIface.ifName" 
                             :value="netIface.ifName"
                           >
@@ -899,6 +899,7 @@
                             <option value="IN">IN</option>
                             <option value="OUT">OUT</option>
                             <option value="BOTH">BOTH</option>
+                            <option value="ADMIN">ADMIN</option>
                           </select>
                         </td>
                         <td>
@@ -1177,6 +1178,13 @@ const interfaceUpdateStatus = ref({})
 // COMPUTED PROPERTIES
 // ================================
 
+// Filter network interfaces to exclude ADMIN interfaces for default instance
+const availableInterfacesForDefault = computed(() => {
+  return networkInterfaces.value.filter(iface => 
+    iface.ifStreamDirection !== 'ADMIN'
+  )
+})
+
 // Filter available interfaces based on selected stream direction
 const getFilteredInterfacesForDirection = (selectedDirection) => {
   if (!selectedDirection) {
@@ -1209,6 +1217,11 @@ const getFilteredInterfacesForDirection = (selectedDirection) => {
     // Show only interfaces configured as OUT
     filteredInterfaces = networkInterfaces.value.filter(iface => 
       iface.ifStreamDirection === 'OUT'
+    )
+  } else if (selectedDirection === 'ADMIN') {
+    // Show only interfaces configured as ADMIN
+    filteredInterfaces = networkInterfaces.value.filter(iface => 
+      iface.ifStreamDirection === 'ADMIN'
     )
   }
   
@@ -1659,8 +1672,8 @@ const removeDefaultInterface = (index) => {
 const selectDefaultNetworkInterface = (defaultInterfaceIndex, selectedInterfaceName) => {
   console.log(`🔗 Default: Selecting interface ${selectedInterfaceName} for interface ${defaultInterfaceIndex}`)
   
-  // Find the selected interface from all network interfaces
-  const selectedInterface = networkInterfaces.value.find(iface => iface.ifName === selectedInterfaceName)
+  // Find the selected interface from available interfaces (excluding ADMIN)
+  const selectedInterface = availableInterfacesForDefault.value.find(iface => iface.ifName === selectedInterfaceName)
   
   if (selectedInterface && defaultForm.value.interfaces[defaultInterfaceIndex]) {
     // Update the default interface with selected network interface data
@@ -1898,6 +1911,8 @@ const updateInterfaceDirection = async (iface, newDirection) => {
       endpoint = `/utils/ifs/configureToOUTStreams/${iface.ifName}`
     } else if (newDirection === 'BOTH') {
       endpoint = `/utils/ifs/configureToOUTStreams/${iface.ifName}` // Note: BOTH uses OUT endpoint as specified
+    } else if (newDirection === 'ADMIN') {
+      endpoint = `/utils/ifs/configureToOUTStreams/${iface.ifName}` // Note: ADMIN uses OUT endpoint as specified
     }
     
     const response = await apiPut(endpoint, {}, true)
