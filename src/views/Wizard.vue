@@ -1359,7 +1359,7 @@ const applyUnattendConfiguration = async () => {
     const adminInstance = config.instances.find(instance => instance.type === 'ADMIN')
     if (adminInstance) {
       console.log('📋 Step 4: Configuring admin instance multicast IP range...')
-      await apiPut(`/utils/instances/defineMulticastAddressRange/startIP/{start_ip}/endIP/{end_ip}/instance/{instance_id}?start_ip=${adminInstance.startIP}&end_ip=${adminInstance.endIP}&instance_id=${adminInstanceId}`, null, true)
+      await apiPut(`/utils/instances/defineMulticastAddressRange/startIP/${adminInstance.startIP}/endIP/${adminInstance.endIP}/instance/${adminInstanceId}`, null, true)
       console.log('✅ Step 4: Admin instance IP range configured')
       
       // Step 5: Configure admin instance port range
