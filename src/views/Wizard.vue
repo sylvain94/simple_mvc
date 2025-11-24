@@ -1910,13 +1910,13 @@ const updateInterfaceDirection = async (iface, newDirection) => {
     } else if (newDirection === 'OUT') {
       endpoint = `/utils/ifs/configureToOUTStreams/${iface.ifName}`
     } else if (newDirection === 'BOTH') {
-      endpoint = `/utils/ifs/configureToOUTStreams/${iface.ifName}` // Note: BOTH uses OUT endpoint as specified
+      endpoint = `/utils/ifs/configureToMultidirectional/${iface.ifName}`
     } else if (newDirection === 'ADMIN') {
-      endpoint = `/utils/ifs/configureToOUTStreams/${iface.ifName}` // Note: ADMIN uses OUT endpoint as specified
+      endpoint = `/utils/ifs/configureToAdmin/${iface.ifName}`
     }
     
     const response = await apiPut(endpoint, {}, true)
-    console.log(`✅ Wizard: ${iface.ifName} direction updated:`, response)
+    console.log(`✅ Wizard: ${iface.ifName} direction updated to ${newDirection}:`, response)
     
     // Update the interface in the local array
     const interfaceIndex = networkInterfaces.value.findIndex(i => i.id === iface.id)
